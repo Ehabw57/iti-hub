@@ -25,17 +25,13 @@ const NotificationSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    created_at: {
-      type: Date,
-      default: Date.now,
-    },
   },
   {
     timestamps: true,
   }
 );
 
-NotificationSchema.index({ receiver_id: 1, created_at: -1 });
+NotificationSchema.index({ receiver_id: 1, createdAt: -1 });
 NotificationSchema.index({ sender_id: 1 });
 NotificationSchema.index({ receiver_id: 1, is_read: 1 });
 
