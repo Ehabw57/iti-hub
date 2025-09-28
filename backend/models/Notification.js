@@ -32,7 +32,6 @@ const NotificationSchema = new mongoose.Schema(
 );
 
 NotificationSchema.index({ receiver_id: 1, createdAt: -1 });
-NotificationSchema.index({ sender_id: 1 });
 NotificationSchema.index({ receiver_id: 1, is_read: 1 });
 
 module.exports = mongoose.model("Notification", NotificationSchema);
