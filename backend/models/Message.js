@@ -35,17 +35,13 @@ const MessageSchema = new mongoose.Schema(
         ref: "User",
       },
     ],
-    created_at: {
-      type: Date,
-      default: Date.now,
-    },
   },
   {
     timestamps: true,
   }
 );
 
-MessageSchema.index({ conversation_id: 1, created_at: -1 });
+MessageSchema.index({ conversation_id: 1, createdAt: -1 });
 MessageSchema.index({ sender_id: 1 });
 
 module.exports = mongoose.model("Message", MessageSchema);
