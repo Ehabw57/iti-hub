@@ -3,29 +3,27 @@ const mongoose = require('mongoose');
 const connectionSchema = new mongoose.Schema({
   user_id: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',     // بيربطه بالـ users collection
+    ref: 'User',   
     required: true
   },
   connected_user_id: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',     // برضه بيربطه بالـ users collection
+    ref: 'User',     
     required: true
   },
   status: {
     type: String,
-    enum: ['pending', 'accepted', 'blocked'], // القيم المسموح بيها
+    enum: ['pending', 'accepted', 'blocked'], 
     default: 'pending'
-  },
-  created_at: {
-    type: Date,
-    default: Date.now
+    
   }
-});
+  },
+  { timestamps: true }
+);
 
-// هنا بقى اللي مهم
 connectionSchema.index(
   { user_id: 1, connected_user_id: 1 }, 
   { unique: true }
 );
 
-module.exports = mongoose.model('Connection', connectionSchema);
+module.exports = mongoose.model('connection', connectionSchema);
