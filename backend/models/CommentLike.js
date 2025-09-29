@@ -1,6 +1,7 @@
+
 const mongoose = require("mongoose");
 
-const commentLikesSchema = new mongoose.Schema(
+const commentLikeSchema = new mongoose.Schema(
   {
     comment_id: {
       type: mongoose.Schema.Types.ObjectId,
@@ -12,18 +13,14 @@ const commentLikesSchema = new mongoose.Schema(
       ref: "users",
       required: true,
     },
-    created_at: {
-      type: Date,
-      default: Date.now,
-    },
   },
   {
-    versionKey: false,
+    timestamps: true,
   }
 );
 
-commentLikesSchema.index({ comment_id: 1, user_id: 1 }, { unique: true });
+commentLikeSchema.index({ comment_id: 1, user_id: 1 }, { unique: true });
 
-const CommentLike = mongoose.model("comment_likes", commentLikesSchema);
+const CommentLike = mongoose.model("Comment_like", commentLikeSchema);
 
 module.exports = CommentLike;
