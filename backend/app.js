@@ -1,15 +1,26 @@
-const express  = require('express')
-const dotenv = require('dotenv')
+const mongoose = require("mongoose")
+const express = require("express");
+const dotenv = require("dotenv");
+const commentRoute = require('./routes/commentRoutes')
 
-dotenv.config()
-const app = express()
+dotenv.config();
+const app = express();
 
-const PORT = process.env.PORT || 3030
+const PORT = process.env.PORT || 3030;
+const DBURL = process.env.DB_URL || "mongodb://127.0.0.1:27017/iti-hub";
 
-app.get('/', (req, res) => {
-  res.json({message: 'Hello, itihub'})
-})
+app.use(express.json());
+app.use(commentRoute)
 
-app.listen(PORT, ()=> {
-  console.log(`Server is running on http://localhost:${PORT}`)
-})
+mongoose
+  .connect(DBURL)
+  .then(() => {
+    console.log("Connected to DB");
+    app.listen(PORT, () => {
+      console.log(`Server is running on http://localhost:${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error(err.message);
+    process.exit(1);
+  });
