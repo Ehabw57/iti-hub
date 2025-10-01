@@ -6,10 +6,10 @@ const{
     updatePost
 } = require("../controllers/postController");
 
-const router = express.Router();
+const postRoutes = express.Router();
 
-router.get("api/posts",getAllPosts);
-router.get("api/posts/:id",getPostById);
-router.put("api/posts/:id",updatePost);
+router.get("/posts",getAllPosts);
+router.get("/posts/:id",getPostById);
+router.put("/posts/:id",updatePost);
 
-module.exports=router;
+module.exports=postRoutes;
