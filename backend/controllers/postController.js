@@ -74,4 +74,5 @@ module.exports = {
   getAllPosts,
   getPostById,
   updatePost,
+  createPost
 };
