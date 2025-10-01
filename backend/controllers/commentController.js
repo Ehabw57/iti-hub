@@ -4,12 +4,22 @@ const Comment = require("../models/Comment");
 async function getCommentsByPost(req, res) {
   try {
     const postId = req.params.postId;
-    console.log(postId);
+    const comments = await Comment.find({ post_id: postId }).lean();
 
-    const comments = await Comment.find({ post_id: postId });
-    res.status(200).json(comments);
+    function buildTree(parentId = null) {
+      return comments
+        .filter((c) => String(c.parent_comment_id) === String(parentId))
+        .map((c) => ({
+          ...c,
+          replies: buildTree(c._id),
+        }));
+    }
+
+    const nestedComments = buildTree(null);
+
+    res.status(200).json(nestedComments);
   } catch (err) {
-    res.status(500).json({ messages: err.message });
+    res.status(500).json({ message: err.message });
   }
 }
 
@@ -25,7 +35,7 @@ async function createComment(req, res) {
       parent_comment_id,
       image_url,
     });
-    console.log(newComment);
+
     await newComment.save();
     res.status(201).json(newComment);
   } catch (err) {
@@ -40,11 +50,32 @@ async function deleteComment(req, res) {
     const deletedComment = await Comment.findByIdAndDelete(commentId);
 
     if (deletedComment)
-      return res.status(202).json({ message: "object susceefully delted" });
+      return res.status(200).json({ message: "object deleted", id: commentId });
     res.status(404).json({ message: "comment not found" });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 }
 
-module.exports = { getCommentsByPost, createComment, deleteComment };
+async function updateComment(req, res) {
+  try {
+    const targetID = req.params.id;
+
+    const updatedComment = await Comment.findByIdAndUpdate(
+      targetID,
+      { ...req.body },
+      { new: true, runValidators: true }
+    );
+    if (updatedComment) return res.status(200).json(updatedComment);
+    res.status(404).json({ message: "comment not found" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+}
+
+module.exports = {
+  getCommentsByPost,
+  createComment,
+  deleteComment,
+  updateComment,
+};
