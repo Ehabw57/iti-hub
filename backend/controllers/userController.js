@@ -3,8 +3,6 @@ const User = require("../models/User");
 
 async function createUser(req, res) {
   try {
-    console.log("wofun worked!!");
-    console.log(req.body);
     const newUser = await User.create({ ...req.body });
     res.status(201).json(newUser);
   } catch (err) {
@@ -33,7 +31,6 @@ async function getUserById() {
 
 const updateUser = async (req, res) => {
   try {
-    console.log(req.body);
     const updatedUser = await User.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
