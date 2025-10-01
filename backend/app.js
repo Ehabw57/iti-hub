@@ -1,7 +1,10 @@
 const mongoose = require("mongoose")
 const express = require("express");
 const dotenv = require("dotenv");
-const commentRoute = require('./routes/commentRoutes')
+
+const commentRoute = require('./routes/commentRoutes');
+const messageRoute = require('./routes/messageRoutes');
+const userRouter = require("./routes/userRoutes");
 
 dotenv.config();
 const app = express();
@@ -10,7 +13,9 @@ const PORT = process.env.PORT || 3030;
 const DBURL = process.env.DB_URL || "mongodb://127.0.0.1:27017/iti-hub";
 
 app.use(express.json());
-app.use(commentRoute)
+app.use(commentRoute);
+app.use(messageRoute);
+app.use(userRouter);
 
 mongoose
   .connect(DBURL)

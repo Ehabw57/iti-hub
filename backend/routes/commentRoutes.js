@@ -3,7 +3,7 @@ const {
   getCommentsByPost,
   createComment,
   deleteComment,
-  updateComment
+  updateComment,
 } = require("../controllers/commentController");
 
 const commentRoute = express.Router();
