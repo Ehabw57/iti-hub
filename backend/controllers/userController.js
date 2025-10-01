@@ -1,6 +1,18 @@
 const mongoose = require ("mongoose");
 const User = require("../models/User");
 
+
+async function createUser (req, res){
+  try{
+      const newUser = await User.create(req.body);
+      res.status(201).json(newUser);
+  }
+  catch(err){
+      res.status(500).json({massage:err.massage});
+
+  }
+};
+
 async function getAllUsers (req , res){
     try{
         const users = await User.find();
@@ -47,4 +59,4 @@ const deleteUser = async (req, res) => {
   }
 };
 
-module.exports={getAllUsers , getUserById ,updateUser, deleteUser,}
+module.exports={getAllUsers , getUserById ,updateUser, deleteUser, createUser}
