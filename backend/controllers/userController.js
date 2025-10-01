@@ -4,11 +4,13 @@ const User = require("../models/User");
 
 async function createUser (req, res){
   try{
-      const newUser = await User.create(req.body);
+       console.log("wofun worked!!")
+       console.log(req.body)
+      const newUser = await User.create({...req.body});
       res.status(201).json(newUser);
-  }
-  catch(err){
-      res.status(500).json({massage:err.massage});
+   
+  }catch(err){
+      res.status(500).json({massage:err.message});
 
   }
 };
