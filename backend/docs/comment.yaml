@@ -56,6 +56,10 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Comment"
+        "400":
+          description: Invalid input data
+        "404":
+          description: Post not found
         "500":
           description: Server error
 
@@ -142,11 +146,12 @@ components:
           example: null
         image_url:
           type: string
+          nullable: true
           example: https://example.com/comment.png
-        replies:
-          type: array
-          items:
-            $ref: "#/components/schemas/Comment"
+        created_at:
+          type: string
+          format: date-time
+          example: 2023-09-15T10:30:00.000Z
 
     CreateCommentInput:
       type: object

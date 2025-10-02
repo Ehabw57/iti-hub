@@ -5,11 +5,11 @@ const userDoc = YAML.load("./docs/user.yaml");
 const postDoc = YAML.load("./docs/post.yaml");
 
 const base = {
-  openapi: "3.0.0",
+  openapi: "3.0.3",
   info: {
-    title: "My API",
+    title: "ITI Hub API",
     version: "1.0.0",
-    description: "API documentation",
+    description: "Comprehensive API documentation for ITI Hub platform",
   },
   servers: [
     { url: `http://localhost:3030` }

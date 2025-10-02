@@ -1,4 +1,4 @@
-openapi: 3.0.0
+openapi: 3.0.3
 info:
   title: User API
   version: 1.0.0
@@ -6,7 +6,7 @@ info:
 
 servers:
   - url: http://localhost:3030
-    description: Local server
+    description: Local development server
 
 paths:
   /User:
@@ -17,6 +17,14 @@ paths:
       responses:
         '200':
           description: List of all users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserResponse'
+        '500':
+          description: Server error
     post:
       tags:
         - Users
@@ -26,10 +34,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/User'
+              $ref: '#/components/schemas/CreateUserInput'
       responses:
         '201':
           description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
         '400':
           description: Error creating user
 
@@ -47,8 +59,14 @@ paths:
       responses:
         '200':
           description: A single user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
         '404':
           description: User not found
+        '500':
+          description: Server error
 
     put:
       tags:
@@ -65,12 +83,18 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/User'
+              $ref: '#/components/schemas/UpdateUserInput'
       responses:
         '200':
           description: User updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
         '404':
           description: User not found
+        '500':
+          description: Server error
 
     delete:
       tags:
@@ -85,11 +109,110 @@ paths:
       responses:
         '200':
           description: User deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User deleted successfully
+                  id:
+                    type: string
+                    example: 64f12a9a9d32a7f1c0b9e001
         '404':
           description: User not found
+        '500':
+          description: Server error
 
 components:
   schemas:
+    UserResponse:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 64f12a9a9d32a7f1c0b9e001
+        first_name:
+          type: string
+          example: Ayat
+        last_name:
+          type: string
+          example: Elkady
+        email:
+          type: string
+          format: email
+          example: ayat@test.com
+        role:
+          type: string
+          enum: [user, student, instructor, admin, super_admin]
+          example: student
+        profile_pic:
+          type: string
+          nullable: true
+          example: https://example.com/avatar.png
+        createdAt:
+          type: string
+          format: date-time
+          example: 2023-09-15T10:30:00.000Z
+        updatedAt:
+          type: string
+          format: date-time
+          example: 2023-09-15T10:30:00.000Z
+
+    CreateUserInput:
+      type: object
+      required:
+        - first_name
+        - last_name
+        - email
+        - password
+      properties:
+        first_name:
+          type: string
+          example: Ayat
+        last_name:
+          type: string
+          example: Elkady
+        email:
+          type: string
+          format: email
+          example: ayat@test.com
+        password:
+          type: string
+          format: password
+          example: 12345678
+          minLength: 8
+        role:
+          type: string
+          enum: [user, student, instructor, admin, super_admin]
+          example: student
+          default: user
+        profile_pic:
+          type: string
+          example: https://example.com/avatar.png
+
+    UpdateUserInput:
+      type: object
+      properties:
+        first_name:
+          type: string
+          example: Ayat
+        last_name:
+          type: string
+          example: Elkady
+        email:
+          type: string
+          format: email
+          example: ayat@test.com
+        role:
+          type: string
+          enum: [user, student, instructor, admin, super_admin]
+          example: student
+        profile_pic:
+          type: string
+          example: https://example.com/avatar.png
+
     User:
       type: object
       properties:
