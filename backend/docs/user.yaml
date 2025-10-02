@@ -11,11 +11,15 @@ servers:
 paths:
   /User:
     get:
+      tags:
+        - Users
       summary: Get all users
       responses:
         '200':
           description: List of all users
     post:
+      tags:
+        - Users
       summary: Create a new user
       requestBody:
         required: true
@@ -31,6 +35,8 @@ paths:
 
   /users/{id}:
     get:
+      tags:
+        - Users
       summary: Get a user by ID
       parameters:
         - in: path
@@ -45,6 +51,8 @@ paths:
           description: User not found
 
     put:
+      tags:
+        - Users
       summary: Update a user by ID
       parameters:
         - in: path
@@ -65,6 +73,8 @@ paths:
           description: User not found
 
     delete:
+      tags:
+        - Users
       summary: Delete a user by ID
       parameters:
         - in: path
