@@ -1,5 +1,6 @@
 const express = require("express");
 const {
+  getAllMessages,
   getMessagesByConversation,
   sendMessage,
   updateMessage,
@@ -8,9 +9,10 @@ const {
 
 const router = express.Router();
 
+router.get("/api/messages", getAllMessages);
 router.get("/api/conversations/:id/messages", getMessagesByConversation);
 router.post("/api/conversations/:id/messages", sendMessage);
-router.put("/api/messages/:id", updateMessage);
+router.patch("/api/messages/:id", updateMessage);
 router.delete("/api/messages/:id", deleteMessage);
 
 module.exports = router;
