@@ -4,6 +4,7 @@ const Comment = require("../models/Comment");
 async function getCommentsByPost(req, res) {
   try {
     const postId = req.params.postId;
+
     const comments = await Comment.find({ post_id: postId }).lean();
 
     function buildTree(parentId = null) {
@@ -35,7 +36,6 @@ async function createComment(req, res) {
       parent_comment_id,
       image_url,
     });
-
     await newComment.save();
     res.status(201).json(newComment);
   } catch (err) {
