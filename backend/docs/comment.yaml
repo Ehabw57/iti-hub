@@ -10,6 +10,8 @@ servers:
 paths:
   /posts/{postId}/comments:
     get:
+      tags:
+        - Comments
       summary: Get all comments for a post
       description: Returns a nested tree of comments for the specified post.
       parameters:
@@ -31,6 +33,8 @@ paths:
         "500":
           description: Server error
     post:
+      tags:
+        - Comments
       summary: Create a new comment on a post
       parameters:
         - name: postId
@@ -57,6 +61,8 @@ paths:
 
   /comments/{id}:
     delete:
+      tags:
+        - Comments
       summary: Delete a comment
       parameters:
         - name: id
@@ -85,6 +91,8 @@ paths:
           description: Server error
 
     patch:
+      tags:
+        - Comments
       summary: Update a comment
       parameters:
         - name: id
