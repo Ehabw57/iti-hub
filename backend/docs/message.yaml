@@ -1,0 +1,297 @@
+openapi: 3.0.3
+info:
+  title: Message API
+  version: 1.0.0
+  description: API for managing messages and conversations
+servers:
+  - url: http://localhost:3030
+    description: Local development server
+
+paths:
+  /api/messages:
+    get:
+      tags:
+        - Messages
+      summary: Get all messages
+      description: Returns all messages from the entire system (admin endpoint)
+      responses:
+        "200":
+          description: List of all messages retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Message"
+                  count:
+                    type: integer
+                    example: 15
+        "500":
+          description: Server error
+          
+  /api/conversations/{id}/messages:
+    get:
+      tags:
+        - Messages
+      summary: Get all messages for a conversation
+      description: Returns all messages for the specified conversation.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The ID of the conversation
+      responses:
+        "200":
+          description: List of messages retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Message"
+                  count:
+                    type: integer
+                    example: 5
+        "400":
+          description: Invalid conversation ID format
+        "404":
+          description: Conversation not found
+        "500":
+          description: Server error
+    post:
+      tags:
+        - Messages
+      summary: Send a new message to a conversation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The ID of the conversation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateMessageInput"
+      responses:
+        "201":
+          description: Message sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Message sent successfully
+                  data:
+                    $ref: "#/components/schemas/Message"
+        "400":
+          description: Invalid input or missing required fields
+        "403":
+          description: User is not a participant in this conversation
+        "404":
+          description: Conversation not found
+        "500":
+          description: Server error
+
+  /api/messages/{id}:
+    patch:
+      tags:
+        - Messages
+      summary: Update a message
+      description: Update a message (only by the sender)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Message ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateMessageInput"
+      responses:
+        "200":
+          description: Message updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Message updated successfully
+                  data:
+                    $ref: "#/components/schemas/Message"
+        "400":
+          description: Invalid input or message ID format
+        "403":
+          description: You can only update your own messages
+        "404":
+          description: Message not found
+        "500":
+          description: Server error
+    delete:
+      tags:
+        - Messages
+      summary: Delete a message
+      description: Delete a message (only by the sender)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Message ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeleteMessageInput"
+      responses:
+        "200":
+          description: Message deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Message deleted successfully
+        "400":
+          description: Invalid input or message ID format
+        "403":
+          description: You can only delete your own messages
+        "404":
+          description: Message not found
+        "500":
+          description: Server error
+
+components:
+  schemas:
+    Message:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 64f12a9a9d32a7f1c0b9e001
+        conversation_id:
+          type: string
+          example: 64f12a9a9d32a7f1c0b9e002
+        sender_id:
+          type: object
+          properties:
+            _id:
+              type: string
+              example: 64f12a9a9d32a7f1c0b9e003
+            first_name:
+              type: string
+              example: John
+            last_name:
+              type: string
+              example: Doe
+            email:
+              type: string
+              example: john.doe@example.com
+        content:
+          type: string
+          example: Hello, how are you?
+        media:
+          type: array
+          items:
+            type: object
+            properties:
+              url:
+                type: string
+                example: https://example.com/image.jpg
+              type:
+                type: string
+                enum: ["image", "video", "file"]
+                example: image
+        seen_by:
+          type: array
+          items:
+            type: string
+          example: ["64f12a9a9d32a7f1c0b9e004"]
+        created_at:
+          type: string
+          format: date-time
+          example: 2023-10-02T10:30:00.000Z
+        createdAt:
+          type: string
+          format: date-time
+          example: 2023-10-02T10:30:00.000Z
+        updatedAt:
+          type: string
+          format: date-time
+          example: 2023-10-02T10:30:00.000Z
+
+    CreateMessageInput:
+      type: object
+      required:
+        - sender_id
+      properties:
+        sender_id:
+          type: string
+          example: 64f12a9a9d32a7f1c0b9e003
+        content:
+          type: string
+          example: Hello, how are you?
+        image_url:
+          type: string
+          example: https://example.com/image.jpg
+
+    UpdateMessageInput:
+      type: object
+      required:
+        - sender_id
+      properties:
+        sender_id:
+          type: string
+          example: 64f12a9a9d32a7f1c0b9e003
+        content:
+          type: string
+          example: Updated message content
+        image_url:
+          type: string
+          example: https://example.com/new-image.jpg
+
+    DeleteMessageInput:
+      type: object
+      required:
+        - user_id
+      properties:
+        user_id:
+          type: string
+          example: 64f12a9a9d32a7f1c0b9e003

@@ -2,6 +2,23 @@ const mongoose = require("mongoose");
 const Message = require("../models/Message");
 const Conversation = require("../models/Conversation");
 
+async function getAllMessages(req, res) {
+  try {
+    const messages = await Message.find();
+    res.status(200).json({
+      success: true,
+      data: messages,
+      count: messages.length
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Error fetching messages",
+      error: err.message
+    });
+  }
+}
+
 async function getMessagesByConversation(req, res) {
   try {
     const conversationId = req.params.id;
@@ -36,33 +53,53 @@ async function getMessagesByConversation(req, res) {
 async function sendMessage(req, res) {
   try {
     const conversationId = req.params.id;
-    const { content, image_url } = req.body;
-    const senderId = req.user?.id; // To be discussed: Assuming req.user is set by authentication middleware
+    const { content, image_url, sender_id } = req.body;
 
-    if (!senderId) {
-      return res.status(401).json({ message: "User not authenticated" });
+    if (!sender_id) {
+      return res.status(400).json({ 
+        success: false,
+        message: "sender_id is required" 
+      });
     }
 
     if (!content && !image_url) {
-      return res.status(400).json({ message: "Message must have content or image" });
+      return res.status(400).json({ 
+        success: false,
+        message: "Message must have content or image" 
+      });
     }
 
     if (!mongoose.Types.ObjectId.isValid(conversationId)) {
-      return res.status(400).json({ message: "Invalid conversation ID format" });
+      return res.status(400).json({ 
+        success: false,
+        message: "Invalid conversation ID format" 
+      });
     }
 
+    if (!mongoose.Types.ObjectId.isValid(sender_id)) {
+      return res.status(400).json({ 
+        success: false,
+        message: "Invalid sender ID format" 
+      });
+    }
     const conversation = await Conversation.findById(conversationId);
     if (!conversation) {
-      return res.status(404).json({ message: "Conversation not found" });
+      return res.status(404).json({ 
+        success: false,
+        message: "Conversation not found" 
+      });
     }
 
-    if (!conversation.participants.includes(senderId)) {
-      return res.status(403).json({ message: "User is not a participant in this conversation" });
+    if (!conversation.participants.includes(sender_id)) {
+      return res.status(403).json({ 
+        success: false,
+        message: "User is not a participant in this conversation" 
+      });
     }
 
     const messageData = {
       conversation_id: conversationId,
-      sender_id: senderId,
+      sender_id: sender_id,
       content: content || ""
     };
 
@@ -81,7 +118,7 @@ async function sendMessage(req, res) {
       last_message: newMessage._id
     });
 
-    await newMessage.populate("sender_id", "name");
+    await newMessage.populate("sender_id", "first_name last_name email");
 
     res.status(201).json({
       success: true,
@@ -100,24 +137,42 @@ async function sendMessage(req, res) {
 async function updateMessage(req, res) {
   try {
     const messageId = req.params.id;
-    const { content, image_url } = req.body;
-    const userId = req.user?.id;
-
-    if (!userId) {
-      return res.status(401).json({ message: "User not authenticated" });
-    }
+    const { content, image_url, sender_id } = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(messageId)) {
-      return res.status(400).json({ message: "Invalid message ID format" });
+      return res.status(400).json({ 
+        success: false,
+        message: "Invalid message ID format" 
+      });
+    }
+
+    if (!sender_id) {
+      return res.status(400).json({ 
+        success: false,
+        message: "sender_id is required" 
+      });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(sender_id)) {
+      return res.status(400).json({ 
+        success: false,
+        message: "Invalid sender ID format" 
+      });
     }
 
     const message = await Message.findById(messageId);
     if (!message) {
-      return res.status(404).json({ message: "Message not found" });
+      return res.status(404).json({ 
+        success: false,
+        message: "Message not found" 
+      });
     }
 
-    if (message.sender_id.toString() !== userId) {
-      return res.status(403).json({ message: "You can only update your own messages" });
+    if (message.sender_id.toString() !== sender_id.toString()) {
+      return res.status(403).json({ 
+        success: false,
+        message: "You can only update your own messages" 
+      });
     }
 
     const updateData = {};
@@ -138,7 +193,7 @@ async function updateMessage(req, res) {
       messageId,
       updateData,
       { new: true }
-    ).populate("sender_id", "name");
+    ).populate("sender_id", "first_name last_name email");
 
     res.status(200).json({
       success: true,
@@ -157,7 +212,7 @@ async function updateMessage(req, res) {
 async function deleteMessage(req, res) {
   try {
     const messageId = req.params.id;
-    const userId = req.user?.id;
+    const userId = req.body.user_id;
 
     if (!userId) {
       return res.status(401).json({ message: "User not authenticated" });
@@ -207,5 +262,6 @@ module.exports = {
   getMessagesByConversation,
   sendMessage,
   updateMessage,
-  deleteMessage
+  deleteMessage,
+  getAllMessages
 };
