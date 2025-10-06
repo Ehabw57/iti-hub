@@ -9,29 +9,117 @@ servers:
     description: Local server
 
 paths:
-  /User:
+  /user:
     get:
       tags:
         - Users
       summary: Get all users
+      description: Retrieve a list of all users in the system
       responses:
         '200':
-          description: List of all users
+          description: List of all users retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  massage:
+                    type: string
+                    example: "Internal server error"
+    
     post:
       tags:
         - Users
       summary: Create a new user
+      description: Register a new user in the system
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/User'
+              $ref: '#/components/schemas/CreateUserInput'
+            examples:
+              student_example:
+                summary: Student user example
+                value:
+                  first_name: "Ahmed"
+                  last_name: "Hassan"
+                  email: "ahmed.hassan@example.com"
+                  password: "securePassword123"
+                  role: "student"
+                  profile_pic: "https://example.com/profiles/ahmed.jpg"
+              instructor_example:
+                summary: Instructor user example
+                value:
+                  first_name: "Dr. Sarah"
+                  last_name: "Mohamed"
+                  email: "sarah.mohamed@iti.gov.eg"
+                  password: "instructorPass456"
+                  role: "instructor"
+                  profile_pic: "https://example.com/profiles/sarah.jpg"
+              basic_user_example:
+                summary: Basic user example
+                value:
+                  first_name: "Omar"
+                  last_name: "Ali"
+                  email: "omar.ali@gmail.com"
+                  password: "password123"
+                  role: "user"
       responses:
         '201':
           description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+              examples:
+                created_user:
+                  summary: Successfully created user
+                  value:
+                    _id: "6510d1a2b3c4d5e6f7890123"
+                    first_name: "Ahmed"
+                    last_name: "Hassan"
+                    email: "ahmed.hassan@example.com"
+                    role: "student"
+                    profile_pic: "https://example.com/profiles/ahmed.jpg"
+                    createdAt: "2025-10-06T12:00:00.000Z"
+                    updatedAt: "2025-10-06T12:00:00.000Z"
         '400':
-          description: Error creating user
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  massage:
+                    type: string
+                examples:
+                  duplicate_email:
+                    summary: Email already exists
+                    value:
+                      massage: "E11000 duplicate key error collection: iti-hub.users index: email_1 dup key: { email: \"ahmed.hassan@example.com\" }"
+                  validation_error:
+                    summary: Missing required fields
+                    value:
+                      massage: "User validation failed: first_name: Path `first_name` is required."
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  massage:
+                    type: string
+                    example: "Internal server error"
 
   /users/{id}:
     get:
@@ -90,6 +178,87 @@ paths:
 
 components:
   schemas:
+    CreateUserInput:
+      type: object
+      required:
+        - first_name
+        - last_name
+        - email
+        - password
+      properties:
+        first_name:
+          type: string
+          minLength: 1
+          description: User's first name
+          example: "Ahmed"
+        last_name:
+          type: string
+          minLength: 1
+          description: User's last name
+          example: "Hassan"
+        email:
+          type: string
+          format: email
+          description: User's unique email address
+          example: "ahmed.hassan@example.com"
+        password:
+          type: string
+          minLength: 6
+          description: User's password (will be hashed)
+          example: "securePassword123"
+        role:
+          type: string
+          enum: [user, student, instructor, admin, super_admin]
+          default: user
+          description: User's role in the system
+          example: "student"
+        profile_pic:
+          type: string
+          format: uri
+          description: URL to user's profile picture
+          example: "https://example.com/profiles/ahmed.jpg"
+
+    UserResponse:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: User's unique identifier
+          example: "6510d1a2b3c4d5e6f7890123"
+        first_name:
+          type: string
+          description: User's first name
+          example: "Ahmed"
+        last_name:
+          type: string
+          description: User's last name
+          example: "Hassan"
+        email:
+          type: string
+          format: email
+          description: User's email address
+          example: "ahmed.hassan@example.com"
+        role:
+          type: string
+          enum: [user, student, instructor, admin, super_admin]
+          description: User's role in the system
+          example: "student"
+        profile_pic:
+          type: string
+          format: uri
+          description: URL to user's profile picture
+          example: "https://example.com/profiles/ahmed.jpg"
+        createdAt:
+          type: string
+          format: date-time
+          description: When the user was created
+          example: "2025-10-06T12:00:00.000Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: When the user was last updated
+          example: "2025-10-06T12:00:00.000Z"
+
     User:
       type: object
       properties:
