@@ -7,6 +7,7 @@ const swaggerDocument = require("./docs/index")
 
 const commentRoute = require('./routes/commentRoutes');
 const messageRoute = require('./routes/messageRoutes');
+const conversationRoute = require('./routes/conversationRoutes');
 const userRouter = require("./routes/userRoutes");
 
 dotenv.config();
@@ -19,6 +20,7 @@ app.use(express.json());
 app.use(cors())
 app.use(commentRoute);
 app.use(messageRoute);
+app.use(conversationRoute);
 app.use(userRouter);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
