@@ -4,6 +4,7 @@ const commentDoc = YAML.load("./docs/comment.yaml");
 const userDoc = YAML.load("./docs/user.yaml");
 const postDoc = YAML.load("./docs/post.yaml");
 const messageDoc = YAML.load("./docs/message.yaml");
+const conversationDoc = YAML.load("./docs/conversation.yaml");
 
 const base = {
   openapi: "3.0.0",
@@ -31,6 +32,10 @@ const base = {
     {
       name: "Messages",
       description: "Message management and conversation operations"
+    },
+    {
+      name: "Conversations",
+      description: "Conversation management between users"
     }
   ],
   paths: {}
@@ -43,21 +48,26 @@ const swaggerDocument = {
     ...commentDoc.paths,
     ...userDoc.paths,
     ...postDoc.paths,
-    ...messageDoc.paths
+    ...messageDoc.paths,
+    ...conversationDoc.paths
   },
   components: {
-    ...base.components,
-    ...commentDoc.components,
-    ...userDoc.components,
-    ...postDoc.components,
-    ...messageDoc.components
+    schemas: {
+      ...(base.components?.schemas || {}),
+      ...(commentDoc.components?.schemas || {}),
+      ...(userDoc.components?.schemas || {}),
+      ...(postDoc.components?.schemas || {}),
+      ...(messageDoc.components?.schemas || {}),
+      ...(conversationDoc.components?.schemas || {})
+    }
   },
   tags: [
     ...base.tags,
     ...(commentDoc.tags || []),
     ...(userDoc.tags || []),
     ...(postDoc.tags || []),
-    ...(messageDoc.tags || [])
+    ...(messageDoc.tags || []),
+    ...(conversationDoc.tags || [])
   ]
 };
 module.exports = swaggerDocument;
