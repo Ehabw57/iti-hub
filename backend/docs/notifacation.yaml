@@ -1,0 +1,53 @@
+openapi: 3.0.0
+info:
+  title: Notification API
+  version: 1.0.0
+  description: API for managing user notifications
+
+paths:
+  /notifications:
+    get:
+      summary: Get all notifications
+      responses:
+        "200":
+          description: List of notifications
+    post:
+      summary: Create new notification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                userId:
+                  type: string
+      responses:
+        "201":
+          description: Notification created successfully
+
+  /notifications/{id}:
+    get:
+      summary: Get a single notification by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Notification details
+    delete:
+      summary: Delete notification
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted successfully

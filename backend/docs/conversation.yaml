@@ -1,0 +1,58 @@
+openapi: 3.0.0
+info:
+  title: Conversation API
+  version: 1.0.0
+  description: API for managing chat conversations
+
+paths:
+  /conversations:
+    get:
+      summary: Get all user conversations
+      responses:
+        "200":
+          description: List of conversations
+    post:
+      summary: Create new conversation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                participants:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        "201":
+          description: Conversation created successfully
+
+  /conversations/{id}/messages:
+    get:
+      summary: Get all messages in a conversation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of messages
+    post:
+      summary: Send a message
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                text:
+                  type: string
+                senderId:
+                  type: string
+      responses:
+        "201":
+          description: Message sent successfully

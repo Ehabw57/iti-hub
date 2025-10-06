@@ -1,0 +1,42 @@
+openapi: 3.0.0
+info:
+  title: Connection API
+  version: 1.0.0
+  description: API for managing user connections
+
+paths:
+  /connections:
+    get:
+      summary: Get user connections
+      responses:
+        "200":
+          description: List of connections
+    post:
+      summary: Send connection request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fromUserId:
+                  type: string
+                toUserId:
+                  type: string
+      responses:
+        "201":
+          description: Connection request sent
+
+  /connections/{id}:
+    delete:
+      summary: Remove connection
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Connection removed
