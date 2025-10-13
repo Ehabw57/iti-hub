@@ -75,35 +75,35 @@ async function updateComment(req, res) {
   }
 }
 
-// Toggle like / unlike using Comment_like collection
+
 const toggleLikeComment = async (req, res) => {
   try {
     const { id } = req.params; // comment id
 
-    // validate comment id
+
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ success: false, error: "Invalid comment ID" });
     }
 
-    // check comment exists
+
     const comment = await Comment.findById(id);
     if (!comment) {
       return res.status(404).json({ success: false, error: "Comment not found" });
     }
     console.log(comment)
 
-    // get user id (temporary from body or from auth middleware: req.user.id)
+
     const userId = req.body.user_id || (req.user && req.user.id);
     if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
       return res.status(400).json({ success: false, error: "Valid user_id is required" });
     }
     console.log(userId)
 
-    // check if like record exists
+
     const existing = await CommentLike.findOne({ comment_id: id, user_id: userId });
 console.log(userId, id)
     if (existing) {
-      // unlike -> remove the record
+
       await CommentLike.deleteOne({ _id: existing._id });
       const likesCount = await CommentLike.countDocuments({ comment_id: id });
       return res.status(200).json({
@@ -112,7 +112,7 @@ console.log(userId, id)
         likesCount,
       });
     } else {
-      // like -> create a new record
+
       await CommentLike.create({ comment_id: id, user_id: userId });
       const likesCount = await CommentLike.countDocuments({ comment_id: id });
       return res.status(200).json({
@@ -122,7 +122,7 @@ console.log(userId, id)
       });
     }
     } catch (err) {
-    // handle duplicate key just in case (race condition)
+
     if (err.code === 11000) {
       const likesCount = await CommentLike.countDocuments({ comment_id: req.params.id });
       return res.status(200).json({
@@ -137,7 +137,7 @@ console.log(userId, id)
 };
 
 
-// Get all users who liked a comment
+
 const getCommentLikes = async (req, res) => {
   try {
     const { id } = req.params;
@@ -146,18 +146,18 @@ const getCommentLikes = async (req, res) => {
       return res.status(400).json({ success: false, error: "Invalid comment ID" });
     }
 
-    // check comment exists
+
     const comment = await Comment.findById(id);
     if (!comment) {
       return res.status(404).json({ success: false, error: "Comment not found" });
     }
 
-    // find likes and populate user info (adjust user fields to your User schema)
+
     const likes = await CommentLike.find({ comment_id: id }).populate("user_id", "name first_name last_name _id");
 
     const users = likes.map((l) => {
       const u = l.user_id;
-      // try to show a sensible name field: prefer name then first+last
+
       const name = u.name || (u.first_name || "") + (u.last_name ? " " + u.last_name : "");
       return { userId: u._id, name: name.trim() || null };
     });
