@@ -2,7 +2,6 @@ const mongoose = require("mongoose");
 const Comment = require("../models/Comment");
 const CommentLike = require("../models/CommentLike");
 
-
 async function getCommentsByPost(req, res) {
   try {
     const postId = req.params.postId;
@@ -75,35 +74,41 @@ async function updateComment(req, res) {
   }
 }
 
+const findCommentOrError = async (id, res) => {
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    res.status(400).json({ success: false, error: "Invalid comment ID" });
+    return null;
+  }
+
+  const comment = await Comment.findById(id);
+  if (!comment) {
+    res.status(404).json({ success: false, error: "Comment not found" });
+    return null;
+  }
+
+  return comment;
+};
 
 const toggleLikeComment = async (req, res) => {
   try {
-    const { id } = req.params; // comment id
+    const { id } = req.params;
 
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ success: false, error: "Invalid comment ID" });
-    }
-
-
-    const comment = await Comment.findById(id);
-    if (!comment) {
-      return res.status(404).json({ success: false, error: "Comment not found" });
-    }
-    console.log(comment)
-
+    const comment = await findCommentOrError(id, res);
+    if (!comment) return;
 
     const userId = req.body.user_id || (req.user && req.user.id);
     if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
-      return res.status(400).json({ success: false, error: "Valid user_id is required" });
+      return res
+        .status(400)
+        .json({ success: false, error: "Valid user_id is required" });
     }
-    console.log(userId)
 
-
-    const existing = await CommentLike.findOne({ comment_id: id, user_id: userId });
-console.log(userId, id)
+    const existing = await CommentLike.findOne({
+      comment_id: id,
+      user_id: userId,
+    });
+    console.log(userId, id);
     if (existing) {
-
       await CommentLike.deleteOne({ _id: existing._id });
       const likesCount = await CommentLike.countDocuments({ comment_id: id });
       return res.status(200).json({
@@ -112,7 +117,6 @@ console.log(userId, id)
         likesCount,
       });
     } else {
-
       await CommentLike.create({ comment_id: id, user_id: userId });
       const likesCount = await CommentLike.countDocuments({ comment_id: id });
       return res.status(200).json({
@@ -121,10 +125,11 @@ console.log(userId, id)
         likesCount,
       });
     }
-    } catch (err) {
-
+  } catch (err) {
     if (err.code === 11000) {
-      const likesCount = await CommentLike.countDocuments({ comment_id: req.params.id });
+      const likesCount = await CommentLike.countDocuments({
+        comment_id: req.params.id,
+      });
       return res.status(200).json({
         success: true,
         message: "Comment liked",
@@ -136,29 +141,23 @@ console.log(userId, id)
   }
 };
 
-
-
 const getCommentLikes = async (req, res) => {
   try {
     const { id } = req.params;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ success: false, error: "Invalid comment ID" });
-    }
+    const comment = await findCommentOrError(id, res);
+    if (!comment) return;
 
-
-    const comment = await Comment.findById(id);
-    if (!comment) {
-      return res.status(404).json({ success: false, error: "Comment not found" });
-    }
-
-
-    const likes = await CommentLike.find({ comment_id: id }).populate("user_id", "name first_name last_name _id");
+    const likes = await CommentLike.find({ comment_id: id }).populate(
+      "user_id",
+      "name first_name last_name _id"
+    );
 
     const users = likes.map((l) => {
       const u = l.user_id;
 
-      const name = u.name || (u.first_name || "") + (u.last_name ? " " + u.last_name : "");
+      const name =
+        u.name || (u.first_name || "") + (u.last_name ? " " + u.last_name : "");
       return { userId: u._id, name: name.trim() || null };
     });
 
