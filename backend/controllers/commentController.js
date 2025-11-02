@@ -74,16 +74,14 @@ async function updateComment(req, res) {
   }
 }
 
-const findCommentOrError = async (id, res) => {
+const findCommentOrError = async (id) => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    res.status(400).json({ success: false, error: "Invalid comment ID" });
-    return null;
+    throw new Error("Invalid comment ID");
   }
 
   const comment = await Comment.findById(id);
   if (!comment) {
-    res.status(404).json({ success: false, error: "Comment not found" });
-    return null;
+    throw new Error("Comment not found");
   }
 
   return comment;
@@ -92,9 +90,7 @@ const findCommentOrError = async (id, res) => {
 const toggleLikeComment = async (req, res) => {
   try {
     const { id } = req.params;
-
-    const comment = await findCommentOrError(id, res);
-    if (!comment) return;
+    const comment = await findCommentOrError(id);
 
     const userId = req.body.user_id || (req.user && req.user.id);
     if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
@@ -107,7 +103,7 @@ const toggleLikeComment = async (req, res) => {
       comment_id: id,
       user_id: userId,
     });
-    console.log(userId, id);
+
     if (existing) {
       await CommentLike.deleteOne({ _id: existing._id });
       const likesCount = await CommentLike.countDocuments({ comment_id: id });
@@ -126,17 +122,6 @@ const toggleLikeComment = async (req, res) => {
       });
     }
   } catch (err) {
-    if (err.code === 11000) {
-      const likesCount = await CommentLike.countDocuments({
-        comment_id: req.params.id,
-      });
-      return res.status(200).json({
-        success: true,
-        message: "Comment liked",
-        likesCount,
-      });
-    }
-
     return res.status(500).json({ success: false, error: err.message });
   }
 };
@@ -145,20 +130,14 @@ const getCommentLikes = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const comment = await findCommentOrError(id, res);
-    if (!comment) return;
+    const comment = await findCommentOrError(id);
 
-    const likes = await CommentLike.find({ comment_id: id }).populate(
-      "user_id",
-      "name first_name last_name _id"
-    );
+    const likes = await CommentLike.find({ comment_id: id });
 
     const users = likes.map((l) => {
       const u = l.user_id;
 
-      const name =
-        u.name || (u.first_name || "") + (u.last_name ? " " + u.last_name : "");
-      return { userId: u._id, name: name.trim() || null };
+      return { userId: u._id };
     });
 
     return res.status(200).json({ success: true, data: users });
