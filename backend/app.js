@@ -9,6 +9,7 @@ const commentRoute = require('./routes/commentRoutes');
 const messageRoute = require('./routes/messageRoutes');
 const conversationRoute = require('./routes/conversationRoutes');
 const userRouter = require("./routes/userRoutes");
+const postRoutes = require("./routes/postRoutes");
 
 dotenv.config();
 const app = express();
@@ -22,6 +23,7 @@ app.use(commentRoute);
 app.use(messageRoute);
 app.use(conversationRoute);
 app.use(userRouter);
+app.use(postRoutes);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 mongoose
