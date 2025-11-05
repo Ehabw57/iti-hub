@@ -19,10 +19,10 @@ exports.deleteConnection = async (req, res) => {
       return res.status(403).json({ error: "Unauthorized to remove this connection" });
     }
 
-    if (["pending", "rejected", "blocked"].includes(connection.status)) {
+    if (connection.status !== 'accepted') {
       return res
         .status(400)
-        .json({ error: "Cannot delete pending, rejected, or blocked connection" });
+        .json({ error: "Cannot delete non-accepted connection" });
     }
 
     await Connection.findByIdAndDelete(id);
