@@ -5,6 +5,7 @@ const cors = require('cors')
 const swaggerUi = require("swagger-ui-express")
 const swaggerDocument = require("./docs/index")
 
+const authRoute = require("./routes/authRoutes");
 const commentRoute = require('./routes/commentRoutes');
 const messageRoute = require('./routes/messageRoutes');
 const conversationRoute = require('./routes/conversationRoutes');
@@ -19,12 +20,16 @@ const DBURL = process.env.DB_URL || "mongodb://127.0.0.1:27017/iti-hub";
 
 app.use(express.json());
 app.use(cors())
+app.use(authRoute);
 app.use(commentRoute);
 app.use(messageRoute);
 app.use(conversationRoute);
 app.use(userRouter);
 app.use(postRoutes);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.get("/", (req, res) => {
+  res.send("Hi if you are see this message!, that means that the server is running :)");
+});
 
 mongoose
   .connect(DBURL)
