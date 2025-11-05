@@ -61,7 +61,7 @@ const getSentRequests = async (req, res) => {
 const sendConnectionRequest = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { id:recipientId } = req.params;
+    const { id: recipientId } = req.params;
 
     if (!recipientId) return sendError(res, 400, "Recipient ID is required");
     if (recipientId === userId)
@@ -109,9 +109,34 @@ const sendConnectionRequest = async (req, res) => {
   }
 };
 
+const getConnections = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const connections = await Connection.find({
+      status: "accepted",
+      $or: [{ requester_id: userId }, { recipient_id: userId }],
+    })
+      .populate("requester_id", "name email first_name last_name profilePicture")
+      .populate("recipient_id", "name email first_name last_name profilePicture");
+
+    const filteredConnections = connections.map((conn) => {
+      const otherUser = conn.requester_id._id.equals(userId)
+        ? conn.recipient_id
+        : conn.requester_id;
+      return otherUser;
+    });
+
+    res.status(200).json({ connections: filteredConnections });
+  } catch (err) {
+    sendError(res, 500, err.message);
+  }
+};
+
 module.exports = {
   deleteConnection,
   getReceivedRequests,
   getSentRequests,
   sendConnectionRequest,
+  getConnections,
 };

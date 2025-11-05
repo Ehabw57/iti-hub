@@ -11,6 +11,7 @@ const messageRoute = require('./routes/messageRoutes');
 const conversationRoute = require('./routes/conversationRoutes');
 const userRouter = require("./routes/userRoutes");
 const postRoutes = require("./routes/postRoutes");
+const connectionRoute = require("./routes/connectionRoutes")
 
 dotenv.config();
 const app = express();
@@ -26,6 +27,7 @@ app.use(messageRoute);
 app.use(conversationRoute);
 app.use(userRouter);
 app.use(postRoutes);
+app.use(connectionRoute);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.get("/", (req, res) => {
   res.send("Hi if you are see this message!, that means that the server is running :)");
