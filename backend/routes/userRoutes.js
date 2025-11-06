@@ -15,6 +15,6 @@ userRouter.get("/user", getAllUsers);
 userRouter.get("/users/:id", getUserById);
 userRouter.put("/users/:id", updateUser);
 userRouter.delete("/users/:id", deleteUser);
-postRoutes.get("/users/:id/posts", getUserPosts);
+userRouter.get("/users/:id/posts", getUserPosts);
 
 module.exports = userRouter;

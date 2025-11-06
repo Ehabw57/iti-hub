@@ -1,5 +1,5 @@
 const post = require("../models/Post");
-const postLikes = require("../models/postLike");
+const postLikes = require("../models/PostLike");
 
 const getAllPosts = async (req, res) => {
   try {
@@ -168,17 +168,6 @@ const getPostLikes = async (req, res) => {
   }
 };
 
-const getUserPosts = async (req, res) => {
-  try {
-    const { id: userId } = req.params;
-
-    const userPosts = await post.find({ author_id: userId });
-
-    res.status(200).json({ success: true, data: userPosts });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
 
 module.exports = {
   getAllPosts,
@@ -188,5 +177,4 @@ module.exports = {
   deletePost,
   toggleLikePost,
   getPostLikes,
-  getUserPosts,
 };
