@@ -1,3 +1,4 @@
+const { connection } = require("mongoose");
 const Connection = require("../models/Connection");
 const User = require("../models/User"); // you used this but didn't import it
 
@@ -117,8 +118,14 @@ const getConnections = async (req, res) => {
       status: "accepted",
       $or: [{ requester_id: userId }, { recipient_id: userId }],
     })
-      .populate("requester_id", "name email first_name last_name profilePicture")
-      .populate("recipient_id", "name email first_name last_name profilePicture");
+      .populate(
+        "requester_id",
+        "name email first_name last_name profilePicture"
+      )
+      .populate(
+        "recipient_id",
+        "name email first_name last_name profilePicture"
+      );
 
     const filteredConnections = connections.map((conn) => {
       const otherUser = conn.requester_id._id.equals(userId)
@@ -133,10 +140,33 @@ const getConnections = async (req, res) => {
   }
 };
 
+const handleConnection = async (req, res, action) => {
+  const userId = req.user.id;
+  const { id: connectionId } = req.params;
+
+  const connection = await Connection.findById(connectionId);
+  if (!connection) return sendError(res, 404, "Connection not found");
+
+  if (!connection.recipient_id.equals(userId))
+    return sendError(res, 403, "connection not intended for this user");
+
+  if (connection.status !== "pending")
+    return sendError(res, 400, "connection already processed");
+
+  connection.status = action === "accept" ? "accepted" : "blocked";
+  await connection.save();
+
+  res
+    .status(200)
+    .json({ message: `Connection ${action}ed successfully`, connection });
+};
+
+
 module.exports = {
   deleteConnection,
   getReceivedRequests,
   getSentRequests,
   sendConnectionRequest,
   getConnections,
+  handleConnection
 };
