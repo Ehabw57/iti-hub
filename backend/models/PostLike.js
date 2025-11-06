@@ -13,7 +13,7 @@ const postLikeSchema = new mongoose.Schema(
       required: true,
     },
   },
-  { timestamps: true }
+  { timestamps: true, versionKey: false }
 );
 
 postLikeSchema.index({ post_id: 1, user_id: 1 }, { unique: true });

@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const User = require("../models/User");
+const Post = require("../models/Post");
 
 async function createUser(req, res) {
   try {
@@ -54,10 +55,23 @@ const deleteUser = async (req, res) => {
   }
 };
 
+const getUserPosts = async (req, res) => {
+  try {
+    const { id: userId } = req.params;
+
+    const userPosts = await Post.find({ author_id: userId });
+
+    res.status(200).json({ success: true, data: userPosts });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   getAllUsers,
   getUserById,
   updateUser,
   deleteUser,
   createUser,
+  getUserPosts
 };
