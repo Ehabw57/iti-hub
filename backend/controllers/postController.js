@@ -1,5 +1,5 @@
-const mongoose = require("mongoose");
 const post = require("../models/Post");
+const postLikes = require("../models/PostLike");
 
 const getAllPosts = async (req, res) => {
   try {
@@ -42,6 +42,8 @@ const getPostById = async (req, res) => {
 
 const createPost = async (req, res) => {
   try {
+    const userId = req.user.id;
+    req.body.author_id = userId;
     const newPost = await post.create(req.body);
     res.status(201).json({ success: true, data: newPost });
   } catch (err) {
@@ -53,13 +55,27 @@ const createPost = async (req, res) => {
 
 const updatePost = async (req, res) => {
   try {
-    const updatesPost = await post.findByIdAndUpdate(req.params.id, req.body, {
+    const userId = req.user.id;
+    const { id: postId } = req.params;
+
+    const existingPost = await post.findById(postId);
+    if (!existingPost) {
+      return res
+        .status(404)
+        .json({ success: false, message: "this post not found" });
+    }
+
+    if (existingPost.author_id.toString() !== userId) {
+      return res
+        .status(403)
+        .json({ success: false, message: "Unauthorized to update this post" });
+    }
+
+    const updatesPost = await post.findByIdAndUpdate(postId, req.body, {
       new: true,
       runValidators: true,
     });
-    if (!updatesPost) {
-      return res.status(404).json({ success: false, message: "this post not found" });
-    }
+
     res.status(200).json({ success: true, data: updatesPost });
   } catch (err) {
     res.status(500).json({
@@ -71,21 +87,94 @@ const updatePost = async (req, res) => {
 };
 
 const deletePost = async (req, res) => {
-    try {
-      const deletedPost = await post.findByIdAndDelete(req.params.id);
-      if (!deletedPost) {
-        return res.status(404).json({ success: false, message: "Post not found" });
-      }
-      return res.status(200).json({ success: true, message: "Post deleted successfully" });
-    } catch (error) {
-      return res.status(500).json({ success: false, message: "Delete Failed", error: error.message });
+  try {
+    const userId = req.user.id;
+    const { id: postId } = req.params;
+
+    const existingPost = await post.findById(postId);
+    if (!existingPost) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Post not found" });
     }
-  };
+
+    if (existingPost.author_id.toString() !== userId) {
+      return res
+        .status(403)
+        .json({ success: false, message: "Unauthorized to delete this post" });
+    }
+
+    await post.findByIdAndDelete(postId);
+
+    return res
+      .status(200)
+      .json({ success: true, message: "Post deleted successfully" });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ success: false, message: "Delete Failed", error: error.message });
+  }
+};
+
+const toggleLikePost = async (req, res) => {
+  try {
+    const { id: postId } = req.params;
+    const userId = req.user.id;
+
+    const postItem = await post.findById(postId);
+    if (!postItem) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Post not found" });
+    }
+    const like = await postLikes.findOne({ post_id: postId, user_id: userId });
+
+    if (like) {
+      await postLikes.deleteOne({ _id: like._id });
+      postItem.likes_count = Math.max(0, postItem.likes_count - 1);
+      await postItem.save();
+      return res.status(200).json({
+        success: true,
+        message: "Post unliked successfully",
+        likes_count: postItem.likes_count,
+      });
+    }
+
+    await postLikes.create({ post_id: postId, user_id: userId });
+    postItem.likes_count += 1;
+    await postItem.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Post liked successfully",
+      likes_count: postItem.likes_count,
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const getPostLikes = async (req, res) => {
+  try {
+    const { id: postId } = req.params;
+
+    const likes = await postLikes
+      .find({ post_id: postId })
+      .populate("user_id", "first_name last_name profilePicture");
+
+    res.status(200).json({ success: true, data: likes });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 
 module.exports = {
   getAllPosts,
   getPostById,
   updatePost,
   createPost,
-  deletePost
+  deletePost,
+  toggleLikePost,
+  getPostLikes,
 };
