@@ -29,8 +29,16 @@ const PostSchema = new mongoose.Schema(
         },
       },
     ],
+    likes_count: {
+      type: Number,
+      default: 0,
+    },
+    comments_count: {
+      type: Number,
+      default: 0,
+    },
   },
-  { timestamps: true }
+  { timestamps: true, versionKey: false }
 );
 
 module.exports = mongoose.model("Post", PostSchema);

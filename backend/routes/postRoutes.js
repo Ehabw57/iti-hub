@@ -5,7 +5,9 @@ const{
     getPostById,
     updatePost,
     createPost,
-    deletePost
+    deletePost,
+    toggleLikePost,
+    getPostLikes,
 } = require("../controllers/postController");
 
 const postRoutes = express.Router();
@@ -15,5 +17,8 @@ postRoutes.get("/posts/:id",getPostById);
 postRoutes.put("/posts/:id",updatePost);
 postRoutes.post("/posts", createPost)
 postRoutes.delete("/posts/:id", deletePost)
+
+postRoutes.post("/posts/:id/like", toggleLikePost);
+postRoutes.get("/posts/:id/likes", getPostLikes);
 
 module.exports=postRoutes;
