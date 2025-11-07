@@ -13,6 +13,10 @@
   },
   "scripts": {
     "start": "node app.js",
+    "test": "jasmine",
     "dev": "nodemon --watch docs --ext js,json,yaml,yml"
+  },
+  "devDependencies": {
+    "jasmine": "^5.12.0"
   }
 }
