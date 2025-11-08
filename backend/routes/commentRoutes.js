@@ -11,7 +11,7 @@ const {
 const commentRoute = express.Router();
 
 commentRoute.get("/posts/:postId/comments", getCommentsByPost);
-commentRoute.post("/posts/:postId/comments", createComment);
+commentRoute.post("/comments/:postId", createComment);
 commentRoute.delete("/comments/:id", deleteComment);
 commentRoute.patch("/comments/:id", updateComment);
 
