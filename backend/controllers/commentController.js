@@ -1,5 +1,6 @@
 const CommentModel = require("../models/Comment");
 const CommentLikeModel = require("../models/CommentLike");
+const PostModel = require("../models/Post");
 
 async function getCommentsByPost(req, res) {
   try {
@@ -20,6 +21,11 @@ async function createComment(req, res) {
     const post_id = req.params.postId;
     const author_id = req.user.id;
     const { content, parent_comment_id, image_url } = req.body;
+
+    const post = await PostModel.findById(post_id);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
 
     if (parent_comment_id) {
       const parentComment = await CommentModel.findById(parent_comment_id);
@@ -46,6 +52,9 @@ async function createComment(req, res) {
       image_url,
     });
 
+    post.comments_count += 1;
+    await post.save();
+
     res.status(201).json(newComment);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -65,6 +74,12 @@ async function deleteComment(req, res) {
 
     if (comment.author_id.toString() !== userId) {
       return res.status(403).json({ message: "forbidden" });
+    }
+
+    const post = await PostModel.findById(comment.post_id);
+    if (post) {
+      post.comments_count = Math.max(0, post.comments_count - 1);
+      await post.save();
     }
 
     if (comment.parent_comment_id) {

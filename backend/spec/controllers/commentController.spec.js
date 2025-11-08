@@ -1,5 +1,6 @@
 const CommentModel = require("../../models/Comment");
 const CommentLikeModel = require("../../models/CommentLike");
+const PostModel = require("../../models/Post");
 const responseMock = require("../helpers/responseMock");
 const {
   getCommentsByPost,
@@ -53,20 +54,33 @@ describe("Comment Controller tests", () => {
   });
 
   describe("createComment", () => {
-    it("create comment", async () => {
+    it("should create a comment and return status 201", async () => {
       req.params.postId = "p1";
       req.user.id = "u1";
       req.body.content = "Nice post";
+      const post = {
+        _id: "p1",
+        comments_count: 0,
+        save: () => Promise.resolve(),
+      };
+      spyOn(PostModel, "findById").and.returnValue(Promise.resolve(post));
       spyCreate(Promise.resolve({ id: "c1", content: "Nice post" }));
       await createComment(req, res);
       expect(res.statusCode).toBe(201);
       expect(res.body).toEqual({ id: "c1", content: "Nice post" });
+      expect(post.comments_count).toBe(1);
     });
 
-    it("reply comment", async () => {
+    it("should reply to a comment and return status 201", async () => {
       req.params.postId = "p1";
       req.user.id = "u1";
       req.body = { content: "Replying", parent_comment_id: "pc1" };
+      const post = {
+        _id: "p1",
+        comments_count: 0,
+        save: () => Promise.resolve(),
+      };
+      spyOn(PostModel, "findById").and.returnValue(Promise.resolve(post));
 
       const parentComment = {
         _id: "pc1",
@@ -87,12 +101,15 @@ describe("Comment Controller tests", () => {
       expect(res.statusCode).toBe(201);
       expect(res.body.parent_comment_id).toBe("pc1");
       expect(parentComment.reply_count).toBe(1);
+      expect(post.comments_count).toBe(1);
     });
 
     it("error", async () => {
       req.params.postId = "p1";
       req.user.id = "u1";
       req.body.content = "Error";
+      const post = { _id: "p1" };
+      spyOn(PostModel, "findById").and.returnValue(Promise.resolve(post));
       spyCreate(Promise.reject(new Error("Save failed")));
       await expectError(() => createComment(req, res), 500, "Save failed");
     });
@@ -129,6 +146,8 @@ describe("Comment Controller tests", () => {
     it("delete comment", async () => {
       req.params.id = "c1";
       req.user.id = "u1";
+      const post = { _id: "p1", comments_count: 1, save: () => Promise.resolve() };
+      spyOn(PostModel, "findById").and.returnValue(Promise.resolve(post));
 
       const comment = { _id: "c1", author_id: "u1" };
       spyFindById(Promise.resolve(comment));
@@ -141,11 +160,14 @@ describe("Comment Controller tests", () => {
       await deleteComment(req, res);
       expect(res.statusCode).toBe(200);
       expect(res.body.id).toBe("c1");
+      expect(post.comments_count).toBe(0);
     });
 
     it("decrease parent's reply_count when deleting reply", async () => {
       req.params.id = "c2";
       req.user.id = "u1";
+      const post = { _id: "p1", comments_count: 1, save: () => Promise.resolve() };
+      spyOn(PostModel, "findById").and.returnValue(Promise.resolve(post));
 
       const comment = { _id: "c2", author_id: "u1", parent_comment_id: "pc1" };
       const parentComment = {
