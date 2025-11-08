@@ -7,7 +7,7 @@ async function createUser(req, res) {
     const newUser = await User.create({ ...req.body });
     res.status(201).json(newUser);
   } catch (err) {
-    res.status(500).json({ massage: err.message });
+    res.status(500).json({ message: err.message });
   }
 }
 
@@ -16,7 +16,7 @@ async function getAllUsers(req, res) {
     const users = await User.find();
     res.status(200).json(users);
   } catch (err) {
-    res.status(500).json({ massage: err.massage });
+    res.status(500).json({ message: err.message || err });
   }
 }
 
@@ -24,7 +24,7 @@ async function getUserById(req, res) {
   try {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ message: "User not found" });
-    res.json(user);
+    res.status(200).json(user);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -38,7 +38,7 @@ const updateUser = async (req, res) => {
     });
     if (!updatedUser)
       return res.status(404).json({ message: "User not found" });
-    res.json(updatedUser);
+    res.status(200).json(updatedUser);
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });
   }
@@ -49,7 +49,7 @@ const deleteUser = async (req, res) => {
     const deletedUser = await User.findByIdAndDelete(req.params.id);
     if (!deletedUser)
       return res.status(404).json({ message: "User not found" });
-    res.json({ message: "User deleted successfully" });
+    res.status(200).json({ message: "User deleted successfully" });
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });
   }

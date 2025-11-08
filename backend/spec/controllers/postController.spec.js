@@ -23,7 +23,7 @@ describe("Post Controller tests", () => {
       expect(res.body.message).toBe(err.message)
     })
   });
-    describe("get All Posts", () => {});
+    // describe("get All Posts", () => {});
   //   describe("create Post ", () => {});
   //   describe("update Post", () => {});
   //   describe("delete Post", () => {});
