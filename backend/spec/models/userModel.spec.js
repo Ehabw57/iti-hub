@@ -10,17 +10,19 @@ describe("User model", () => {
     last_name: "Hegazy",
     email: "ehab@example.com",
     password: plain,
-  }
+  };
   let fresh = null;
   beforeAll(async () => {
     process.env.JWT_SECRET = process.env.JWT_SECRET;
     await mongoHelper.connectToDB();
   });
 
+  beforeEach(async () => {
+    fresh = new User(user);
+    await fresh.save();
+  });
   afterEach(async () => {
     await mongoHelper.clearDatabase();
-    fresh = new User(user)
-    await fresh.save()
   });
 
   afterAll(async () => {
@@ -28,9 +30,8 @@ describe("User model", () => {
   });
 
   it("hashes password before save", async () => {
-    const fromDb = await User.findOne({ email: user.email }).lean();
+    const fromDb = await User.findOne({ email: user.email });
     expect(fromDb).toBeDefined();
-    expect(fromDb.password).toBeDefined();
     expect(fromDb.password).not.toBe(plain);
 
     const match = await bcrypt.compare(plain, fromDb.password);
