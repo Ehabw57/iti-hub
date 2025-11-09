@@ -1,34 +1,54 @@
-const express = require('express');
-const request = require('supertest');
-const mongoose = require('mongoose');
+const express = require("express");
+const request = require("supertest");
 
-const mongoHelper = require('../helpers/DBUtils')
-const User = require('../../models/User');
-const Post = require('../../models/Post');
-const PostLike = require('../../models/PostLike');
-const postRoute = require('../../routes/postRoutes');
+const mongoHelper = require("../helpers/DBUtils");
+const authHelper = require("../helpers/authHelper");
+const postTestHelper = require("../helpers/postTestHelper");
 
-describe('Post routes integration', () => {
+const Post = require("../../models/Post");
+const PostLike = require("../../models/PostLike");
+const User = require("../../models/User");
+const postRoutes = require("../../routes/postRoutes");
+
+describe("Post routes integration", () => {
   let app;
+  let testUser;
+  let testUser2;
+  let testPost;
+  let testUserToken;
+  let testUser2Token;
 
   beforeAll(async () => {
-    process.env.JWT_SECRET = process.env.JWT_SECRET || 'testsecret';
     await mongoHelper.connectToDB();
-
+    
+    // Create Express app with post routes
     app = express();
     app.use(express.json());
+    app.use(postRoutes);
+  });
 
-    // simple auth mock: Authorization: Bearer <userId>
-    app.use((req, res, next) => {
-      const auth = req.header('Authorization');
-      if (auth && auth.startsWith('Bearer ')) {
-        const token = auth.slice(7);
-        req.user = { id: token };
-      }
-      next();
+  beforeEach(async () => {
+    // Create test users with real JWT tokens
+    const { user: user1, token: token1 } = await authHelper.createTestUser({
+      first_name: "John",
+      last_name: "Doe",
+      email: "john@example.com",
     });
+    testUser = user1;
+    testUserToken = token1;
 
-    app.use(postRoute);
+    const { user: user2, token: token2 } = await authHelper.createTestUser({
+      first_name: "Jane",
+      last_name: "Smith", 
+      email: "jane@example.com",
+    });
+    testUser2 = user2;
+    testUser2Token = token2;
+
+    // Create a test post
+    testPost = await postTestHelper.createTestPost(testUser._id, {
+      content: "Original test post content",
+    });
   });
 
   afterEach(async () => {
@@ -39,94 +59,406 @@ describe('Post routes integration', () => {
     await mongoHelper.disconnectFromDB();
   });
 
-  it('POST /posts - create a post (author set from token)', async () => {
-    const user = await new User({ first_name: 'P', last_name: 'U', email: 'puser@example.com', password: 'password' }).save();
+  describe("GET /posts - getAllPosts", () => {
+    it("should return empty array when no posts exist", async () => {
+      await mongoHelper.clearDatabase();
 
-    const payload = { content: 'Hello world' };
-    const res = await request(app).post('/posts').set('Authorization', `Bearer ${user._id}`).send(payload);
-    expect(res.status).toBe(201);
-    expect(res.body.data).toBeDefined();
-    expect(res.body.data.author_id.toString()).toBe(user._id.toString());
-    expect(res.body.data.content).toBe(payload.content);
+      const res = await request(app).get("/posts");
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(Array.isArray(res.body.data)).toBe(true);
+      expect(res.body.data.length).toBe(0);
+    });
+
+    it("should return all posts when posts exist", async () => {
+      // Create additional posts
+      await postTestHelper.createMultipleTestPosts(testUser._id, 2);
+      await postTestHelper.createTestPost(testUser2._id);
+
+      const res = await request(app).get("/posts");
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(Array.isArray(res.body.data)).toBe(true);
+      expect(res.body.data.length).toBe(4); // 1 from beforeEach + 2 + 1
+    });
+
+    it("should handle database errors gracefully", async () => {
+      // Mock Post.find to throw an error
+      const originalFind = Post.find;
+      Post.find = jasmine.createSpy("find").and.throwError(new Error("Database error"));
+
+      const res = await request(app).get("/posts");
+
+      expect(res.status).toBe(500);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBe("Database error");
+
+      // Restore original method
+      Post.find = originalFind;
+    });
   });
 
-  it('GET /posts - list posts with pagination defaults', async () => {
-    const u = await new User({ first_name: 'A', last_name: 'B', email: 'a@example.com', password: 'password' }).save();
-    await Post.create({ author_id: u._id, content: 'one' });
-    await Post.create({ author_id: u._id, content: 'two' });
+  describe("GET /posts/:id - getPostById", () => {
+    it("should return post when valid ID is provided", async () => {
+      const res = await request(app).get(`/posts/${testPost._id}`);
 
-    const res = await request(app).get('/posts');
-    expect(res.status).toBe(200);
-    expect(res.body.data).toBeDefined();
-    expect(Array.isArray(res.body.data)).toBeTrue();
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data._id).toBe(testPost._id.toString());
+      expect(res.body.data.content).toBe(testPost.content);
+    });
+
+    it("should return 404 when post does not exist", async () => {
+      const nonExistentId = postTestHelper.generateNonExistentObjectId();
+
+      const res = await request(app).get(`/posts/${nonExistentId}`);
+
+      expect(res.status).toBe(404);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBe("this post not found");
+    });
+
+    it("should return 500 when invalid ObjectId is provided", async () => {
+      const invalidId = postTestHelper.generateInvalidObjectId();
+
+      const res = await request(app).get(`/posts/${invalidId}`);
+
+      expect(res.status).toBe(500);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBe("this post not found");
+      expect(res.body.error).toBeDefined();
+    });
   });
 
-  it('GET /posts/:id - returns a post or 404', async () => {
-    const u = await new User({ first_name: 'G', last_name: 'H', email: 'g@example.com', password: 'password' }).save();
-    const p = await Post.create({ author_id: u._id, content: 'findme' });
+  describe("POST /posts - createPost", () => {
+    it("should create post successfully with authentication", async () => {
+      const postData = {
+        content: "New test post content",
+      };
 
-    const r1 = await request(app).get(`/posts/${p._id}`);
-    expect(r1.status).toBe(200);
-    expect(r1.body.data.content).toBe('findme');
+      const res = await authHelper.makeAuthenticatedRequest(
+        request(app).post("/posts"),
+        testUserToken
+      ).send(postData);
 
-    const fake = new mongoose.Types.ObjectId();
-    const r2 = await request(app).get(`/posts/${fake}`);
-    expect(r2.status).toBe(404);
+      expect(res.status).toBe(201);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.content).toBe(postData.content);
+      expect(res.body.data.author_id).toBe(testUser._id.toString());
+      expect(res.body.data.likes_count).toBe(0);
+      expect(res.body.data.comments_count).toBe(0);
+    });
+
+    it("should create post with media successfully", async () => {
+      const postData = {
+        content: "Post with media",
+        media: [
+          { url: "https://example.com/image.jpg", type: "photo" },
+          { url: "https://example.com/video.mp4", type: "video" },
+        ],
+      };
+
+      const res = await authHelper.makeAuthenticatedRequest(
+        request(app).post("/posts"),
+        testUserToken
+      ).send(postData);
+
+      expect(res.status).toBe(201);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.content).toBe(postData.content);
+      expect(res.body.data.media.length).toBe(2);
+      expect(res.body.data.media[0].url).toBe(postData.media[0].url);
+      expect(res.body.data.media[0].type).toBe(postData.media[0].type);
+      expect(res.body.data.media[1].url).toBe(postData.media[1].url);
+      expect(res.body.data.media[1].type).toBe(postData.media[1].type);
+    });
+
+    it("should return 400 when required content is missing", async () => {
+      const postData = {}; // Missing required content
+
+      const res = await authHelper.makeAuthenticatedRequest(
+        request(app).post("/posts"),
+        testUserToken
+      ).send(postData);
+
+      expect(res.status).toBe(400);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBe("Invalid Data");
+    });
+
+    it("should fail without authentication", async () => {
+      const postData = {
+        content: "New test post content",
+      };
+
+      const res = await request(app).post("/posts").send(postData);
+
+      expect(res.status).toBe(401);
+      expect(res.body.message).toBe("No token provided");
+    });
   });
 
-  it('PUT /posts/:id - only author can update', async () => {
-    const author = await new User({ first_name: 'Auth', last_name: 'Or', email: 'auth@example.com', password: 'password' }).save();
-    const other = await new User({ first_name: 'Other', last_name: 'One', email: 'other@example.com', password: 'password' }).save();
-    const post = await Post.create({ author_id: author._id, content: 'original' });
+  describe("PUT /posts/:id - updatePost", () => {
+    it("should update post successfully by author", async () => {
+      const updateData = {
+        content: "Updated post content",
+      };
 
-    const resFail = await request(app).put(`/posts/${post._id}`).set('Authorization', `Bearer ${other._id}`).send({ content: 'updated' });
-    expect(resFail.status).toBe(403);
+      const res = await authHelper.makeAuthenticatedRequest(
+        request(app).put(`/posts/${testPost._id}`),
+        testUserToken
+      ).send(updateData);
 
-    const resOk = await request(app).put(`/posts/${post._id}`).set('Authorization', `Bearer ${author._id}`).send({ content: 'updated' });
-    expect(resOk.status).toBe(200);
-    expect(resOk.body.data.content).toBe('updated');
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.content).toBe(updateData.content);
+      expect(res.body.data._id).toBe(testPost._id.toString());
+    });
+
+    it("should return 403 when non-author tries to update", async () => {
+      const updateData = {
+        content: "Updated by different user",
+      };
+
+      const res = await authHelper.makeAuthenticatedRequest(
+        request(app).put(`/posts/${testPost._id}`),
+        testUser2Token // Different user
+      ).send(updateData);
+
+      expect(res.status).toBe(403);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBe("Unauthorized to update this post");
+    });
+
+    it("should return 404 when post does not exist", async () => {
+      const nonExistentId = postTestHelper.generateNonExistentObjectId();
+      const updateData = {
+        content: "Updated content",
+      };
+
+      const res = await authHelper.makeAuthenticatedRequest(
+        request(app).put(`/posts/${nonExistentId}`),
+        testUserToken
+      ).send(updateData);
+
+      expect(res.status).toBe(404);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBe("this post not found");
+    });
+
+    it("should fail without authentication", async () => {
+      const updateData = {
+        content: "Updated content",
+      };
+
+      const res = await request(app)
+        .put(`/posts/${testPost._id}`)
+        .send(updateData);
+
+      expect(res.status).toBe(401);
+      expect(res.body.message).toBe("No token provided");
+    });
   });
 
-  it('DELETE /posts/:id - only author can delete', async () => {
-    const author = await new User({ first_name: 'D', last_name: 'U', email: 'd@example.com', password: 'password' }).save();
-    const other = await new User({ first_name: 'E', last_name: 'V', email: 'e@example.com', password: 'password' }).save();
-    const post = await Post.create({ author_id: author._id, content: 'todelete' });
+  describe("DELETE /posts/:id - deletePost", () => {
+    it("should delete post successfully by author", async () => {
+      const res = await authHelper.makeAuthenticatedRequest(
+        request(app).delete(`/posts/${testPost._id}`),
+        testUserToken
+      );
 
-    const r1 = await request(app).delete(`/posts/${post._id}`).set('Authorization', `Bearer ${other._id}`);
-    expect(r1.status).toBe(403);
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.message).toBe("Post deleted successfully");
 
-    const r2 = await request(app).delete(`/posts/${post._id}`).set('Authorization', `Bearer ${author._id}`);
-    expect(r2.status).toBe(200);
-    const found = await Post.findById(post._id);
-    expect(found).toBeNull();
+      // Verify post is actually deleted
+      const deletedPost = await Post.findById(testPost._id);
+      expect(deletedPost).toBe(null);
+    });
+
+    it("should return 403 when non-author tries to delete", async () => {
+      const res = await authHelper.makeAuthenticatedRequest(
+        request(app).delete(`/posts/${testPost._id}`),
+        testUser2Token // Different user
+      );
+
+      expect(res.status).toBe(403);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBe("Unauthorized to delete this post");
+
+      // Verify post still exists
+      const existingPost = await Post.findById(testPost._id);
+      expect(existingPost).not.toBe(null);
+    });
+
+    it("should return 404 when post does not exist", async () => {
+      const nonExistentId = postTestHelper.generateNonExistentObjectId();
+
+      const res = await authHelper.makeAuthenticatedRequest(
+        request(app).delete(`/posts/${nonExistentId}`),
+        testUserToken
+      );
+
+      expect(res.status).toBe(404);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBe("Post not found");
+    });
+
+    it("should fail without authentication", async () => {
+      const res = await request(app).delete(`/posts/${testPost._id}`);
+
+      expect(res.status).toBe(401);
+      expect(res.body.message).toBe("No token provided");
+    });
   });
 
-  it('POST /posts/:id/like - toggles like/unlike and updates likes_count', async () => {
-    const author = await new User({ first_name: 'L', last_name: 'I', email: 'l@example.com', password: 'password' }).save();
-    const liker = await new User({ first_name: 'K', last_name: 'R', email: 'k@example.com', password: 'password' }).save();
-    const p = await Post.create({ author_id: author._id, content: 'like me' });
+  describe("POST /posts/:id/like - toggleLikePost", () => {
+    it("should like post successfully", async () => {
+      const res = await authHelper.makeAuthenticatedRequest(
+        request(app).post(`/posts/${testPost._id}/like`),
+        testUser2Token // Different user liking
+      );
 
-    const r1 = await request(app).post(`/posts/${p._id}/like`).set('Authorization', `Bearer ${liker._id}`);
-    expect(r1.status).toBe(200);
-    expect(r1.body.message).toMatch(/liked successfully/i);
-    expect(r1.body.likes_count).toBe(1);
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.message).toBe("Post liked successfully");
+      expect(res.body.likes_count).toBe(1);
 
-    const r2 = await request(app).post(`/posts/${p._id}/like`).set('Authorization', `Bearer ${liker._id}`);
-    expect(r2.status).toBe(200);
-    expect(r2.body.message).toMatch(/unliked successfully/i);
-    expect(r2.body.likes_count).toBe(0);
+      // Verify like was created
+      const like = await PostLike.findOne({
+        post_id: testPost._id,
+        user_id: testUser2._id,
+      });
+      expect(like).not.toBe(null);
+
+      // Verify post likes_count was updated
+      const updatedPost = await Post.findById(testPost._id);
+      expect(updatedPost.likes_count).toBe(1);
+    });
+
+    it("should unlike post when already liked", async () => {
+      // First, create a like
+      await postTestHelper.createPostLike(testPost._id, testUser2._id);
+
+      const res = await authHelper.makeAuthenticatedRequest(
+        request(app).post(`/posts/${testPost._id}/like`),
+        testUser2Token
+      );
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.message).toBe("Post unliked successfully");
+      expect(res.body.likes_count).toBe(0);
+
+      // Verify like was removed
+      const like = await PostLike.findOne({
+        post_id: testPost._id,
+        user_id: testUser2._id,
+      });
+      expect(like).toBe(null);
+
+      // Verify post likes_count was updated
+      const updatedPost = await Post.findById(testPost._id);
+      expect(updatedPost.likes_count).toBe(0);
+    });
+
+    it("should return 404 when post does not exist", async () => {
+      const nonExistentId = postTestHelper.generateNonExistentObjectId();
+
+      const res = await authHelper.makeAuthenticatedRequest(
+        request(app).post(`/posts/${nonExistentId}/like`),
+        testUser2Token
+      );
+
+      expect(res.status).toBe(404);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBe("Post not found");
+    });
+
+    it("should handle likes_count properly when it becomes negative", async () => {
+      // Set post likes_count to 0 and create a like record manually
+      await Post.findByIdAndUpdate(testPost._id, { likes_count: 0 });
+      await PostLike.create({ post_id: testPost._id, user_id: testUser2._id });
+
+      const res = await authHelper.makeAuthenticatedRequest(
+        request(app).post(`/posts/${testPost._id}/like`),
+        testUser2Token
+      );
+
+      expect(res.status).toBe(200);
+      expect(res.body.likes_count).toBe(0); // Should not go negative due to Math.max
+    });
+
+    it("should fail without authentication", async () => {
+      const res = await request(app).post(`/posts/${testPost._id}/like`);
+
+      expect(res.status).toBe(401);
+      expect(res.body.message).toBe("No token provided");
+    });
   });
 
-  it('GET /posts/:id/likes - returns likes array', async () => {
-    const a = await new User({ first_name: 'M', last_name: 'N', email: 'm@example.com', password: 'password' }).save();
-    const b = await new User({ first_name: 'O', last_name: 'P', email: 'o@example.com', password: 'password' }).save();
-    const p = await Post.create({ author_id: a._id, content: 'liked' });
-    await PostLike.create({ post_id: p._id, user_id: a._id });
-    await PostLike.create({ post_id: p._id, user_id: b._id });
+  describe("GET /posts/:id/likes - getPostLikes", () => {
+    it("should return empty array when post has no likes", async () => {
+      const res = await request(app).get(`/posts/${testPost._id}/likes`);
 
-    const res = await request(app).get(`/posts/${p._id}/likes`);
-    expect(res.status).toBe(200);
-    expect(Array.isArray(res.body.data)).toBeTrue();
-    expect(res.body.data.length).toBe(2);
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(Array.isArray(res.body.data)).toBe(true);
+      expect(res.body.data.length).toBe(0);
+    });
+
+    it("should return likes with user information when likes exist", async () => {
+      // Create likes from multiple users
+      const users = await authHelper.createMultipleTestUsers(2);
+      await postTestHelper.createMultiplePostLikes(testPost._id, [
+        users[0].user._id,
+        users[1].user._id,
+      ]);
+
+      const res = await request(app).get(`/posts/${testPost._id}/likes`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(Array.isArray(res.body.data)).toBe(true);
+      expect(res.body.data.length).toBe(2);
+
+      // Check if user data is populated
+      res.body.data.forEach((like) => {
+        expect(like.user_id).toBeDefined();
+        expect(like.user_id.first_name).toBeDefined();
+        expect(like.user_id.last_name).toBeDefined();
+        expect(like.user_id.password).toBeUndefined(); // Should not include password
+      });
+    });
+
+    it("should handle non-existent post gracefully", async () => {
+      const nonExistentId = postTestHelper.generateNonExistentObjectId();
+
+      const res = await request(app).get(`/posts/${nonExistentId}/likes`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(Array.isArray(res.body.data)).toBe(true);
+      expect(res.body.data.length).toBe(0);
+    });
+
+    it("should handle database errors gracefully", async () => {
+      // Mock PostLike.find to throw an error
+      const originalFind = PostLike.find;
+      PostLike.find = jasmine.createSpy("find").and.returnValue({
+        populate: jasmine.createSpy("populate").and.throwError(new Error("Database error"))
+      });
+
+      const res = await request(app).get(`/posts/${testPost._id}/likes`);
+
+      expect(res.status).toBe(500);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBe("Database error");
+
+      // Restore original method
+      PostLike.find = originalFind;
+    });
   });
 });
