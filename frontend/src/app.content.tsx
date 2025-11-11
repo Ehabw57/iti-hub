@@ -1,18 +1,17 @@
 import { t, type Dictionary } from "intlayer";
-import type { ReactNode } from "react";
 
 const appContent = {
   key: "app",
   content: {
 
-    title: t({
-      en: "TEST",
-      ar: "اختبار",
+    messages: t({
+      en: "messages",
+      ar: "الرسائل",
     }),
 
-    welcome: t({
-      en: "Welcome ya aboya",
-      ar: "احلى مسا ي ابويا",
+    home: t({
+      en: "Home",
+      ar: "الصفحة الرئيسية",
     }),
     
   },
