@@ -2,6 +2,7 @@ import { Locales } from "intlayer";
 import { useLocale } from "react-intlayer";
 import { useIntlayer } from "react-intlayer";
 import { Link } from "react-router-dom";
+import ThemeSwitch from "../ThemeSwitcher.jsx";
 
 export default function Navbar() {
   const { locale, setLocale } = useLocale();
@@ -25,6 +26,7 @@ export default function Navbar() {
       >
         {locale === Locales.ARABIC ? "EN" : "ع"}
       </button>
+      <ThemeSwitch />
     </nav>
   );
 }
