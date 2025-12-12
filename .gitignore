@@ -2,6 +2,7 @@
 node_modules/
 jspm_packages/
 uploads/
+
 # Production build
 dist/
 build/
@@ -60,3 +61,6 @@ pnpm-lock.yaml
 
 #intlayer
 .intlayer
+
+#github-spec-kit
+.github/

@@ -1,0 +1,35 @@
+id,epic,title,description,priority,estimate,tags
+1,Authentication & Authorization,Register user,Implement POST /auth/register with validation and bcrypt hashing,P0,S,auth,users
+2,Authentication & Authorization,Login user,Implement POST /auth/login and JWT generation (7d expiry),P0,S,auth,users
+3,Authentication & Authorization,Password reset,Implement password-reset request and confirm flows with hashed tokens,P0,M,auth
+4,Authentication & Authorization,Auth middlewares,Add checkAuth, optionalAuth, checkAdmin middlewares and tests,P0,S,auth,middleware
+5,User Profiles & Social,Get user profile,GET /users/:userId with optionalAuth and response shaping,P0,S,users,api
+6,User Profiles & Social,Update profile,PATCH /users/me validation and update (own profile only),P0,S,users
+7,User Profiles & Social,Follow/unfollow,POST and DELETE /users/:id/follow, maintain Connection model counts,P0,S,social
+8,User Profiles & Social,Block/unblock user,Implement block/unblock and cascade rules,P1,M,users,admin
+9,Posts & Comments,Create post,POST /posts with images/tags/community, enforce validation and rate limit,P0,M,posts,upload
+10,Posts & Comments,Get post,GET /posts/:postId with optionalAuth (isLiked/isSaved),P0,S,posts
+11,Posts & Comments,Update post,PATCH /posts/:postId (content/tags only) with permission checks,P0,S,posts
+12,Posts & Comments,Delete post,DELETE /posts/:postId soft-delete and cascade handling,P0,M,posts
+13,Posts & Comments,Like/unlike post,POST and DELETE /posts/:postId/like and PostLike model updates,P0,S,posts,likes
+14,Posts & Comments,Save/unsave post,POST and DELETE /posts/:postId/save and SavedPost model updates,P0,S,posts,saves
+15,Posts & Comments,Repost,POST /posts/:postId/repost with optional comment,P1,S,posts
+16,Posts & Comments,Comments CRUD,POST/GET/DELETE comments and single-level replies,P0,M,comments
+17,File Upload & Media,Single image upload,POST /upload/image with multer/Cloudinary, type & size limits,P0,M,upload,cloud
+18,File Upload & Media,Images for posts,Support multiple images (max 10) and return URLs,P0,M,upload
+19,Feed & Discovery,Following feed,GET /feed/following chronological feed,P0,S,feed
+20,Feed & Discovery,Home feed,GET /feed/home algorithmic ranking + pagination + caching,P0,M,feed
+21,Feed & Discovery,Feed caching,In-memory/Redis caching for feed endpoints,P1,M,cache,feed
+22,Communities,Community CRUD,Admin create, public GET, join/leave endpoints,P1,M,communities,admin
+23,Communities,Community posts,GET /communities/:id/posts and pagination,P1,S,communities,posts
+24,Messaging,Conversations list,GET /messages/conversations and create conversation,P1,S,messages
+25,Messaging,Send message,POST /messages/conversations/:id/messages and message model,P1,S,messages,realtime
+26,Messaging,Socket.io events,Implement message:new,notification:new,user:status events (server-side),P1,M,realtime
+27,Notifications,Create notifications,Create notifications on like/comment/follow actions,P1,M,notifications
+28,Notifications,Notifications endpoints,GET /notifications, unread count, mark read,P1,S,notifications
+29,Search,Search endpoints,GET /search/users, /search/posts, /search/communities with filters,P1,M,search
+30,Admin & Moderation,Reports review,GET /admin/reports and PATCH /admin/reports/:id, actions (delete/warn/block),P1,M,admin,reports
+31,Admin & Moderation,Admin user management,GET /admin/users, POST /admin/users/:id/block, delete, etc,P1,M,admin
+32,Tests & CI,Unit & integration tests,Add Jasmine + Supertest tests for auth, posts, comments, upload,P0,M,tests,ci
+33,API Docs & OpenAPI,Swagger UI,Expose Swagger UI at /api-docs generated from server/docs/*.yaml,P0,S,docs,swagger
+34,Docs,Sprint plan & QA,Create sprint-plan.md and PR checklist, define acceptance tests,P2,S,docs
