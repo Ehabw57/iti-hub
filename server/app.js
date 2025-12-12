@@ -14,6 +14,10 @@ const postRoutes = require("./routes/postRoutes");
 const connectionRoute = require("./routes/connectionRoutes")
 
 dotenv.config();
+if (!process.env.JWT_SECRET && process.env.NODE_ENV !== 'test') {
+  console.error('FATAL: JWT_SECRET is not set. Set JWT_SECRET in environment.');
+  process.exit(1);
+}
 const app = express();
 
 const PORT = process.env.PORT || 3030;
@@ -21,7 +25,7 @@ const DBURL = process.env.DB_URL || "mongodb://127.0.0.1:27017/iti-hub";
 
 app.use(express.json());
 app.use(cors())
-app.use(authRoute);
+app.use('/auth', authRoute);
 app.use(commentRoute);
 app.use(messageRoute);
 app.use(conversationRoute);
@@ -33,18 +37,22 @@ app.get("/", (req, res) => {
   res.send("Hi if you are see this message!, that means that the server is running :)");
 });
 
-mongoose
-  .connect(DBURL)
-  .then(() => {
-    console.log("Connected to DB");
-    app.listen(PORT, () => {
-      console.log(`Server is running on http://localhost:${PORT}`);
-      console.log(`Docs at http://localhost:${PORT}/api-docs`)
-    });
-  })
-  .catch((err) => {
-    console.error(err.message);
-    process.exit(1);
-  });
+// Export app for testing
+module.exports = app;
 
-module.exports = PORT
+// Only start server if not in test mode
+if (process.env.NODE_ENV !== 'test') {
+  mongoose
+    .connect(DBURL)
+    .then(() => {
+      console.log("Connected to DB");
+      app.listen(PORT, () => {
+        console.log(`Server is running on http://localhost:${PORT}`);
+        console.log(`Docs at http://localhost:${PORT}/api-docs`)
+      });
+    })
+    .catch((err) => {
+      console.error(err.message);
+      process.exit(1);
+    });
+}

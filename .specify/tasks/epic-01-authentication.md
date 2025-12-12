@@ -286,10 +286,11 @@ describe('User Model - Authentication', () => {
    - Output: Calls next() always
    - Description: Attaches user to req.user if token present, allows anonymous
 
-3. **`checkAdmin(req, res, next)`**
-   - Input: Express request, response, next
-   - Output: Calls next() or sends error response
-   - Description: Requires valid JWT and admin role
+3. **`authorize(...allowedRoles)`**
+   - Input: ...allowedRoles (string[]) - Array of allowed role names
+   - Output: Middleware function (req, res, next)
+   - Description: Role-based access control - requires user to have one of the specified roles
+   - Usage: `authorize('admin', 'moderator')` or `authorize('admin')`
 
 **Implementation Details:**
 ```javascript
@@ -376,21 +377,44 @@ const optionalAuth = async (req, res, next) => {
   next();
 };
 
-// Middleware 3: checkAdmin
-const checkAdmin = async (req, res, next) => {
-  // First run checkAuth logic
-  // Then verify role === 'admin'
-  next();
+// Middleware 3: authorize (role-based access control)
+const authorize = (...allowedRoles) => {
+  return (req, res, next) => {
+    // 1. Check if user is authenticated (must be called after checkAuth)
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        error: {
+          code: 'NOT_AUTHENTICATED',
+          message: 'Authentication required'
+        }
+      });
+    }
+
+    // 2. Check if user's role is in allowed roles
+    if (!allowedRoles.includes(req.user.role)) {
+      return res.status(403).json({
+        success: false,
+        error: {
+          code: 'INSUFFICIENT_PERMISSIONS',
+          message: 'You do not have permission to access this resource'
+        }
+      });
+    }
+
+    // 3. User has required role, continue
+    next();
+  };
 };
 
-module.exports = { checkAuth, optionalAuth, checkAdmin };
+module.exports = { checkAuth, optionalAuth, authorize };
 ```
 
 **Tests to Pass:**
 File: `/server/spec/middlewares/checkAuth.spec.js`
 
 ```javascript
-const { checkAuth, optionalAuth, checkAdmin } = require('../../middlewares/checkAuth');
+const { checkAuth, optionalAuth, authorize } = require('../../middlewares/checkAuth');
 const User = require('../../models/User');
 const jwt = require('jsonwebtoken');
 const mockResponse = require('../helpers/responseMock');
@@ -510,33 +534,64 @@ describe('Authentication Middleware', () => {
     });
   });
 
-  describe('checkAdmin', () => {
-    it('should return 403 if user is not admin', async () => {
-      const mockUser = { _id: 'user123', role: 'user', isBlocked: false };
-      const token = jwt.sign({ userId: 'user123' }, process.env.JWT_SECRET);
-      const req = { headers: { authorization: `Bearer ${token}` } };
+  describe('authorize', () => {
+    it('should return 401 if user not authenticated', async () => {
+      const req = {}; // No req.user
       const res = mockResponse();
       const next = jasmine.createSpy('next');
-      spyOn(User, 'findById').and.returnValue(Promise.resolve(mockUser));
+      const middleware = authorize('admin');
 
-      await checkAdmin(req, res, next);
+      middleware(req, res, next);
 
-      expect(res.statusCode).toBe(403);
-      expect(res.body.error.code).toBe('ADMIN_REQUIRED');
+      expect(res.statusCode).toBe(401);
+      expect(res.body.error.code).toBe('NOT_AUTHENTICATED');
       expect(next).not.toHaveBeenCalled();
     });
 
-    it('should call next if user is admin', async () => {
-      const mockUser = { _id: 'admin123', role: 'admin', isBlocked: false };
-      const token = jwt.sign({ userId: 'admin123' }, process.env.JWT_SECRET);
-      const req = { headers: { authorization: `Bearer ${token}` } };
+    it('should return 403 if user role not in allowed roles', async () => {
+      const req = { user: { _id: 'user123', role: 'user' } };
       const res = mockResponse();
       const next = jasmine.createSpy('next');
-      spyOn(User, 'findById').and.returnValue(Promise.resolve(mockUser));
+      const middleware = authorize('admin', 'moderator');
 
-      await checkAdmin(req, res, next);
+      middleware(req, res, next);
 
-      expect(req.user).toEqual(mockUser);
+      expect(res.statusCode).toBe(403);
+      expect(res.body.error.code).toBe('INSUFFICIENT_PERMISSIONS');
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    it('should call next if user has admin role', async () => {
+      const req = { user: { _id: 'admin123', role: 'admin' } };
+      const res = mockResponse();
+      const next = jasmine.createSpy('next');
+      const middleware = authorize('admin');
+
+      middleware(req, res, next);
+
+      expect(next).toHaveBeenCalled();
+      expect(res.statusCode).toBeUndefined();
+    });
+
+    it('should call next if user has one of multiple allowed roles', async () => {
+      const req = { user: { _id: 'mod123', role: 'moderator' } };
+      const res = mockResponse();
+      const next = jasmine.createSpy('next');
+      const middleware = authorize('admin', 'moderator', 'editor');
+
+      middleware(req, res, next);
+
+      expect(next).toHaveBeenCalled();
+    });
+
+    it('should work with single role', async () => {
+      const req = { user: { _id: 'user123', role: 'user' } };
+      const res = mockResponse();
+      const next = jasmine.createSpy('next');
+      const middleware = authorize('user');
+
+      middleware(req, res, next);
+
       expect(next).toHaveBeenCalled();
     });
   });
@@ -548,8 +603,13 @@ describe('Authentication Middleware', () => {
 - [ ] checkAuth rejects invalid/expired tokens
 - [ ] checkAuth rejects blocked users
 - [ ] optionalAuth works with or without token
-- [ ] checkAdmin requires admin role
+- [ ] authorize requires authentication
+- [ ] authorize supports multiple roles
 - [ ] All tests pass
+
+---
+
+## Phase 3: User Story 1 - User Registration
 
 ---
 
@@ -563,7 +623,10 @@ describe('Authentication Middleware', () => {
 **Priority**: P0
 
 **Target File:**
-- `/server/controllers/authController.js`
+- `/server/controllers/auth/registerController.js`
+
+**Export:**
+- `exports.register` - Registration controller function
 
 **Function to Implement:**
 
@@ -584,7 +647,7 @@ describe('Authentication Middleware', () => {
 5. Return user without password field
 
 **Tests to Pass:**
-File: `/server/spec/controllers/authController.spec.js` (extend existing)
+File: `/server/spec/controllers/auth/registerController.spec.js`
 
 ```javascript
 describe('register', () => {
@@ -743,7 +806,10 @@ describe('register', () => {
 **Priority**: P0
 
 **Target File:**
-- `/server/controllers/authController.js`
+- `/server/controllers/auth/loginController.js`
+
+**Export:**
+- `exports.login` - Login controller function
 
 **Function to Implement:**
 
@@ -764,7 +830,7 @@ describe('register', () => {
 7. Return token and user profile (without password)
 
 **Tests to Pass:**
-File: `/server/spec/controllers/authController.spec.js` (extend existing)
+File: `/server/spec/controllers/auth/loginController.spec.js`
 
 ```javascript
 describe('login', () => {
@@ -913,7 +979,10 @@ describe('login', () => {
 **Priority**: P0
 
 **Target File:**
-- `/server/controllers/authController.js`
+- `/server/controllers/auth/passwordResetController.js`
+
+**Export:**
+- `exports.requestPasswordReset` - Password reset request function
 
 **Function to Implement:**
 
@@ -931,7 +1000,7 @@ describe('login', () => {
 6. Always return success message
 
 **Tests to Pass:**
-File: `/server/spec/controllers/authController.spec.js`
+File: `/server/spec/controllers/auth/passwordResetController.spec.js`
 
 ```javascript
 describe('requestPasswordReset', () => {
@@ -1003,7 +1072,10 @@ describe('requestPasswordReset', () => {
 **Priority**: P0
 
 **Target File:**
-- `/server/controllers/authController.js`
+- `/server/controllers/auth/passwordResetController.js`
+
+**Export:**
+- `exports.confirmPasswordReset` - Password reset confirmation function
 
 **Function to Implement:**
 
@@ -1024,7 +1096,7 @@ describe('requestPasswordReset', () => {
 7. Return success message
 
 **Tests to Pass:**
-File: `/server/spec/controllers/authController.spec.js`
+File: `/server/spec/controllers/auth/passwordResetController.spec.js`
 
 ```javascript
 describe('confirmPasswordReset', () => {
@@ -1152,12 +1224,14 @@ POST /auth/password-reset/confirm
 const express = require('express');
 const router = express.Router();
 const rateLimit = require('express-rate-limit');
+
+// Import controllers from auth directory
+const { register } = require('../controllers/auth/registerController');
+const { login } = require('../controllers/auth/loginController');
 const {
-  register,
-  login,
   requestPasswordReset,
   confirmPasswordReset
-} = require('../controllers/authController');
+} = require('../controllers/auth/passwordResetController');
 
 // Rate limiters
 const registerLimiter = rateLimit({
@@ -1310,7 +1384,7 @@ describe('Authentication Integration Tests', () => {
     it('should register user and then login successfully', async () => {
       // Register
       const registerRes = await request(app)
-        .post('/api/v1/auth/register')
+        .post('/auth/register')
         .send({
           email: 'integration@example.com',
           password: 'Password123',
@@ -1324,7 +1398,7 @@ describe('Authentication Integration Tests', () => {
 
       // Login
       const loginRes = await request(app)
-        .post('/api/v1/auth/login')
+        .post('/auth/login')
         .send({
           email: 'integration@example.com',
           password: 'Password123'
@@ -1338,7 +1412,7 @@ describe('Authentication Integration Tests', () => {
     it('should prevent duplicate email registration', async () => {
       // First registration
       await request(app)
-        .post('/api/v1/auth/register')
+        .post('/auth/register')
         .send({
           email: 'duplicate@example.com',
           password: 'Password123',
@@ -1348,7 +1422,7 @@ describe('Authentication Integration Tests', () => {
 
       // Second registration with same email
       const res = await request(app)
-        .post('/api/v1/auth/register')
+        .post('/auth/register')
         .send({
           email: 'duplicate@example.com',
           password: 'Password456',
@@ -1373,7 +1447,7 @@ describe('Authentication Integration Tests', () => {
 
       // Request reset
       const requestRes = await request(app)
-        .post('/api/v1/auth/password-reset/request')
+        .post('/auth/password-reset/request')
         .send({ email: 'reset@example.com' });
 
       expect(requestRes.status).toBe(200);
@@ -1388,7 +1462,7 @@ describe('Authentication Integration Tests', () => {
 
       // Confirm reset
       const confirmRes = await request(app)
-        .post('/api/v1/auth/password-reset/confirm')
+        .post('/auth/password-reset/confirm')
         .send({
           token: plainToken,
           newPassword: 'NewPassword123'
@@ -1398,7 +1472,7 @@ describe('Authentication Integration Tests', () => {
 
       // Try logging in with new password
       const loginRes = await request(app)
-        .post('/api/v1/auth/login')
+        .post('/auth/login')
         .send({
           email: 'reset@example.com',
           password: 'NewPassword123'
@@ -1413,7 +1487,7 @@ describe('Authentication Integration Tests', () => {
     it('should protect routes with checkAuth middleware', async () => {
       // Try accessing protected route without token
       const res = await request(app)
-        .get('/api/v1/users/me')
+        .get('/users/me')
         .send();
 
       expect(res.status).toBe(401);
@@ -1432,7 +1506,7 @@ describe('Authentication Integration Tests', () => {
 
       // Access protected route with token
       const res = await request(app)
-        .get('/api/v1/users/me')
+        .get('/users/me')
         .set('Authorization', `Bearer ${token}`)
         .send();
 
@@ -1453,7 +1527,7 @@ describe('Authentication Integration Tests', () => {
 
       // Try accessing protected route
       const res = await request(app)
-        .get('/api/v1/users/me')
+        .get('/users/me')
         .set('Authorization', `Bearer ${token}`)
         .send();
 

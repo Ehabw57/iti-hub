@@ -1,5 +1,6 @@
 const YAML = require("yamljs");
 
+const authDoc = YAML.load("./docs/auth.yaml");
 const commentDoc = YAML.load("./docs/comment.yaml");
 const userDoc = YAML.load("./docs/user.yaml");
 const postDoc = YAML.load("./docs/post.yaml");
@@ -17,6 +18,10 @@ const base = {
     { url: `http://localhost:3030` }
   ],
   tags: [
+    {
+      name: "Authentication",
+      description: "User authentication and authorization operations"
+    },
     {
       name: "Users",
       description: "User management operations"
@@ -45,6 +50,7 @@ const swaggerDocument = {
   ...base,
   paths: {
     ...base.paths,
+    ...authDoc.paths,
     ...commentDoc.paths,
     ...userDoc.paths,
     ...postDoc.paths,
@@ -54,15 +60,26 @@ const swaggerDocument = {
   components: {
     schemas: {
       ...(base.components?.schemas || {}),
+      ...(authDoc.components?.schemas || {}),
       ...(commentDoc.components?.schemas || {}),
       ...(userDoc.components?.schemas || {}),
       ...(postDoc.components?.schemas || {}),
       ...(messageDoc.components?.schemas || {}),
       ...(conversationDoc.components?.schemas || {})
+    },
+    securitySchemes: {
+      ...(base.components?.securitySchemes || {}),
+      ...(authDoc.components?.securitySchemes || {}),
+      ...(commentDoc.components?.securitySchemes || {}),
+      ...(userDoc.components?.securitySchemes || {}),
+      ...(postDoc.components?.securitySchemes || {}),
+      ...(messageDoc.components?.securitySchemes || {}),
+      ...(conversationDoc.components?.securitySchemes || {})
     }
   },
   tags: [
     ...base.tags,
+    ...(authDoc.tags || []),
     ...(commentDoc.tags || []),
     ...(userDoc.tags || []),
     ...(postDoc.tags || []),

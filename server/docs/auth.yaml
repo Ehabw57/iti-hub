@@ -1,0 +1,630 @@
+openapi: 3.0.0
+info:
+  title: Authentication API
+  version: 1.0.0
+  description: API for user authentication and authorization
+
+servers:
+  - url: http://localhost:3030
+    description: Local server
+
+tags:
+  - name: Authentication
+    description: User authentication and authorization operations
+
+paths:
+  /auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: Register a new user
+      description: |
+        Register a new user account. Returns user data and authentication token for immediate login.
+        
+        **Rate Limit:** 5 requests per hour per IP
+        
+        **Validation Rules:**
+        - Email: Must be valid email format
+        - Password: Minimum 8 characters, must contain uppercase, lowercase, and number
+        - Username: 3-30 characters, alphanumeric and underscores only
+        - Full Name: Minimum 2 characters
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+                - username
+                - fullName
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: User's email address (will be converted to lowercase)
+                  example: "user@example.com"
+                password:
+                  type: string
+                  format: password
+                  minLength: 8
+                  description: User's password (min 8 chars, must contain uppercase, lowercase, and number)
+                  example: "SecurePass123"
+                username:
+                  type: string
+                  minLength: 3
+                  maxLength: 30
+                  pattern: "^[a-zA-Z0-9_]+$"
+                  description: Unique username (will be converted to lowercase)
+                  example: "john_doe"
+                fullName:
+                  type: string
+                  minLength: 2
+                  description: User's full name
+                  example: "John Doe"
+            examples:
+              valid_registration:
+                summary: Valid registration request
+                value:
+                  email: "john.doe@example.com"
+                  password: "SecurePass123"
+                  username: "johndoe"
+                  fullName: "John Doe"
+      responses:
+        '201':
+          description: User registered successfully with authentication token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "User registered successfully"
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/UserResponse'
+                      token:
+                        type: string
+                        description: JWT authentication token (valid for 7 days)
+                        example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+              examples:
+                successful_registration:
+                  summary: Successful registration
+                  value:
+                    success: true
+                    message: "User registered successfully"
+                    data:
+                      user:
+                        _id: "6510d1a2b3c4d5e6f7890123"
+                        email: "john.doe@example.com"
+                        username: "johndoe"
+                        fullName: "John Doe"
+                        role: "user"
+                        isBlocked: false
+                        createdAt: "2025-12-12T10:00:00.000Z"
+                        updatedAt: "2025-12-12T10:00:00.000Z"
+                      token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NTEwZDFhMmIzYzRkNWU2Zjc4OTAxMjMiLCJlbWFpbCI6ImpvaG4uZG9lQGV4YW1wbGUuY29tIiwicm9sZSI6InVzZXIiLCJpYXQiOjE3MDIzODE2MDAsImV4cCI6MTcwMjk4NjQwMH0.abcdef123456"
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+              examples:
+                missing_fields:
+                  summary: Missing required fields
+                  value:
+                    success: false
+                    error:
+                      code: "VALIDATION_ERROR"
+                      message: "Validation failed"
+                      details:
+                        fields:
+                          email: "Email is required"
+                          password: "Password is required"
+                invalid_format:
+                  summary: Invalid field formats
+                  value:
+                    success: false
+                    error:
+                      code: "VALIDATION_ERROR"
+                      message: "Validation failed"
+                      details:
+                        fields:
+                          email: "Email format is invalid"
+                          password: "Password must contain at least one uppercase letter"
+                          username: "Username must be between 3 and 30 characters"
+        '409':
+          description: Conflict - email or username already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                email_exists:
+                  summary: Email already registered
+                  value:
+                    success: false
+                    error:
+                      code: "EMAIL_EXISTS"
+                      message: "Email is already registered"
+                username_exists:
+                  summary: Username already taken
+                  value:
+                    success: false
+                    error:
+                      code: "USERNAME_EXISTS"
+                      message: "Username is already taken"
+        '429':
+          description: Rate limit exceeded (5 requests per hour)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                success: false
+                error:
+                  code: "RATE_LIMIT_EXCEEDED"
+                  message: "Too many registration attempts. Please try again later."
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                success: false
+                error:
+                  code: "REGISTRATION_ERROR"
+                  message: "Error registering user"
+                  details: "Internal server error"
+
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Login user
+      description: |
+        Authenticate user and receive authentication token. Updates user's lastSeen timestamp.
+        
+        **Rate Limit:** 10 requests per 15 minutes per IP
+        
+        **Notes:**
+        - Blocked users cannot login
+        - Email is case-insensitive
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: User's email address
+                  example: "user@example.com"
+                password:
+                  type: string
+                  format: password
+                  description: User's password
+                  example: "SecurePass123"
+            examples:
+              valid_login:
+                summary: Valid login credentials
+                value:
+                  email: "john.doe@example.com"
+                  password: "SecurePass123"
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Login successful"
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/UserResponse'
+                      token:
+                        type: string
+                        description: JWT authentication token (valid for 7 days)
+                        example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+              examples:
+                successful_login:
+                  summary: Successful login
+                  value:
+                    success: true
+                    message: "Login successful"
+                    data:
+                      user:
+                        _id: "6510d1a2b3c4d5e6f7890123"
+                        email: "john.doe@example.com"
+                        username: "johndoe"
+                        fullName: "John Doe"
+                        role: "user"
+                        isBlocked: false
+                        lastSeen: "2025-12-12T10:30:00.000Z"
+                        createdAt: "2025-12-12T10:00:00.000Z"
+                        updatedAt: "2025-12-12T10:30:00.000Z"
+                      token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NTEwZDFhMmIzYzRkNWU2Zjc4OTAxMjMiLCJlbWFpbCI6ImpvaG4uZG9lQGV4YW1wbGUuY29tIiwicm9sZSI6InVzZXIiLCJpYXQiOjE3MDIzODE2MDAsImV4cCI6MTcwMjk4NjQwMH0.abcdef123456"
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+              examples:
+                missing_fields:
+                  summary: Missing required fields
+                  value:
+                    success: false
+                    error:
+                      code: "VALIDATION_ERROR"
+                      message: "Validation failed"
+                      details:
+                        fields:
+                          email: "Email is required"
+                          password: "Password is required"
+        '401':
+          description: Authentication failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                invalid_credentials:
+                  summary: Invalid email or password
+                  value:
+                    success: false
+                    error:
+                      code: "INVALID_CREDENTIALS"
+                      message: "Invalid email or password"
+        '403':
+          description: Account blocked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                success: false
+                error:
+                  code: "ACCOUNT_BLOCKED"
+                  message: "Your account has been blocked. Please contact support."
+        '429':
+          description: Rate limit exceeded (10 requests per 15 minutes)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                success: false
+                error:
+                  code: "RATE_LIMIT_EXCEEDED"
+                  message: "Too many login attempts. Please try again later."
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/password-reset/request:
+    post:
+      tags:
+        - Authentication
+      summary: Request password reset
+      description: |
+        Request a password reset token. An email with reset instructions will be sent if the email exists.
+        For security, always returns success even if email doesn't exist.
+        
+        **Rate Limit:** 3 requests per hour per IP
+        
+        **Token Validity:** Reset tokens expire after 1 hour
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: User's registered email address
+                  example: "user@example.com"
+            examples:
+              valid_request:
+                summary: Valid password reset request
+                value:
+                  email: "john.doe@example.com"
+      responses:
+        '200':
+          description: Password reset email sent (or would be sent if email exists)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "If the email exists, a password reset link has been sent"
+              example:
+                success: true
+                message: "If the email exists, a password reset link has been sent"
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+              example:
+                success: false
+                error:
+                  code: "VALIDATION_ERROR"
+                  message: "Validation failed"
+                  details:
+                    fields:
+                      email: "Email is required"
+        '429':
+          description: Rate limit exceeded (3 requests per hour)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                success: false
+                error:
+                  code: "RATE_LIMIT_EXCEEDED"
+                  message: "Too many password reset requests. Please try again later."
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/password-reset/confirm:
+    post:
+      tags:
+        - Authentication
+      summary: Confirm password reset
+      description: |
+        Reset user password using the token received via email.
+        
+        **Token Requirements:**
+        - Must be valid and not expired (1 hour validity)
+        - Can only be used once
+        
+        **Password Requirements:**
+        - Minimum 8 characters
+        - Must contain uppercase letter
+        - Must contain lowercase letter
+        - Must contain number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - token
+                - newPassword
+              properties:
+                token:
+                  type: string
+                  description: Password reset token received via email
+                  example: "a2092a4c65ba757477dbcc988f27f1fcde36037a1eef13ecc94e9f77323e31a2"
+                newPassword:
+                  type: string
+                  format: password
+                  minLength: 8
+                  description: New password (must meet security requirements)
+                  example: "NewSecurePass123"
+            examples:
+              valid_reset:
+                summary: Valid password reset
+                value:
+                  token: "a2092a4c65ba757477dbcc988f27f1fcde36037a1eef13ecc94e9f77323e31a2"
+                  newPassword: "NewSecurePass123"
+      responses:
+        '200':
+          description: Password reset successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Password has been reset successfully"
+              example:
+                success: true
+                message: "Password has been reset successfully"
+        '400':
+          description: Validation error or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+              examples:
+                missing_fields:
+                  summary: Missing required fields
+                  value:
+                    success: false
+                    error:
+                      code: "VALIDATION_ERROR"
+                      message: "Validation failed"
+                      details:
+                        fields:
+                          token: "Reset token is required"
+                          newPassword: "New password is required"
+                invalid_password:
+                  summary: Invalid password format
+                  value:
+                    success: false
+                    error:
+                      code: "VALIDATION_ERROR"
+                      message: "Validation failed"
+                      details:
+                        fields:
+                          newPassword: "Password must be at least 8 characters long"
+                invalid_token:
+                  summary: Invalid or expired token
+                  value:
+                    success: false
+                    error:
+                      code: "INVALID_TOKEN"
+                      message: "Invalid or expired reset token"
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    UserResponse:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: User's unique identifier
+          example: "6510d1a2b3c4d5e6f7890123"
+        email:
+          type: string
+          format: email
+          description: User's email address
+          example: "john.doe@example.com"
+        username:
+          type: string
+          description: User's unique username
+          example: "johndoe"
+        fullName:
+          type: string
+          description: User's full name
+          example: "John Doe"
+        role:
+          type: string
+          enum: [user, admin, moderator]
+          default: user
+          description: User's role in the system
+          example: "user"
+        profilePic:
+          type: string
+          description: URL to user's profile picture
+          example: "https://example.com/profiles/johndoe.jpg"
+        bio:
+          type: string
+          description: User's biography
+          example: "Software developer passionate about web technologies"
+        isBlocked:
+          type: boolean
+          description: Whether the user account is blocked
+          default: false
+          example: false
+        lastSeen:
+          type: string
+          format: date-time
+          description: Timestamp of user's last activity
+          example: "2025-12-12T10:30:00.000Z"
+        createdAt:
+          type: string
+          format: date-time
+          description: Account creation timestamp
+          example: "2025-12-12T10:00:00.000Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last account update timestamp
+          example: "2025-12-12T10:30:00.000Z"
+
+    Error:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              description: Error code identifier
+              example: "INVALID_CREDENTIALS"
+            message:
+              type: string
+              description: Human-readable error message
+              example: "Invalid email or password"
+            details:
+              type: string
+              description: Additional error details (optional)
+              example: "The provided credentials do not match our records"
+
+    ValidationError:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              example: "VALIDATION_ERROR"
+            message:
+              type: string
+              example: "Validation failed"
+            details:
+              type: object
+              properties:
+                fields:
+                  type: object
+                  description: Field-specific validation errors
+                  additionalProperties:
+                    type: string
+                  example:
+                    email: "Email format is invalid"
+                    password: "Password must be at least 8 characters long"
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT authentication token. Include in Authorization header as: `Bearer <token>`
+        
+        Token is obtained from `/auth/register` or `/auth/login` endpoints.
+        Token is valid for 7 days from issuance.
+
+security:
+  - BearerAuth: []
