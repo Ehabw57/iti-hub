@@ -1,11 +1,8 @@
 const YAML = require("yamljs");
 
 const authDoc = YAML.load("./docs/auth.yaml");
-const commentDoc = YAML.load("./docs/comment.yaml");
 const userDoc = YAML.load("./docs/user.yaml");
-const postDoc = YAML.load("./docs/post.yaml");
-const messageDoc = YAML.load("./docs/message.yaml");
-const conversationDoc = YAML.load("./docs/conversation.yaml");
+const connectionDoc = YAML.load("./docs/connection.yaml");
 
 const base = {
   openapi: "3.0.0",
@@ -27,20 +24,8 @@ const base = {
       description: "User management operations"
     },
     {
-      name: "Comments",
-      description: "Comment management and nested replies operations"
-    },
-    {
-      name: "Posts",
-      description: "Post management operations with media attachments"
-    },
-    {
-      name: "Messages",
-      description: "Message management and conversation operations"
-    },
-    {
-      name: "Conversations",
-      description: "Conversation management between users"
+      name: "Connections",
+      description: "User connection operations (follow, unfollow, block, unblock)"
     }
   ],
   paths: {}
@@ -51,40 +36,34 @@ const swaggerDocument = {
   paths: {
     ...base.paths,
     ...authDoc.paths,
-    ...commentDoc.paths,
     ...userDoc.paths,
-    ...postDoc.paths,
-    ...messageDoc.paths,
-    ...conversationDoc.paths
+    ...connectionDoc.paths
   },
   components: {
     schemas: {
       ...(base.components?.schemas || {}),
       ...(authDoc.components?.schemas || {}),
-      ...(commentDoc.components?.schemas || {}),
       ...(userDoc.components?.schemas || {}),
-      ...(postDoc.components?.schemas || {}),
-      ...(messageDoc.components?.schemas || {}),
-      ...(conversationDoc.components?.schemas || {})
+      ...(connectionDoc.components?.schemas || {})
     },
     securitySchemes: {
       ...(base.components?.securitySchemes || {}),
       ...(authDoc.components?.securitySchemes || {}),
-      ...(commentDoc.components?.securitySchemes || {}),
       ...(userDoc.components?.securitySchemes || {}),
-      ...(postDoc.components?.securitySchemes || {}),
-      ...(messageDoc.components?.securitySchemes || {}),
-      ...(conversationDoc.components?.securitySchemes || {})
+      ...(connectionDoc.components?.securitySchemes || {})
+    },
+    responses: {
+      ...(base.components?.responses || {}),
+      ...(authDoc.components?.responses || {}),
+      ...(userDoc.components?.responses || {}),
+      ...(connectionDoc.components?.responses || {})
     }
   },
   tags: [
     ...base.tags,
     ...(authDoc.tags || []),
-    ...(commentDoc.tags || []),
     ...(userDoc.tags || []),
-    ...(postDoc.tags || []),
-    ...(messageDoc.tags || []),
-    ...(conversationDoc.tags || [])
+    ...(connectionDoc.tags || [])
   ]
 };
 module.exports = swaggerDocument;

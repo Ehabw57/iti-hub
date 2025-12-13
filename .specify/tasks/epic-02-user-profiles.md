@@ -334,17 +334,174 @@ describe('Connection Model', () => {
 
 ---
 
+## Phase 1.5: Shared Utilities (Foundation)
+
+### T011b: [P] Create User Profile Utilities
+**Type**: Utility  
+**User Story**: Foundation  
+**Estimated Effort**: 0.5 days  
+**Can Run in Parallel**: Yes  
+**Priority**: Blocking
+
+**Target File:**
+- `/server/utils/userHelpers.js`
+
+**Functions to Implement:**
+
+1. **`sanitizeUserProfile(user, includeEmail = false)`**
+   - Input: `user` (User object), `includeEmail` (boolean)
+   - Output: Sanitized user object (excludes sensitive fields)
+   - Description: Removes password, reset tokens, and optionally email
+
+2. **`checkUserBlocked(currentUserId, targetUserId)`**
+   - Input: `currentUserId` (ObjectId), `targetUserId` (ObjectId)
+   - Output: Promise<{ isBlocked: boolean, blockedBy: string | null }>
+   - Description: Checks if either user has blocked the other
+
+3. **`validateProfileUpdate(updateData)`**
+   - Input: `updateData` (object with profile fields)
+   - Output: `{ valid: boolean, errors: object, validData: object }`
+   - Description: Validates profile update fields (fullName, bio, URLs, etc.)
+
+4. **`buildProfileResponse(user, currentUserId = null)`**
+   - Input: `user` (User object), `currentUserId` (ObjectId, optional)
+   - Output: Promise<object> with sanitized profile + isFollowing flag
+   - Description: Builds consistent profile response with relationship status
+
+**Acceptance Criteria:**
+- [ ] Sanitization removes all sensitive fields
+- [ ] Block checking works in both directions
+- [ ] Validation uses constants from constants.js
+- [ ] Profile response is consistent across endpoints
+- [ ] Reusable across all profile-related controllers
+
+---
+
+### T011c: [P] Create Connection Helper Utilities
+**Type**: Utility  
+**User Story**: Foundation  
+**Estimated Effort**: 0.5 days  
+**Can Run in Parallel**: Yes  
+**Priority**: Blocking
+
+**Target File:**
+- `/server/utils/connectionHelpers.js`
+
+**Functions to Implement:**
+
+1. **`validateConnectionAction(currentUserId, targetUserId, action)`**
+   - Input: `currentUserId`, `targetUserId`, `action` (string: 'follow' | 'block')
+   - Output: `{ valid: boolean, error: string | null }`
+   - Description: Validates connection actions (cannot follow/block self, etc.)
+
+2. **`buildConnectionList(connections, currentUserId = null, populateField = 'follower')`**
+   - Input: `connections` (array), `currentUserId`, `populateField`
+   - Output: Promise<array> with user data + isFollowing flags
+   - Description: Generic function to build follower/following lists
+
+3. **`checkMutualBlock(userId1, userId2)`**
+   - Input: `userId1` (ObjectId), `userId2` (ObjectId)
+   - Output: Promise<boolean>
+   - Description: Checks if users have blocked each other
+
+**Acceptance Criteria:**
+- [ ] Validation prevents self-follows and self-blocks
+- [ ] Connection list builder works for both followers and following
+- [ ] Efficiently checks relationships
+- [ ] Reusable across connection controllers
+
+---
+
+### T011d: [P] Update Constants File for User Profiles
+**Type**: Utility  
+**User Story**: Foundation  
+**Estimated Effort**: 0.25 days  
+**Can Run in Parallel**: Yes  
+**Priority**: Blocking
+
+**Target File:**
+- `/server/utils/constants.js` (update existing from Epic 3)
+
+**New Constants to Add:**
+
+```javascript
+// Profile validation constants
+const MIN_FULL_NAME_LENGTH = 2;
+const MAX_FULL_NAME_LENGTH = 100;
+const MAX_BIO_LENGTH = 500;
+const MAX_SPECIALIZATION_LENGTH = 100;
+const MAX_LOCATION_LENGTH = 100;
+
+// Connection constants
+const CONNECTION_TYPES = ['follow', 'block'];
+
+// User profile fields to exclude
+const SENSITIVE_USER_FIELDS = [
+  'password',
+  'passwordResetToken',
+  'passwordResetExpires',
+  '__v'
+];
+
+const PUBLIC_USER_FIELDS = [
+  '_id',
+  'username',
+  'fullName',
+  'bio',
+  'profilePicture',
+  'coverImage',
+  'specialization',
+  'location',
+  'followersCount',
+  'followingCount',
+  'postsCount',
+  'role',
+  'createdAt',
+  'lastSeen'
+];
+
+module.exports = {
+  // ... existing constants from Epic 3 ...
+  
+  // Profile constants
+  MIN_FULL_NAME_LENGTH,
+  MAX_FULL_NAME_LENGTH,
+  MAX_BIO_LENGTH,
+  MAX_SPECIALIZATION_LENGTH,
+  MAX_LOCATION_LENGTH,
+  
+  // Connection constants
+  CONNECTION_TYPES,
+  
+  // User field constants
+  SENSITIVE_USER_FIELDS,
+  PUBLIC_USER_FIELDS
+};
+```
+
+**Acceptance Criteria:**
+- [ ] All magic numbers centralized
+- [ ] Field lists defined
+- [ ] Easy to reference in tests
+- [ ] Compatible with Epic 3 constants
+
+---
+
 ## Phase 2: User Story 1 - View User Profile
 
 ### T012: [US1] Implement Get User Profile Controller
 **Type**: Controller  
 **User Story**: US1  
 **Estimated Effort**: 1.5 days  
-**Depends On**: Epic 1, T011  
+**Depends On**: Epic 1, T011, T011b, T011c, T011d  
 **Priority**: P0
 
 **Target File:**
-- `/server/controllers/userController.js`
+- `/server/controllers/user/getUserProfileController.js`
+
+**Utility Dependencies:**
+- `/server/utils/userHelpers.js` (for sanitizeUserProfile, checkUserBlocked, buildProfileResponse)
+- `/server/utils/constants.js` (for SENSITIVE_USER_FIELDS, PUBLIC_USER_FIELDS)
 
 **Function to Implement:**
 
@@ -364,13 +521,14 @@ describe('Connection Model', () => {
 4. Return user profile with computed fields
 
 **Tests to Pass:**
-File: `/server/spec/controllers/userController.spec.js`
+File: `/server/spec/controllers/user/getUserProfileController.spec.js`
 
 ```javascript
-const { getUserProfile } = require('../../controllers/userController');
-const User = require('../../models/User');
-const Connection = require('../../models/Connection');
-const mockResponse = require('../helpers/responseMock');
+const { getUserProfile } = require('../../../controllers/user/getUserProfileController');
+const User = require('../../../models/User');
+const Connection = require('../../../models/Connection');
+const mockResponse = require('../../helpers/responseMock');
+const { SENSITIVE_USER_FIELDS } = require('../../../utils/constants');
 
 describe('getUserProfile', () => {
   let targetUser;
@@ -452,15 +610,17 @@ describe('getUserProfile', () => {
       ...targetUser,
       password: 'hashedPassword',
       email: 'target@example.com',
-      resetPasswordToken: 'token'
+      passwordResetToken: 'token',
+      passwordResetExpires: new Date()
     };
     spyOn(User, 'findById').and.returnValue(Promise.resolve(userWithSensitiveData));
 
     await getUserProfile(req, res);
 
-    expect(res.body.data.password).toBeUndefined();
-    expect(res.body.data.email).toBeUndefined();
-    expect(res.body.data.resetPasswordToken).toBeUndefined();
+    // Use constants instead of hardcoded field names
+    SENSITIVE_USER_FIELDS.forEach(field => {
+      expect(res.body.data[field]).toBeUndefined();
+    });
   });
 
   it('should work for viewing own profile', async () => {
@@ -496,11 +656,16 @@ describe('getUserProfile', () => {
 **Type**: Controller  
 **User Story**: US2  
 **Estimated Effort**: 1 day  
-**Depends On**: Epic 1  
+**Depends On**: Epic 1, T011b, T011d  
 **Priority**: P0
 
 **Target File:**
-- `/server/controllers/userController.js`
+- `/server/controllers/user/updateProfileController.js`
+
+**Utility Dependencies:**
+- `/server/utils/userHelpers.js` (for validateProfileUpdate, sanitizeUserProfile)
+- `/server/utils/validation.js` (for validateImageUrls - reuse from Epic 3)
+- `/server/utils/constants.js` (for validation limits)
 
 **Function to Implement:**
 
@@ -524,9 +689,19 @@ describe('getUserProfile', () => {
 5. Return updated user (without sensitive fields)
 
 **Tests to Pass:**
-File: `/server/spec/controllers/userController.spec.js`
+File: `/server/spec/controllers/user/updateProfileController.spec.js`
 
 ```javascript
+const { updateProfile } = require('../../../controllers/user/updateProfileController');
+const User = require('../../../models/User');
+const mockResponse = require('../../helpers/responseMock');
+const {
+  MIN_FULL_NAME_LENGTH,
+  MAX_FULL_NAME_LENGTH,
+  MAX_BIO_LENGTH,
+  SENSITIVE_USER_FIELDS
+} = require('../../../utils/constants');
+
 describe('updateProfile', () => {
   let currentUser;
 
@@ -601,40 +776,46 @@ describe('updateProfile', () => {
   it('should return 400 if fullName too short', async () => {
     const req = {
       user: currentUser,
-      body: { fullName: 'A' }
+      body: { fullName: 'A'.repeat(MIN_FULL_NAME_LENGTH - 1) }
     };
     const res = mockResponse();
 
     await updateProfile(req, res);
 
     expect(res.statusCode).toBe(400);
-    expect(res.body.error.details.fields.fullName).toMatch(/at least 2 characters/i);
+    expect(res.body.error.details.fields.fullName).toMatch(
+      new RegExp(`at least ${MIN_FULL_NAME_LENGTH} characters`, 'i')
+    );
   });
 
   it('should return 400 if fullName too long', async () => {
     const req = {
       user: currentUser,
-      body: { fullName: 'A'.repeat(101) }
+      body: { fullName: 'A'.repeat(MAX_FULL_NAME_LENGTH + 1) }
     };
     const res = mockResponse();
 
     await updateProfile(req, res);
 
     expect(res.statusCode).toBe(400);
-    expect(res.body.error.details.fields.fullName).toMatch(/max.*100 characters/i);
+    expect(res.body.error.details.fields.fullName).toMatch(
+      new RegExp(`max.*${MAX_FULL_NAME_LENGTH} characters`, 'i')
+    );
   });
 
   it('should return 400 if bio too long', async () => {
     const req = {
       user: currentUser,
-      body: { bio: 'A'.repeat(501) }
+      body: { bio: 'A'.repeat(MAX_BIO_LENGTH + 1) }
     };
     const res = mockResponse();
 
     await updateProfile(req, res);
 
     expect(res.statusCode).toBe(400);
-    expect(res.body.error.details.fields.bio).toMatch(/max.*500 characters/i);
+    expect(res.body.error.details.fields.bio).toMatch(
+      new RegExp(`max.*${MAX_BIO_LENGTH} characters`, 'i')
+    );
   });
 
   it('should return 400 if profile picture URL invalid', async () => {
@@ -676,7 +857,10 @@ describe('updateProfile', () => {
 
     await updateProfile(req, res);
 
-    expect(res.body.data.user.password).toBeUndefined();
+    // Use constants to check all sensitive fields are excluded
+    SENSITIVE_USER_FIELDS.forEach(field => {
+      expect(res.body.data.user[field]).toBeUndefined();
+    });
   });
 
   it('should return 200 with no changes if body empty', async () => {
@@ -710,11 +894,15 @@ describe('updateProfile', () => {
 **Type**: Controller  
 **User Story**: US3  
 **Estimated Effort**: 1.5 days  
-**Depends On**: T011, Epic 1  
+**Depends On**: T011, T011c, Epic 1  
 **Priority**: P0
 
 **Target File:**
-- `/server/controllers/connectionController.js` (new file)
+- `/server/controllers/connection/followController.js`
+
+**Utility Dependencies:**
+- `/server/utils/connectionHelpers.js` (for validateConnectionAction, checkMutualBlock)
+- `/server/utils/constants.js` (for CONNECTION_TYPES)
 
 **Function to Implement:**
 
@@ -726,13 +914,13 @@ describe('updateProfile', () => {
 - **Description**: Creates follow relationship
 
 **Tests to Pass:**
-File: `/server/spec/controllers/connectionController.spec.js`
+File: `/server/spec/controllers/connection/followController.spec.js`
 
 ```javascript
-const { followUser, unfollowUser } = require('../../controllers/connectionController');
-const User = require('../../models/User');
-const Connection = require('../../models/Connection');
-const mockResponse = require('../helpers/responseMock');
+const { followUser, unfollowUser } = require('../../../controllers/connection/followController');
+const User = require('../../../models/User');
+const Connection = require('../../../models/Connection');
+const mockResponse = require('../../helpers/responseMock');
 
 describe('Connection Controller', () => {
   describe('followUser', () => {
@@ -887,7 +1075,18 @@ describe('Connection Controller', () => {
 ---
 
 ### T015: [US3] Implement Unfollow User Controller
-(Covered in T014 tests above)
+**Type**: Controller  
+**User Story**: US3  
+**Estimated Effort**: Included in T014  
+**Depends On**: T011, T011c, Epic 1  
+**Priority**: P0
+
+**Target File:**
+- `/server/controllers/connection/followController.js` (same file as T014)
+
+**Note**: Both follow and unfollow are in the same controller file as they share logic.
+
+(Tests covered in T014 above)
 
 **Acceptance Criteria for T014 & T015:**
 - [ ] Follow creates connection and updates counts
@@ -906,11 +1105,16 @@ describe('Connection Controller', () => {
 **Type**: Controller  
 **User Story**: US4  
 **Estimated Effort**: 1 day  
-**Depends On**: T011, Epic 1  
+**Depends On**: T011, T011c, Epic 1  
 **Priority**: P0
 
 **Target File:**
-- `/server/controllers/userController.js`
+- `/server/controllers/user/getFollowersController.js`
+
+**Utility Dependencies:**
+- `/server/utils/connectionHelpers.js` (for buildConnectionList)
+- `/server/utils/pagination.js` (reuse from Epic 3)
+- `/server/utils/constants.js` (for DEFAULT_PAGE_LIMIT, MAX_PAGE_LIMIT)
 
 **Function to Implement:**
 
@@ -924,12 +1128,18 @@ describe('Connection Controller', () => {
 
 **Implementation:**
 ```javascript
+const Connection = require('../../models/Connection');
+const User = require('../../models/User');
+const { buildConnectionList } = require('../../utils/connectionHelpers');
+const { buildPaginationQuery, buildPaginationResponse } = require('../../utils/pagination');
+
 async function getFollowers(req, res) {
   try {
     const { userId } = req.params;
-    const page = parseInt(req.query.page) || 1;
-    const limit = Math.min(parseInt(req.query.limit) || 20, 100);
-    const skip = (page - 1) * limit;
+    const { skip, limit, sort } = buildPaginationQuery(req, {
+      sortBy: 'createdAt',
+      sortOrder: 'desc'
+    });
 
     // Check user exists
     const user = await User.findById(userId);
@@ -945,7 +1155,7 @@ async function getFollowers(req, res) {
       following: userId,
       type: 'follow'
     })
-    .sort({ createdAt: -1 })
+    .sort(sort)
     .skip(skip)
     .limit(limit)
     .populate('follower', 'username fullName profilePicture');
@@ -955,35 +1165,23 @@ async function getFollowers(req, res) {
       type: 'follow'
     });
 
-    // Add isFollowing flag if authenticated
-    const followers = await Promise.all(
-      connections.map(async (conn) => {
-        const follower = conn.follower;
-        let isFollowing = false;
-        
-        if (req.user) {
-          isFollowing = await Connection.isFollowing(req.user._id, follower._id);
-        }
+    // Build response with isFollowing flags using utility
+    const followers = await buildConnectionList(
+      connections,
+      req.user?._id,
+      'follower'
+    );
 
-        return {
-          id: follower._id,
-          username: follower.username,
-          fullName: follower.fullName,
-          profilePicture: follower.profilePicture,
-          isFollowing
-        };
-      })
+    const response = buildPaginationResponse(
+      followers,
+      total,
+      req.query.page,
+      limit
     );
 
     res.status(200).json({
       success: true,
-      data: followers,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit)
-      }
+      ...response
     });
   } catch (error) {
     res.status(500).json({
@@ -992,6 +1190,8 @@ async function getFollowers(req, res) {
     });
   }
 }
+
+module.exports = { getFollowers };
 ```
 
 **Tests:** (Similar structure for getFollowing)
@@ -1019,7 +1219,22 @@ describe('getFollowers', () => {
 ---
 
 ### T017: [US4] Implement Get Following Controller
-(Similar to T016)
+**Type**: Controller  
+**User Story**: US4  
+**Estimated Effort**: 0.5 days  
+**Depends On**: T011, T011c, T016, Epic 1  
+**Priority**: P0
+
+**Target File:**
+- `/server/controllers/user/getFollowingController.js`
+
+**Utility Dependencies:**
+- `/server/utils/connectionHelpers.js` (for buildConnectionList)
+- `/server/utils/pagination.js` (reuse from Epic 3)
+
+**Note**: Implementation is nearly identical to T016, but queries `follower: userId` instead of `following: userId`, and populates `'following'` field instead of `'follower'`.
+
+(Similar to T016, uses buildConnectionList utility with `populateField = 'following'`)
 
 **Acceptance Criteria for T016 & T017:**
 - [ ] Returns paginated lists
@@ -1036,11 +1251,15 @@ describe('getFollowers', () => {
 **Type**: Controller  
 **User Story**: US5  
 **Estimated Effort**: 1.5 days  
-**Depends On**: T011, Epic 1  
+**Depends On**: T011, T011c, Epic 1  
 **Priority**: P0
 
 **Target File:**
-- `/server/controllers/connectionController.js`
+- `/server/controllers/connection/blockController.js`
+
+**Utility Dependencies:**
+- `/server/utils/connectionHelpers.js` (for validateConnectionAction)
+- `/server/utils/constants.js` (for CONNECTION_TYPES)
 
 **Functions to Implement:**
 
@@ -1079,32 +1298,120 @@ describe('unblockUser', () => {
 
 ---
 
+### T018b: [P] Create Controller Index Files
+**Type**: Structure  
+**User Story**: Foundation  
+**Estimated Effort**: 0.25 days  
+**Can Run in Parallel**: No  
+**Priority**: P0
+
+**Target Files:**
+- `/server/controllers/user/index.js`
+- `/server/controllers/connection/index.js`
+
+**Purpose:** Export all controller functions from their respective folders for clean imports
+
+**Example `/server/controllers/user/index.js`:**
+```javascript
+const { getUserProfile } = require('./getUserProfileController');
+const { updateProfile } = require('./updateProfileController');
+const { getFollowers } = require('./getFollowersController');
+const { getFollowing } = require('./getFollowingController');
+
+module.exports = {
+  getUserProfile,
+  updateProfile,
+  getFollowers,
+  getFollowing
+};
+```
+
+**Example `/server/controllers/connection/index.js`:**
+```javascript
+const { followUser, unfollowUser } = require('./followController');
+const { blockUser, unblockUser } = require('./blockController');
+
+module.exports = {
+  followUser,
+  unfollowUser,
+  blockUser,
+  unblockUser
+};
+```
+
+**Acceptance Criteria:**
+- [ ] Clean imports in routes: `require('./controllers/user')`
+- [ ] All functions exported
+- [ ] Consistent with Epic 1 and Epic 3 patterns
+
+---
+
 ## Phase 7: Routes & Integration
 
 ### T019: Create/Update User and Connection Routes
 **Type**: Routes  
 **Estimated Effort**: 0.5 days  
-**Depends On**: T012-T018  
+**Depends On**: T012-T018b  
 **Priority**: P0
 
 **Target Files:**
-- `/server/routes/userRoutes.js`
+- `/server/routes/userRoutes.js` (update existing)
 - `/server/routes/connectionRoutes.js` (new)
 
 **Routes:**
 ```javascript
 // userRoutes.js
-GET /users/:userId (optionalAuth)
-PATCH /users/me (checkAuth)
-GET /users/:userId/followers (optionalAuth)
-GET /users/:userId/following (optionalAuth)
+const express = require('express');
+const router = express.Router();
+const { checkAuth, optionalAuth } = require('../middlewares/checkAuth');
+const {
+  getUserProfile,
+  updateProfile,
+  getFollowers,
+  getFollowing
+} = require('../controllers/user'); // Clean import from index.js
+
+router.get('/:userId', optionalAuth, getUserProfile);
+router.patch('/me', checkAuth, updateProfile);
+router.get('/:userId/followers', optionalAuth, getFollowers);
+router.get('/:userId/following', optionalAuth, getFollowing);
+
+module.exports = router;
 
 // connectionRoutes.js
-POST /users/:userId/follow (checkAuth)
-DELETE /users/:userId/follow (checkAuth)
-POST /users/:userId/block (checkAuth)
-DELETE /users/:userId/block (checkAuth)
+const express = require('express');
+const router = express.Router();
+const { checkAuth } = require('../middlewares/checkAuth');
+const {
+  followUser,
+  unfollowUser,
+  blockUser,
+  unblockUser
+} = require('../controllers/connection'); // Clean import from index.js
+
+router.post('/users/:userId/follow', checkAuth, followUser);
+router.delete('/users/:userId/follow', checkAuth, unfollowUser);
+router.post('/users/:userId/block', checkAuth, blockUser);
+router.delete('/users/:userId/block', checkAuth, unblockUser);
+
+module.exports = router;
 ```
+
+**app.js Updates:**
+```javascript
+const userRoute = require('./routes/userRoutes');
+const connectionRoute = require('./routes/connectionRoutes');
+
+app.use('/users', userRoute);
+app.use('/', connectionRoute); // Mount at root for /users/:userId/follow paths
+```
+
+**Acceptance Criteria:**
+- [ ] All routes properly defined
+- [ ] Correct middleware applied
+- [ ] Clean controller imports
+- [ ] Routes mounted in app.js
+- [ ] All endpoints accessible
 
 ---
 
@@ -1127,14 +1434,73 @@ DELETE /users/:userId/block (checkAuth)
 
 ## Summary
 
-**Total Tasks**: 10 (T011-T020)  
-**Estimated Total Effort**: 10-12 days  
+**Total Tasks**: 14 (T011-T020)
+- **Models**: 1 task (T011)
+- **Utilities**: 3 tasks (T011b, T011c, T011d)
+- **User Controllers**: 4 tasks (T012, T013, T016, T017)
+- **Connection Controllers**: 3 tasks (T014, T015, T018)
+- **Structure**: 1 task (T018b)
+- **Routes & Testing**: 2 tasks (T019, T020)
+
+**Estimated Total Effort**: 11-13 days  
 **Dependencies**: Epic 1 (Authentication) must be complete
+
+**File Structure:**
+```
+server/
+├── controllers/
+│   ├── user/
+│   │   ├── index.js (exports all)
+│   │   ├── getUserProfileController.js
+│   │   ├── updateProfileController.js
+│   │   ├── getFollowersController.js
+│   │   └── getFollowingController.js
+│   └── connection/
+│       ├── index.js (exports all)
+│       ├── followController.js (follow + unfollow)
+│       └── blockController.js (block + unblock)
+├── utils/
+│   ├── userHelpers.js (profile utilities)
+│   ├── connectionHelpers.js (connection utilities)
+│   ├── pagination.js (reused from Epic 3)
+│   ├── validation.js (reused from Epic 3)
+│   └── constants.js (updated with profile constants)
+├── models/
+│   ├── User.js (updated with profile fields)
+│   └── Connection.js (new)
+└── routes/
+    ├── userRoutes.js (updated)
+    └── connectionRoutes.js (new)
+```
+
+**Parallel Opportunities:**
+- Phase 1.5: T011b, T011c, T011d (all utilities in parallel)
+- Phase 2-6: Controllers can be worked on in parallel after utilities complete
+- T018b must wait until all controllers are complete
+
+**Benefits of This Structure:**
+1. **Maintainability**: Each controller file is focused and < 150 lines
+2. **Reusability**: 
+   - buildConnectionList works for both followers and following
+   - Pagination utilities reused from Epic 3
+   - Validation utilities reused from Epic 3
+3. **Testability**: Easier to test individual functions, utilities tested once
+4. **Consistency**: Follows Epic 1 and Epic 3 patterns
+5. **DRY**: No code duplication between followers/following logic
+6. **Magic Numbers**: All limits use constants, easy to change in tests
+
+**Code Reuse from Epic 3:**
+- ✅ `pagination.js` - buildPaginationQuery, buildPaginationResponse
+- ✅ `validation.js` - validateImageUrls for profile/cover pictures
+- ✅ `constants.js` - Extended with profile-specific constants
 
 **Definition of Done:**
 - [ ] All models, controllers, routes implemented
-- [ ] All unit tests passing
+- [ ] All utility functions tested and working
+- [ ] All unit tests passing (use constants, not magic numbers)
 - [ ] All integration tests passing
 - [ ] Privacy and blocking logic works correctly
 - [ ] Denormalized counts stay consistent
 - [ ] API documentation updated
+- [ ] Code follows Epic 1 and Epic 3 patterns
+- [ ] Tests use constants instead of hardcoded values

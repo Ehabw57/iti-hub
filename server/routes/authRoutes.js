@@ -4,8 +4,11 @@ const rateLimit = require("express-rate-limit");
 // Import controllers from auth directory
 const {register, login, requestPasswordReset, confirmPasswordReset} = require("../controllers/auth");
 
-// Rate limiters
-const registerLimiter = rateLimit({
+// Disable rate limiting in test environment
+const isTestEnv = process.env.NODE_ENV === 'test';
+
+// Rate limiters - disabled in test environment
+const registerLimiter = isTestEnv ? (req, res, next) => next() : rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 5, // 5 requests per hour
   message: {
@@ -17,7 +20,7 @@ const registerLimiter = rateLimit({
   },
 });
 
-const loginLimiter = rateLimit({
+const loginLimiter = isTestEnv ? (req, res, next) => next() : rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 10, // 10 requests per 15 minutes
   message: {
@@ -29,7 +32,7 @@ const loginLimiter = rateLimit({
   },
 });
 
-const passwordResetLimiter = rateLimit({
+const passwordResetLimiter = isTestEnv ? (req, res, next) => next() : rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 3, // 3 requests per hour
   message: {

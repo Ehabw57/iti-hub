@@ -1,20 +1,19 @@
 const express = require("express");
-const {
-  getAllUsers,
-  getUserById,
-  updateUser,
-  deleteUser,
-  createUser,
-  getUserPosts
-} = require("../controllers/userController");
+const { 
+  getUserProfile, 
+  updateProfile, 
+  blockUser, 
+  unblockUser 
+} = require("../controllers/user");
+const { checkAuth, optionalAuth } = require("../middlewares/checkAuth");
 
 const userRouter = express.Router();
 
-userRouter.post("/user", createUser);
-userRouter.get("/user", getAllUsers);
-userRouter.get("/users/:id", getUserById);
-userRouter.put("/users/:id", updateUser);
-userRouter.delete("/users/:id", deleteUser);
-userRouter.get("/users/:id/posts", getUserPosts);
+
+userRouter.get("/users/:username", optionalAuth, getUserProfile); // Public, optional auth
+userRouter.put("/users/profile", checkAuth, updateProfile); // Requires auth
+
+userRouter.post("/users/:userId/block", checkAuth, blockUser); // Requires auth
+userRouter.delete("/users/:userId/block", checkAuth, unblockUser); // Requires auth
 
 module.exports = userRouter;

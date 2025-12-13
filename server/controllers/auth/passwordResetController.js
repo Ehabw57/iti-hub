@@ -38,8 +38,8 @@ exports.requestPasswordReset = async (req, res) => {
     const plainToken = await user.generatePasswordResetToken();
 
     // MVP: Log token to console (in production, send via email)
-    console.log(`Password reset token for ${email}: ${plainToken}`);
-    console.log(`Reset link: http://localhost:3000/auth/password-reset/confirm?token=${plainToken}`);
+    // console.log(`Password reset token for ${email}: ${plainToken}`);
+    // console.log(`Reset link: http://localhost:3000/auth/password-reset/confirm?token=${plainToken}`);
 
     return res.status(200).json({
       success: true,

@@ -6,280 +6,270 @@ info:
 
 servers:
   - url: http://localhost:3030
-    description: Local server
+    description: Development server
 
 paths:
-  /user:
+  /users/{username}:
     get:
       tags:
         - Users
-      summary: Get all users
-      description: Retrieve a list of all users in the system
+      summary: Get user profile by username
+      description: Returns the public profile of a user. When authenticated, also includes relationship information (isFollowing, followsYou).
+      parameters:
+        - in: path
+          name: username
+          required: true
+          schema:
+            type: string
+            minLength: 3
+            maxLength: 30
+          description: Username of the user to retrieve
+          example: "johndoe"
       responses:
         '200':
-          description: List of all users retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/UserResponse'
-        '500':
-          description: Server error
+          description: User profile retrieved successfully
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  massage:
-                    type: string
-                    example: "Internal server error"
-    
-    post:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/UserProfileResponse'
+        '403':
+          description: User is blocked or has blocked you
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                blocked:
+                  summary: User blocked
+                  value:
+                    success: false
+                    message: "Access to this profile is restricted"
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                not_found:
+                  summary: User does not exist
+                  value:
+                    success: false
+                    message: "User not found"
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /users/profile:
+    put:
       tags:
         - Users
-      summary: Create a new user
-      description: Register a new user in the system
+      summary: Update own profile
+      description: Allows authenticated user to update their profile information. Only provided fields will be updated.
+      security:
+        - BearerAuth: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateUserInput'
+              type: object
+              properties:
+                fullName:
+                  type: string
+                  minLength: 2
+                  maxLength: 50
+                  example: "John Smith"
+                bio:
+                  type: string
+                  maxLength: 300
+                  example: "Full-stack developer passionate about open source"
+                specialization:
+                  type: string
+                  maxLength: 100
+                  example: "React & Node.js Developer"
+                location:
+                  type: string
+                  maxLength: 100
+                  example: "San Francisco, CA"
+                profilePicture:
+                  type: string
+                  format: uri
+                  example: "https://example.com/profile.jpg"
+                coverImage:
+                  type: string
+                  format: uri
+                  example: "https://example.com/cover.jpg"
             examples:
-              student_example:
-                summary: Student user example
+              update_bio:
+                summary: Update bio and specialization
                 value:
-                  first_name: "Ahmed"
-                  last_name: "Hassan"
-                  email: "ahmed.hassan@example.com"
-                  password: "securePassword123"
-                  role: "student"
-                  profile_pic: "https://example.com/profiles/ahmed.jpg"
-              instructor_example:
-                summary: Instructor user example
+                  bio: "Senior software engineer with 5 years of experience"
+                  specialization: "Backend Architecture"
+              update_full_profile:
+                summary: Update multiple fields
                 value:
-                  first_name: "Dr. Sarah"
-                  last_name: "Mohamed"
-                  email: "sarah.mohamed@iti.gov.eg"
-                  password: "instructorPass456"
-                  role: "instructor"
-                  profile_pic: "https://example.com/profiles/sarah.jpg"
-              basic_user_example:
-                summary: Basic user example
-                value:
-                  first_name: "Omar"
-                  last_name: "Ali"
-                  email: "omar.ali@gmail.com"
-                  password: "password123"
-                  role: "user"
+                  fullName: "John Smith"
+                  bio: "Tech enthusiast and coffee lover"
+                  specialization: "DevOps Engineer"
+                  location: "New York, NY"
       responses:
-        '201':
-          description: User created successfully
+        '200':
+          description: Profile updated successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserResponse'
-              examples:
-                created_user:
-                  summary: Successfully created user
-                  value:
-                    _id: "6510d1a2b3c4d5e6f7890123"
-                    first_name: "Ahmed"
-                    last_name: "Hassan"
-                    email: "ahmed.hassan@example.com"
-                    role: "student"
-                    profile_pic: "https://example.com/profiles/ahmed.jpg"
-                    createdAt: "2025-10-06T12:00:00.000Z"
-                    updatedAt: "2025-10-06T12:00:00.000Z"
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Profile updated successfully"
+                  data:
+                    $ref: '#/components/schemas/UserProfileResponse'
         '400':
           description: Validation error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  massage:
-                    type: string
-                examples:
-                  duplicate_email:
-                    summary: Email already exists
-                    value:
-                      massage: "E11000 duplicate key error collection: iti-hub.users index: email_1 dup key: { email: \"ahmed.hassan@example.com\" }"
-                  validation_error:
-                    summary: Missing required fields
-                    value:
-                      massage: "User validation failed: first_name: Path `first_name` is required."
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                validation_error:
+                  summary: Invalid field values
+                  value:
+                    success: false
+                    message: "Validation failed"
+                    errors:
+                      fullName: "Full name must be between 2 and 50 characters"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
         '500':
-          description: Server error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  massage:
-                    type: string
-                    example: "Internal server error"
-
-  /users/{id}:
-    get:
-      tags:
-        - Users
-      summary: Get a user by ID
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: A single user
-        '404':
-          description: User not found
-
-    put:
-      tags:
-        - Users
-      summary: Update a user by ID
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/User'
-      responses:
-        '200':
-          description: User updated successfully
-        '404':
-          description: User not found
-
-    delete:
-      tags:
-        - Users
-      summary: Delete a user by ID
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: User deleted successfully
-        '404':
-          description: User not found
+          $ref: '#/components/responses/ServerError'
 
 components:
   schemas:
-    CreateUserInput:
+    UserProfileResponse:
       type: object
-      required:
-        - first_name
-        - last_name
-        - email
-        - password
-      properties:
-        first_name:
-          type: string
-          minLength: 1
-          description: User's first name
-          example: "Ahmed"
-        last_name:
-          type: string
-          minLength: 1
-          description: User's last name
-          example: "Hassan"
-        email:
-          type: string
-          format: email
-          description: User's unique email address
-          example: "ahmed.hassan@example.com"
-        password:
-          type: string
-          minLength: 6
-          description: User's password (will be hashed)
-          example: "securePassword123"
-        role:
-          type: string
-          enum: [user, student, instructor, admin, super_admin]
-          default: user
-          description: User's role in the system
-          example: "student"
-        profile_pic:
-          type: string
-          format: uri
-          description: URL to user's profile picture
-          example: "https://example.com/profiles/ahmed.jpg"
-
-    UserResponse:
-      type: object
+      description: User profile response for Epic 2 endpoints
       properties:
         _id:
           type: string
-          description: User's unique identifier
-          example: "6510d1a2b3c4d5e6f7890123"
-        first_name:
+          example: "507f1f77bcf86cd799439011"
+        username:
           type: string
-          description: User's first name
-          example: "Ahmed"
-        last_name:
+          example: "johndoe"
+        fullName:
           type: string
-          description: User's last name
-          example: "Hassan"
+          example: "John Doe"
         email:
           type: string
           format: email
-          description: User's email address
-          example: "ahmed.hassan@example.com"
-        role:
+          example: "john.doe@example.com"
+        bio:
           type: string
-          enum: [user, student, instructor, admin, super_admin]
-          description: User's role in the system
-          example: "student"
-        profile_pic:
+          nullable: true
+          example: "Software engineer passionate about clean code"
+        specialization:
           type: string
-          format: uri
-          description: URL to user's profile picture
-          example: "https://example.com/profiles/ahmed.jpg"
+          nullable: true
+          example: "Frontend Development"
+        location:
+          type: string
+          nullable: true
+          example: "San Francisco, CA"
+        profilePicture:
+          type: string
+          nullable: true
+          example: "https://example.com/profile.jpg"
+        coverImage:
+          type: string
+          nullable: true
+          example: "https://example.com/cover.jpg"
+        followersCount:
+          type: integer
+          example: 150
+        followingCount:
+          type: integer
+          example: 200
+        postsCount:
+          type: integer
+          example: 42
         createdAt:
           type: string
           format: date-time
-          description: When the user was created
-          example: "2025-10-06T12:00:00.000Z"
+          example: "2025-01-15T10:00:00.000Z"
         updatedAt:
           type: string
           format: date-time
-          description: When the user was last updated
-          example: "2025-10-06T12:00:00.000Z"
+          example: "2025-12-13T10:00:00.000Z"
+        isFollowing:
+          type: boolean
+          description: Present only when request is authenticated. Indicates if the current user follows this profile.
+          example: true
+        followsYou:
+          type: boolean
+          description: Present only when request is authenticated. Indicates if this profile follows the current user.
+          example: false
 
-    User:
+    ErrorResponse:
       type: object
       properties:
-        first_name:
+        success:
+          type: boolean
+          example: false
+        message:
           type: string
-          example: Ayat
-        last_name:
-          type: string
-          example: Elkady
-        email:
-          type: string
-          format: email
-          example: ayat@test.com
-        password:
-          type: string
-          format: password
-          example: 12345678
-        role:
-          type: string
-          enum: [user, student, instructor, admin, super_admin]
-          example: student
-        profile_pic:
-          type: string
-          example: https://example.com/avatar.png
+          example: "Error message"
+
+  responses:
+    UnauthorizedError:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              error:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: "NO_TOKEN"
+                  message:
+                    type: string
+                    example: "Authentication required"
+
+    ServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              message:
+                type: string
+                example: "Internal server error"
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from /auth/register or /auth/login
+
+tags:
+  - name: Users
+    description: User management operations

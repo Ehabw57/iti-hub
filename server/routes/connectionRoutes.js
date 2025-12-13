@@ -1,20 +1,18 @@
 const express = require("express");
 const connectionRoute = express.Router();
-const {
-  deleteConnection,
-  getReceivedRequests,
-  getSentRequests,
-  sendConnectionRequest,
-  getConnections,
-  handleConnection
-} = require("../controllers/connectionController");
+const { 
+  followUser, 
+  unfollowUser, 
+  getFollowers, 
+  getFollowing 
+} = require("../controllers/connection");
+const { checkAuth, optionalAuth } = require("../middlewares/checkAuth");
 
-connectionRoute.delete("/connections/:id", deleteConnection);
-connectionRoute.post("/connections/request/:id", sendConnectionRequest);
-connectionRoute.get("/connections/requests", getReceivedRequests);
-connectionRoute.get("/connections/requests/sent", getSentRequests);
-connectionRoute.get("/connections", getConnections);
-connectionRoute.put("/connections/:id/accept", (req, res) => handleConnection(req, res, "accept"));
-connectionRoute.put("/connections/:id/block", (req, res) => handleConnection(req, res, "block"));
+
+connectionRoute.post("/users/:userId/follow", checkAuth, followUser);
+connectionRoute.delete("/users/:userId/follow", checkAuth, unfollowUser);
+
+connectionRoute.get("/users/:userId/followers", optionalAuth, getFollowers);
+connectionRoute.get("/users/:userId/following", optionalAuth, getFollowing);
 
 module.exports = connectionRoute;

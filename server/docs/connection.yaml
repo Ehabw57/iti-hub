@@ -1,0 +1,474 @@
+openapi: 3.0.0
+info:
+  title: Connection API
+  version: 1.0.0
+  description: API for managing user connections, follows, and blocks
+
+paths:
+  /users/{userId}/follow:
+    post:
+      tags:
+        - Connections
+      summary: Follow a user
+      description: Creates a follow connection to another user. Increments follower/following counts.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9a-fA-F]{24}$'
+          description: MongoDB ObjectId of the user to follow
+          example: "507f1f77bcf86cd799439012"
+      responses:
+        '200':
+          description: Successfully followed user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Successfully followed user"
+                  data:
+                    type: object
+                    properties:
+                      followedUserId:
+                        type: string
+                        example: "507f1f77bcf86cd799439012"
+                      followedAt:
+                        type: string
+                        format: date-time
+                        example: "2025-12-13T10:00:00.000Z"
+        '400':
+          description: Bad request (self-follow, already following, or blocked)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                self_follow:
+                  summary: Cannot follow yourself
+                  value:
+                    success: false
+                    message: "Cannot follow yourself"
+                already_following:
+                  summary: Already following
+                  value:
+                    success: false
+                    message: "Already following this user"
+                blocked:
+                  summary: Block exists
+                  value:
+                    success: false
+                    message: "Cannot follow this user due to a block"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    
+    delete:
+      tags:
+        - Connections
+      summary: Unfollow a user
+      description: Removes the follow connection to another user. Decrements follower/following counts.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9a-fA-F]{24}$'
+          description: MongoDB ObjectId of the user to unfollow
+          example: "507f1f77bcf86cd799439012"
+      responses:
+        '200':
+          description: Successfully unfollowed user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Successfully unfollowed user"
+                  data:
+                    type: object
+                    properties:
+                      unfollowedUserId:
+                        type: string
+                        example: "507f1f77bcf86cd799439012"
+        '400':
+          description: Bad request (not following)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                not_following:
+                  summary: Not following this user
+                  value:
+                    success: false
+                    message: "Not following this user"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /users/{userId}/followers:
+    get:
+      tags:
+        - Connections
+      summary: Get user's followers
+      description: Returns a paginated list of users who follow the specified user. Optionally includes isFollowing status when authenticated.
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9a-fA-F]{24}$'
+          description: MongoDB ObjectId of the user
+          example: "507f1f77bcf86cd799439011"
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: Items per page
+      responses:
+        '200':
+          description: List of followers retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      followers:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/UserProfile'
+                      pagination:
+                        $ref: '#/components/schemas/PaginationInfo'
+        '400':
+          description: Invalid user ID format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /users/{userId}/following:
+    get:
+      tags:
+        - Connections
+      summary: Get users that this user follows
+      description: Returns a paginated list of users that the specified user follows. Optionally includes isFollowing status when authenticated.
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9a-fA-F]{24}$'
+          description: MongoDB ObjectId of the user
+          example: "507f1f77bcf86cd799439011"
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: Items per page
+      responses:
+        '200':
+          description: List of following retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      following:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/UserProfile'
+                      pagination:
+                        $ref: '#/components/schemas/PaginationInfo'
+        '400':
+          description: Invalid user ID format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /users/{userId}/block:
+    post:
+      tags:
+        - Connections
+      summary: Block a user
+      description: Blocks another user. Automatically removes all follow relationships in both directions and prevents future follows.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9a-fA-F]{24}$'
+          description: MongoDB ObjectId of the user to block
+          example: "507f1f77bcf86cd799439012"
+      responses:
+        '200':
+          description: Successfully blocked user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Successfully blocked user"
+                  data:
+                    type: object
+                    properties:
+                      blockedUserId:
+                        type: string
+                        example: "507f1f77bcf86cd799439012"
+                      blockedAt:
+                        type: string
+                        format: date-time
+                        example: "2025-12-13T10:00:00.000Z"
+        '400':
+          description: Bad request (self-block or already blocking)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                self_block:
+                  summary: Cannot block yourself
+                  value:
+                    success: false
+                    message: "Cannot block yourself"
+                already_blocking:
+                  summary: Already blocking
+                  value:
+                    success: false
+                    message: "Already blocking this user"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    
+    delete:
+      tags:
+        - Connections
+      summary: Unblock a user
+      description: Removes the block on another user. Allows both users to follow each other again.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9a-fA-F]{24}$'
+          description: MongoDB ObjectId of the user to unblock
+          example: "507f1f77bcf86cd799439012"
+      responses:
+        '200':
+          description: Successfully unblocked user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Successfully unblocked user"
+                  data:
+                    type: object
+                    properties:
+                      unblockedUserId:
+                        type: string
+                        example: "507f1f77bcf86cd799439012"
+        '400':
+          description: Not blocking this user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                not_blocking:
+                  summary: Not blocking
+                  value:
+                    success: false
+                    message: "Not blocking this user"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+components:
+  schemas:
+    UserProfile:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: "507f1f77bcf86cd799439013"
+        username:
+          type: string
+          example: "janedoe"
+        fullName:
+          type: string
+          example: "Jane Doe"
+        profilePicture:
+          type: string
+          nullable: true
+          example: "https://example.com/jane.jpg"
+        bio:
+          type: string
+          nullable: true
+          example: "Backend developer"
+        specialization:
+          type: string
+          nullable: true
+          example: "Node.js Expert"
+        followersCount:
+          type: integer
+          example: 85
+        followingCount:
+          type: integer
+          example: 120
+        createdAt:
+          type: string
+          format: date-time
+          example: "2025-02-10T10:00:00.000Z"
+        isFollowing:
+          type: boolean
+          description: Only present when request is authenticated
+          example: true
+
+    PaginationInfo:
+      type: object
+      properties:
+        currentPage:
+          type: integer
+          example: 1
+        pageSize:
+          type: integer
+          example: 20
+        totalCount:
+          type: integer
+          example: 150
+        totalPages:
+          type: integer
+          example: 8
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "Error message"
+
+  responses:
+    UnauthorizedError:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              error:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: "NO_TOKEN"
+                  message:
+                    type: string
+                    example: "Authentication required"
+
+    ServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              message:
+                type: string
+                example: "Internal server error"
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from /auth/register or /auth/login
+
+tags:
+  - name: Connections
+    description: User connection operations (follow, unfollow, block, unblock)

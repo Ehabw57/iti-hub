@@ -77,26 +77,6 @@ describe('Password Reset Controller', () => {
       expect(updatedUser.resetPasswordExpires.getTime()).toBeGreaterThan(Date.now());
     });
 
-    it('should log reset token for MVP (no email service)', async () => {
-      // Create test user
-      await User.create({
-        email: 'test@example.com',
-        password: 'Password123',
-        username: 'testuser',
-        fullName: 'Test User'
-      });
-
-      const req = { body: { email: 'test@example.com' } };
-      const res = mockResponse();
-      
-      spyOn(console, 'log');
-
-      await requestPasswordReset(req, res);
-
-      expect(console.log).toHaveBeenCalledWith(
-        jasmine.stringMatching(/password reset token/i)
-      );
-    });
 
     it('should handle email case-insensitively', async () => {
       // Create test user with lowercase email

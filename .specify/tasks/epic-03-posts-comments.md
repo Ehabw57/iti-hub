@@ -476,6 +476,243 @@ describe('Comment Model', () => {
 
 ---
 
+## Phase 1.5: Shared Utilities (Foundation)
+
+### T021b: [P] Create Validation Utilities
+**Type**: Utility  
+**User Story**: Foundation  
+**Estimated Effort**: 0.5 days  
+**Can Run in Parallel**: Yes  
+**Priority**: Blocking
+
+**Target File:**
+- `/server/utils/validation.js`
+
+**Functions to Implement:**
+
+1. **`validateTags(tags, allowedTags = ALLOWED_TAGS)`**
+   - Input: `tags` (array of strings), `allowedTags` (array)
+   - Output: `{ valid: boolean, errors: array, validTags: array }`
+   - Description: Validates tags against allowed list, returns errors and filtered valid tags
+
+2. **`validateImageUrls(images, maxCount = 10)`**
+   - Input: `images` (array of strings), `maxCount` (number)
+   - Output: `{ valid: boolean, errors: array }`
+   - Description: Validates image URLs (format, count, protocol)
+
+3. **`validateContentLength(content, minLength, maxLength)`**
+   - Input: `content` (string), `minLength` (number), `maxLength` (number)
+   - Output: `{ valid: boolean, error: string }`
+   - Description: Validates content length with clear error messages
+
+**Acceptance Criteria:**
+- [ ] Tag validation with allowed list
+- [ ] Image URL validation (https, format)
+- [ ] Content length validation
+- [ ] Clear, field-specific error messages
+- [ ] Reusable across controllers
+
+---
+
+### T021c: [P] Create Post Helper Utilities
+**Type**: Utility  
+**User Story**: Foundation  
+**Estimated Effort**: 0.5 days  
+**Can Run in Parallel**: Yes  
+**Priority**: Blocking
+
+**Target File:**
+- `/server/utils/postHelpers.js`
+
+**Functions to Implement:**
+
+1. **`checkUserLikedPost(userId, postId)`**
+   - Input: `userId` (ObjectId), `postId` (ObjectId)
+   - Output: Promise<boolean>
+   - Description: Check if user liked a post
+
+2. **`checkUserSavedPost(userId, postId)`**
+   - Input: `userId` (ObjectId), `postId` (ObjectId)
+   - Output: Promise<boolean>
+   - Description: Check if user saved a post
+
+3. **`checkPostEditPermission(post, userId, userRole)`**
+   - Input: `post` (Post object), `userId` (ObjectId), `userRole` (string)
+   - Output: `{ canEdit: boolean, reason: string }`
+   - Description: Check if user can edit/delete post (owner, admin, moderator)
+
+4. **`populatePostAuthor(post)`**
+   - Input: `post` (Post document or query)
+   - Output: Promise<Post> with populated author
+   - Description: Consistent author population with selected fields
+
+**Acceptance Criteria:**
+- [ ] Efficient database queries
+- [ ] Permission checks follow RBAC rules
+- [ ] Consistent author population
+- [ ] Reusable across post controllers
+
+---
+
+### T021d: [P] Create Comment Helper Utilities
+**Type**: Utility  
+**User Story**: Foundation  
+**Estimated Effort**: 0.5 days  
+**Can Run in Parallel**: Yes  
+**Priority**: Blocking
+
+**Target File:**
+- `/server/utils/commentHelpers.js`
+
+**Functions to Implement:**
+
+1. **`validateCommentReply(parentCommentId)`**
+   - Input: `parentCommentId` (ObjectId)
+   - Output: Promise<{ valid: boolean, error: string, parentComment: Comment }>
+   - Description: Validates parent comment exists and is not itself a reply
+
+2. **`incrementCommentCounts(postId, parentCommentId = null)`**
+   - Input: `postId` (ObjectId), `parentCommentId` (ObjectId, optional)
+   - Output: Promise<void>
+   - Description: Increments post commentsCount and parent comment repliesCount
+
+3. **`populateCommentReplies(comments, userId = null)`**
+   - Input: `comments` (array of Comment), `userId` (ObjectId, optional)
+   - Output: Promise<array> with populated replies and isLiked flags
+   - Description: Populate replies for comments and check if user liked them
+
+4. **`checkUserLikedComment(userId, commentId)`**
+   - Input: `userId` (ObjectId), `commentId` (ObjectId)
+   - Output: Promise<boolean>
+   - Description: Check if user liked a comment
+
+**Acceptance Criteria:**
+- [ ] Prevents nested replies (max 1 level)
+- [ ] Atomic count updates
+- [ ] Efficient reply population
+- [ ] Works with optional auth
+
+---
+
+### T021e: [P] Create Interaction Helper Utilities
+**Type**: Utility  
+**User Story**: Foundation  
+**Estimated Effort**: 0.5 days  
+**Can Run in Parallel**: Yes  
+**Priority**: Blocking
+
+**Target File:**
+- `/server/utils/interactionHelpers.js`
+
+**Functions to Implement:**
+
+1. **`toggleLike(Model, userId, targetId, countField = 'likesCount')`**
+   - Input: `Model` (Mongoose model), `userId`, `targetId`, `countField` (string)
+   - Output: Promise<{ liked: boolean, count: number }>
+   - Description: Generic toggle like function (works for posts, comments)
+
+2. **`toggleSave(userId, postId)`**
+   - Input: `userId` (ObjectId), `postId` (ObjectId)
+   - Output: Promise<{ saved: boolean }>
+   - Description: Toggle save post
+
+**Acceptance Criteria:**
+- [ ] Idempotent operations
+- [ ] Atomic count updates
+- [ ] Reusable for posts and comments
+- [ ] Transaction-safe
+
+---
+
+### T021f: [P] Create Pagination Utilities
+**Type**: Utility  
+**User Story**: Foundation  
+**Estimated Effort**: 0.5 days  
+**Can Run in Parallel**: Yes  
+**Priority**: Blocking
+
+**Target File:**
+- `/server/utils/pagination.js`
+
+**Functions to Implement:**
+
+1. **`buildPaginationQuery(req, defaults = { limit: 20, sortBy: 'createdAt', sortOrder: 'desc' })`**
+   - Input: `req` (Express request), `defaults` (object)
+   - Output: `{ skip: number, limit: number, sort: object }`
+   - Description: Parse and validate pagination params from query string
+
+2. **`buildPaginationResponse(data, total, page, limit)`**
+   - Input: `data` (array), `total` (number), `page` (number), `limit` (number)
+   - Output: `{ data, pagination: { total, page, limit, totalPages, hasMore } }`
+   - Description: Build consistent pagination response
+
+**Acceptance Criteria:**
+- [ ] Validates and sanitizes input
+- [ ] Default values
+- [ ] Max limit enforcement
+- [ ] Reusable across all list endpoints
+
+---
+
+### T021g: [P] Create Constants File
+**Type**: Utility  
+**User Story**: Foundation  
+**Estimated Effort**: 0.25 days  
+**Can Run in Parallel**: Yes  
+**Priority**: Blocking
+
+**Target File:**
+- `/server/utils/constants.js`
+
+**Constants to Define:**
+
+```javascript
+// Post constants
+const POST_TYPES = ['text', 'question', 'project'];
+const MAX_POST_CONTENT_LENGTH = 5000;
+const MAX_POST_IMAGES = 10;
+const MAX_POST_TAGS = 5;
+
+// Comment constants
+const MIN_COMMENT_LENGTH = 1;
+const MAX_COMMENT_LENGTH = 1000;
+
+// Tag constants
+const ALLOWED_TAGS = [
+  'javascript', 'python', 'java', 'csharp', 'cpp', 'php', 'ruby', 'go', 'rust', 'typescript',
+  'react', 'angular', 'vue', 'nodejs', 'express', 'django', 'flask', 'spring', 'dotnet',
+  'webdev', 'frontend', 'backend', 'fullstack', 'mobile', 'ios', 'android', 'flutter',
+  'database', 'sql', 'mongodb', 'postgresql', 'mysql', 'redis',
+  'devops', 'docker', 'kubernetes', 'aws', 'azure', 'cloud',
+  'ai', 'machinelearning', 'datascience', 'algorithms', 'datastructures',
+  'security', 'testing', 'git', 'career', 'tutorial', 'project', 'help', 'discussion'
+];
+
+// Pagination constants
+const DEFAULT_PAGE_LIMIT = 20;
+const MAX_PAGE_LIMIT = 100;
+
+module.exports = {
+  POST_TYPES,
+  MAX_POST_CONTENT_LENGTH,
+  MAX_POST_IMAGES,
+  MAX_POST_TAGS,
+  MIN_COMMENT_LENGTH,
+  MAX_COMMENT_LENGTH,
+  ALLOWED_TAGS,
+  DEFAULT_PAGE_LIMIT,
+  MAX_PAGE_LIMIT
+};
+```
+
+**Acceptance Criteria:**
+- [ ] All magic numbers centralized
+- [ ] Clear naming conventions
+- [ ] Easy to update
+- [ ] Documented
+
+---
+
 ## Phase 2: User Story 1 - Create and View Posts
 
 ### T024: [US1] Implement Create Post Controller
@@ -486,7 +723,11 @@ describe('Comment Model', () => {
 **Priority**: P0
 
 **Target File:**
-- `/server/controllers/postController.js`
+- `/server/controllers/post/createPostController.js`
+
+**Utility Dependency:**
+- `/server/utils/validation.js` (for validateTags, validateImageUrls)
+- `/server/utils/constants.js` (for ALLOWED_TAGS, POST_TYPES)
 
 **Function to Implement:**
 
@@ -510,13 +751,13 @@ describe('Comment Model', () => {
 7. Return post with populated author info
 
 **Tests to Pass:**
-File: `/server/spec/controllers/postController.spec.js`
+File: `/server/spec/controllers/post/createPostController.spec.js`
 
 ```javascript
-const { createPost, getPost, updatePost, deletePost } = require('../../controllers/postController');
-const Post = require('../../models/Post');
-const User = require('../../models/User');
-const mockResponse = require('../helpers/responseMock');
+const { createPost } = require('../../../controllers/post/createPostController');
+const Post = require('../../../models/Post');
+const User = require('../../../models/User');
+const mockResponse = require('../../helpers/responseMock');
 
 describe('Post Controller', () => {
   describe('createPost', () => {
@@ -729,7 +970,10 @@ describe('Post Controller', () => {
 **Priority**: P0
 
 **Target File:**
-- `/server/controllers/postController.js`
+- `/server/controllers/post/getPostController.js`
+
+**Utility Dependency:**
+- `/server/utils/postHelpers.js` (for checkUserLikedPost, checkUserSavedPost)
 
 **Function to Implement:**
 
@@ -835,7 +1079,11 @@ describe('getPost', () => {
 **Priority**: P0
 
 **Target File:**
-- `/server/controllers/postController.js`
+- `/server/controllers/post/updatePostController.js`
+
+**Utility Dependency:**
+- `/server/utils/validation.js` (for validateTags)
+- `/server/utils/postHelpers.js` (for checkPostEditPermission)
 
 **Function to Implement:**
 
@@ -864,6 +1112,12 @@ describe('getPost', () => {
 **Depends On**: T021, Epic 1  
 **Priority**: P0
 
+**Target File:**
+- `/server/controllers/post/deletePostController.js`
+
+**Utility Dependency:**
+- `/server/utils/postHelpers.js` (for checkPostEditPermission)
+
 **Function:** `deletePost(req, res)`
 
 **Implementation:**
@@ -883,9 +1137,18 @@ describe('getPost', () => {
 **Depends On**: T022, Epic 1  
 **Priority**: P0
 
+**Target Files:**
+- `/server/controllers/post/likePostController.js`
+- `/server/controllers/post/savePostController.js` (for save/unsave)
+
+**Utility Dependency:**
+- `/server/utils/interactionHelpers.js` (for toggleLike, toggleSave - reusable for comments too)
+
 **Functions:**
 1. `likePost(req, res)` - Toggle like using PostLike.toggle()
-2. Similar for save/unsave
+2. `savePost(req, res)` - Toggle save using SavedPost.toggle()
+3. `unlikePost(req, res)` - Alternative endpoint (calls likePost internally)
+4. `unsavePost(req, res)` - Alternative endpoint (calls savePost internally)
 
 ---
 
@@ -897,6 +1160,12 @@ describe('getPost', () => {
 **Estimated Effort**: 1.5 days  
 **Depends On**: T023, Epic 1  
 **Priority**: P0
+
+**Target File:**
+- `/server/controllers/comment/createCommentController.js`
+
+**Utility Dependency:**
+- `/server/utils/commentHelpers.js` (for validateCommentReply, incrementCommentCount)
 
 **Function:** `createComment(req, res)`
 
@@ -916,6 +1185,13 @@ describe('getPost', () => {
 **Depends On**: T023, Epic 1  
 **Priority**: P0
 
+**Target File:**
+- `/server/controllers/comment/getCommentsController.js`
+
+**Utility Dependency:**
+- `/server/utils/commentHelpers.js` (for populateCommentReplies, checkUserLikedComment)
+- `/server/utils/pagination.js` (for buildPaginationQuery - reusable across all list endpoints)
+
 **Function:** `getComments(req, res)`
 
 **Implementation:**
@@ -923,6 +1199,81 @@ describe('getPost', () => {
 - Populate replies (one level)
 - Include isLiked flag if authenticated
 - Paginate and sort (createdAt or likesCount)
+
+---
+
+### T030b: [US4] Create Comment Interaction Controllers
+**Type**: Controller  
+**User Story**: US4  
+**Estimated Effort**: 1 day  
+**Depends On**: T023, Epic 1  
+**Priority**: P0
+
+**Target Files:**
+- `/server/controllers/comment/likeCommentController.js`
+- `/server/controllers/comment/deleteCommentController.js`
+
+**Utility Dependency:**
+- `/server/utils/interactionHelpers.js` (for toggleLike)
+- `/server/utils/commentHelpers.js` (for checkCommentEditPermission)
+
+**Functions:**
+1. `likeComment(req, res)` - Toggle comment like using toggleLike helper
+2. `deleteComment(req, res)` - Soft delete comment, decrement counts
+
+---
+
+### T030c: [P] Create Controller Index Files
+**Type**: Structure  
+**User Story**: Foundation  
+**Estimated Effort**: 0.25 days  
+**Can Run in Parallel**: No  
+**Priority**: P0
+
+**Target Files:**
+- `/server/controllers/post/index.js`
+- `/server/controllers/comment/index.js`
+
+**Purpose:** Export all controller functions from their respective folders for clean imports
+
+**Example `/server/controllers/post/index.js`:**
+```javascript
+const { createPost } = require('./createPostController');
+const { getPost } = require('./getPostController');
+const { updatePost } = require('./updatePostController');
+const { deletePost } = require('./deletePostController');
+const { likePost } = require('./likePostController');
+const { savePost } = require('./savePostController');
+
+module.exports = {
+  createPost,
+  getPost,
+  updatePost,
+  deletePost,
+  likePost,
+  savePost
+};
+```
+
+**Example `/server/controllers/comment/index.js`:**
+```javascript
+const { createComment } = require('./createCommentController');
+const { getComments } = require('./getCommentsController');
+const { likeComment } = require('./likeCommentController');
+const { deleteComment } = require('./deleteCommentController');
+
+module.exports = {
+  createComment,
+  getComments,
+  likeComment,
+  deleteComment
+};
+```
+
+**Acceptance Criteria:**
+- [ ] Clean imports in routes: `require('./controllers/post')`
+- [ ] All functions exported
+- [ ] No breaking changes to existing code
 
 ---
 
@@ -969,17 +1320,67 @@ GET /posts/:postId/comments (optionalAuth)
 
 ## Summary
 
-**Total Tasks**: 12 (T021-T032)  
-**Estimated Total Effort**: 12-15 days  
-**Critical Path**: T021 → T024 → T025 → T031 → T032
+**Total Tasks**: 19 (T021-T032)
+- **Models**: 3 tasks (T021, T022, T023)
+- **Utilities**: 6 tasks (T021b-T021g)
+- **Post Controllers**: 5 tasks (T024-T028)
+- **Comment Controllers**: 3 tasks (T029, T030, T030b)
+- **Structure**: 1 task (T030c)
+- **Routes & Testing**: 2 tasks (T031, T032)
+
+**Estimated Total Effort**: 14-17 days  
+**Critical Path**: T021 → T021b-g → T024 → T031 → T032
+
+**File Structure:**
+```
+server/
+├── controllers/
+│   ├── post/
+│   │   ├── index.js (exports all)
+│   │   ├── createPostController.js
+│   │   ├── getPostController.js
+│   │   ├── updatePostController.js
+│   │   ├── deletePostController.js
+│   │   ├── likePostController.js
+│   │   └── savePostController.js
+│   └── comment/
+│       ├── index.js (exports all)
+│       ├── createCommentController.js
+│       ├── getCommentsController.js
+│       ├── likeCommentController.js
+│       └── deleteCommentController.js
+├── utils/
+│   ├── validation.js (tag, URL, content validation)
+│   ├── postHelpers.js (post-specific utilities)
+│   ├── commentHelpers.js (comment-specific utilities)
+│   ├── interactionHelpers.js (like/save toggle logic)
+│   ├── pagination.js (pagination utilities)
+│   └── constants.js (all constants)
+├── models/
+│   ├── Post.js
+│   ├── PostLike.js
+│   └── Comment.js
+└── routes/
+    └── postRoutes.js
+```
 
 **Parallel Opportunities:**
-- T021, T022, T023 (all models)
-- T024, T025 after T021 complete
-- T026, T027, T028 after base controllers
+- Phase 1: T021, T022, T023 (all models in parallel)
+- Phase 1.5: T021b, T021c, T021d, T021e, T021f, T021g (all utilities in parallel)
+- Phase 2-5: Controllers can be worked on in parallel after utilities complete
+- T030c must wait until all controllers are complete
+
+**Benefits of This Structure:**
+1. **Maintainability**: Each controller file is focused and < 200 lines
+2. **Reusability**: Common logic in utils can be reused across controllers
+3. **Testability**: Easier to test individual functions
+4. **Scalability**: Easy to add new post types or comment features
+5. **Consistency**: Follows auth controller pattern established in Epic 1
+6. **DRY**: No code duplication between post and comment like functionality
 
 **Definition of Done:**
 - [ ] All models with validation
+- [ ] All utility functions tested and working
 - [ ] All CRUD operations work
 - [ ] Soft delete implemented
 - [ ] Denormalized counts accurate
@@ -987,3 +1388,4 @@ GET /posts/:postId/comments (optionalAuth)
 - [ ] Comments support one-level replies
 - [ ] All tests pass (unit + integration)
 - [ ] API documentation updated
+- [ ] Code follows auth controller pattern

@@ -4,7 +4,7 @@ const { connectToDB, disconnectFromDB, clearDatabase } = require('../helpers/DBU
 
 // Set JWT_SECRET for tests if not already set
 if (!process.env.JWT_SECRET) {
-  process.env.JWT_SECRET = 'test-jwt-secret-key-for-integration-tests';
+  process.env.JWT_SECRET = 'testts';
 }
 
 const app = require('../../app');
