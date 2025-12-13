@@ -1,26 +1,28 @@
-
 const mongoose = require("mongoose");
 
 const commentLikeSchema = new mongoose.Schema(
   {
-    comment_id: {
+    user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "comments",
+      ref: "User",
       required: true,
     },
-    user_id: {
+    comment: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "users",
+      ref: "Comment",
       required: true,
     },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true, versionKey: false }
 );
 
-commentLikeSchema.index({ comment_id: 1, user_id: 1 }, { unique: true });
+// Unique compound index to ensure a user can only like a comment once
+commentLikeSchema.index({ user: 1, comment: 1 }, { unique: true });
 
-const CommentLike = mongoose.model("Comment_like", commentLikeSchema);
+// Query indexes for efficient lookups
+commentLikeSchema.index({ user: 1, createdAt: -1 });
+commentLikeSchema.index({ comment: 1, createdAt: -1 });
+
+const CommentLike = mongoose.model("CommentLike", commentLikeSchema);
 
 module.exports = CommentLike;

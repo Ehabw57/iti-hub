@@ -1,0 +1,919 @@
+openapi: 3.0.0
+info:
+  title: Post API
+  version: 1.0.0
+  description: API for managing posts, including creation, updates, likes, saves, and reposts
+
+servers:
+  - url: http://localhost:3030
+    description: Development server
+
+paths:
+  /posts:
+    post:
+      tags:
+        - Posts
+      summary: Create a new post
+      description: Creates a new post or repost with content and optional media attachments.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - content
+              properties:
+                content:
+                  type: string
+                  minLength: 1
+                  maxLength: 500
+                  description: The content of the post
+                  example: "Just finished implementing the comment system! 🚀"
+                media:
+                  type: array
+                  maxItems: 4
+                  description: Array of media URLs (images/videos)
+                  items:
+                    type: string
+                    format: uri
+                  example: ["https://example.com/image1.jpg", "https://example.com/image2.jpg"]
+                originalPost:
+                  type: string
+                  format: objectId
+                  description: ID of the original post if this is a repost
+                  example: "507f1f77bcf86cd799439011"
+      responses:
+        '201':
+          description: Post created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Post created successfully"
+                  data:
+                    type: object
+                    properties:
+                      post:
+                        $ref: '#/components/schemas/Post'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                content_too_short:
+                  summary: Content too short
+                  value:
+                    success: false
+                    message: "Content must be at least 1 characters"
+                content_too_long:
+                  summary: Content too long
+                  value:
+                    success: false
+                    message: "Content cannot exceed 500 characters"
+                too_many_media:
+                  summary: Too many media items
+                  value:
+                    success: false
+                    message: "Maximum 4 media items allowed"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /posts/{id}:
+    get:
+      tags:
+        - Posts
+      summary: Get a single post
+      description: Retrieves a post by ID. For authenticated users, includes isLiked and isSaved flags.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: objectId
+          description: ID of the post to retrieve
+          example: "507f1f77bcf86cd799439011"
+      responses:
+        '200':
+          description: Post retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      post:
+                        $ref: '#/components/schemas/Post'
+        '404':
+          description: Post not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                not_found:
+                  summary: Post not found
+                  value:
+                    success: false
+                    message: "Post not found"
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    patch:
+      tags:
+        - Posts
+      summary: Update a post
+      description: Updates the content or media of a post. Only the post author or an admin can update it. Sets the editedAt timestamp.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: objectId
+          description: ID of the post to update
+          example: "507f1f77bcf86cd799439011"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                  minLength: 1
+                  maxLength: 500
+                  description: Updated content of the post
+                  example: "Updated post content"
+                media:
+                  type: array
+                  maxItems: 4
+                  description: Updated array of media URLs
+                  items:
+                    type: string
+                    format: uri
+                  example: ["https://example.com/new-image.jpg"]
+      responses:
+        '200':
+          description: Post updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Post updated successfully"
+                  data:
+                    type: object
+                    properties:
+                      post:
+                        $ref: '#/components/schemas/Post'
+        '400':
+          description: Validation error or invalid fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalid_fields:
+                  summary: Cannot update protected fields
+                  value:
+                    success: false
+                    message: "Cannot update fields: likesCount, commentsCount"
+                content_invalid:
+                  summary: Content validation failed
+                  value:
+                    success: false
+                    message: "Content must be at least 1 characters"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Not authorized to update this post
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                not_authorized:
+                  summary: Permission denied
+                  value:
+                    success: false
+                    message: "Not authorized to update this post"
+        '404':
+          description: Post not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                not_found:
+                  summary: Post not found
+                  value:
+                    success: false
+                    message: "Post not found"
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    delete:
+      tags:
+        - Posts
+      summary: Delete a post
+      description: Deletes a post. Only the post author or an admin can delete it. Deletes all associated comments, likes, and saves.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: objectId
+          description: ID of the post to delete
+          example: "507f1f77bcf86cd799439011"
+      responses:
+        '200':
+          description: Post deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Post deleted successfully"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Not authorized to delete this post
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                not_authorized:
+                  summary: Permission denied
+                  value:
+                    success: false
+                    message: "Not authorized to delete this post"
+        '404':
+          description: Post not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                not_found:
+                  summary: Post not found
+                  value:
+                    success: false
+                    message: "Post not found"
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /posts/{id}/like:
+    post:
+      tags:
+        - Posts
+      summary: Like a post
+      description: Adds a like to a post from the authenticated user. User cannot like the same post twice.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: objectId
+          description: ID of the post to like
+          example: "507f1f77bcf86cd799439011"
+      responses:
+        '200':
+          description: Post liked successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Post liked successfully"
+                  data:
+                    type: object
+                    properties:
+                      isLiked:
+                        type: boolean
+                        example: true
+                      likesCount:
+                        type: integer
+                        example: 42
+        '400':
+          description: Post already liked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                already_liked:
+                  summary: Already liked
+                  value:
+                    success: false
+                    message: "Post already liked"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Post not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                not_found:
+                  summary: Post not found
+                  value:
+                    success: false
+                    message: "Post not found"
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    delete:
+      tags:
+        - Posts
+      summary: Unlike a post
+      description: Removes a like from a post for the authenticated user.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: objectId
+          description: ID of the post to unlike
+          example: "507f1f77bcf86cd799439011"
+      responses:
+        '200':
+          description: Post unliked successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Post unliked successfully"
+                  data:
+                    type: object
+                    properties:
+                      isLiked:
+                        type: boolean
+                        example: false
+                      likesCount:
+                        type: integer
+                        example: 41
+        '400':
+          description: Post not liked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                not_liked:
+                  summary: Post not liked
+                  value:
+                    success: false
+                    message: "Post not liked"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Post not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                not_found:
+                  summary: Post not found
+                  value:
+                    success: false
+                    message: "Post not found"
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /posts/{id}/save:
+    post:
+      tags:
+        - Posts
+      summary: Save a post
+      description: Saves a post to the authenticated user's saved posts collection. User cannot save the same post twice.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: objectId
+          description: ID of the post to save
+          example: "507f1f77bcf86cd799439011"
+      responses:
+        '200':
+          description: Post saved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Post saved successfully"
+                  data:
+                    type: object
+                    properties:
+                      isSaved:
+                        type: boolean
+                        example: true
+        '400':
+          description: Post already saved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                already_saved:
+                  summary: Already saved
+                  value:
+                    success: false
+                    message: "Post already saved"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Post not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                not_found:
+                  summary: Post not found
+                  value:
+                    success: false
+                    message: "Post not found"
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    delete:
+      tags:
+        - Posts
+      summary: Unsave a post
+      description: Removes a post from the authenticated user's saved posts collection.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: objectId
+          description: ID of the post to unsave
+          example: "507f1f77bcf86cd799439011"
+      responses:
+        '200':
+          description: Post unsaved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Post unsaved successfully"
+                  data:
+                    type: object
+                    properties:
+                      isSaved:
+                        type: boolean
+                        example: false
+        '400':
+          description: Post not saved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                not_saved:
+                  summary: Post not saved
+                  value:
+                    success: false
+                    message: "Post not saved"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Post not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                not_found:
+                  summary: Post not found
+                  value:
+                    success: false
+                    message: "Post not found"
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /posts/{id}/repost:
+    post:
+      tags:
+        - Posts
+      summary: Repost (share) a post
+      description: Creates a repost/share of an existing post. The repost can include additional commentary. User cannot repost the same post twice.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: objectId
+          description: ID of the post to repost
+          example: "507f1f77bcf86cd799439011"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                  maxLength: 500
+                  description: Optional commentary on the repost
+                  example: "Great insights! Everyone should read this."
+      responses:
+        '201':
+          description: Post reposted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Post reposted successfully"
+                  data:
+                    type: object
+                    properties:
+                      post:
+                        $ref: '#/components/schemas/Post'
+        '400':
+          description: Validation error or already reposted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                already_reposted:
+                  summary: Already reposted
+                  value:
+                    success: false
+                    message: "You have already reposted this post"
+                content_too_long:
+                  summary: Content too long
+                  value:
+                    success: false
+                    message: "Content cannot exceed 500 characters"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Post not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                not_found:
+                  summary: Post not found
+                  value:
+                    success: false
+                    message: "Post not found"
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /posts/saved:
+    get:
+      tags:
+        - Posts
+      summary: Get saved posts
+      description: Retrieves all posts saved by the authenticated user with pagination.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number for pagination
+          example: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: Number of posts per page
+          example: 20
+      responses:
+        '200':
+          description: Saved posts retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      posts:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Post'
+                      pagination:
+                        $ref: '#/components/schemas/Pagination'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /users/{userId}/posts:
+    get:
+      tags:
+        - Posts
+      summary: Get posts by user
+      description: Retrieves all posts created by a specific user with pagination. For authenticated users, includes isLiked and isSaved flags.
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+            format: objectId
+          description: ID of the user whose posts to retrieve
+          example: "507f1f77bcf86cd799439012"
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number for pagination
+          example: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: Number of posts per page
+          example: 20
+      responses:
+        '200':
+          description: User posts retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      posts:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Post'
+                      pagination:
+                        $ref: '#/components/schemas/Pagination'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                not_found:
+                  summary: User not found
+                  value:
+                    success: false
+                    message: "User not found"
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+components:
+  schemas:
+    Post:
+      type: object
+      properties:
+        _id:
+          type: string
+          format: objectId
+          example: "507f1f77bcf86cd799439011"
+        author:
+          type: object
+          properties:
+            _id:
+              type: string
+              format: objectId
+              example: "507f1f77bcf86cd799439012"
+            username:
+              type: string
+              example: "johndoe"
+            fullName:
+              type: string
+              example: "John Doe"
+            profilePicture:
+              type: string
+              nullable: true
+              example: "https://example.com/profile.jpg"
+        content:
+          type: string
+          example: "Just finished implementing the comment system! 🚀"
+        media:
+          type: array
+          items:
+            type: string
+            format: uri
+          example: ["https://example.com/image1.jpg"]
+        originalPost:
+          type: object
+          nullable: true
+          description: The original post if this is a repost
+          properties:
+            _id:
+              type: string
+              format: objectId
+            author:
+              type: object
+              properties:
+                username:
+                  type: string
+                fullName:
+                  type: string
+            content:
+              type: string
+        likesCount:
+          type: integer
+          minimum: 0
+          example: 42
+        commentsCount:
+          type: integer
+          minimum: 0
+          example: 15
+        repostsCount:
+          type: integer
+          minimum: 0
+          example: 8
+        isLiked:
+          type: boolean
+          description: Whether the authenticated user has liked this post (only present for authenticated requests)
+          example: true
+        isSaved:
+          type: boolean
+          description: Whether the authenticated user has saved this post (only present for authenticated requests)
+          example: false
+        createdAt:
+          type: string
+          format: date-time
+          example: "2025-12-13T10:30:00.000Z"
+        editedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: Timestamp of last edit (null if never edited)
+          example: "2025-12-13T11:45:00.000Z"
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 20
+        total:
+          type: integer
+          example: 150
+        pages:
+          type: integer
+          example: 8
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "Error message"
+
+  responses:
+    Unauthorized:
+      description: Unauthorized - Invalid or missing authentication token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            missing_token:
+              summary: No token provided
+              value:
+                success: false
+                message: "Authentication required"
+            invalid_token:
+              summary: Invalid token
+              value:
+                success: false
+                message: "Invalid token"
+
+    ServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            server_error:
+              summary: Server error
+              value:
+                success: false
+                message: "Internal server error"
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from login or registration
+
+tags:
+  - name: Posts
+    description: Operations for creating, reading, updating, and deleting posts, as well as interactions like likes, saves, and reposts

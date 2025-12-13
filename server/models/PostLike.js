@@ -2,21 +2,26 @@ const mongoose = require("mongoose");
 
 const postLikeSchema = new mongoose.Schema(
   {
-    post_id: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Post",
-      required: true,
-    },
-    user_id: {
+    user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
+      required: true,
+    },
+    post: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Post",
       required: true,
     },
   },
   { timestamps: true, versionKey: false }
 );
 
-postLikeSchema.index({ post_id: 1, user_id: 1 }, { unique: true });
+// Unique compound index to ensure a user can only like a post once
+postLikeSchema.index({ user: 1, post: 1 }, { unique: true });
+
+// Query indexes for efficient lookups
+postLikeSchema.index({ user: 1, createdAt: -1 });
+postLikeSchema.index({ post: 1, createdAt: -1 });
 
 const PostLike = mongoose.model("PostLike", postLikeSchema);
 
