@@ -45,7 +45,6 @@
 
 **Critical Operations Handled with Care:**
 - User deletion: Cascade deletes handled in service layer with rollback logic
-- Post deletion: Soft delete flag prevents data loss, cleanup is eventual
 - Community deletion: Mark as deleted first, cleanup in background job
 
 ### Collections Summary
@@ -146,8 +145,7 @@
   _id: ObjectId,
   author: ObjectId,           // Ref: users
   content: String,            // Max 5000 chars, required if no images
-  images: [String],           // Array of URLs, max 10
-  type: String,               // Enum: "text", "question", "project"
+  images: [String],           // Array of URLs
   
   // Community association
   community: ObjectId,        // Ref: communities, default: null
@@ -166,15 +164,9 @@
   originalPost: ObjectId,     // Ref: posts, default: null
   repostComment: String,      // Optional comment on repost, max 500 chars
   
-  // Moderation
-  isDeleted: Boolean,         // Soft delete, default: false
-  deletedBy: ObjectId,        // Ref: users (admin/moderator), default: null
-  deletedAt: Date,            // Deletion timestamp, default: null
-  
   // Timestamps
   createdAt: Date,
   updatedAt: Date,
-  editedAt: Date              // Last edit time (updates when content/tags change), default: null
 }
 ```
 
@@ -198,13 +190,12 @@
 { community: 1, createdAt: -1 }
 { type: 1, createdAt: -1 }
 { tags: 1, createdAt: -1 }
-{ isDeleted: 1 }
 { createdAt: -1 }
 { originalPost: 1 }  // For reposts
 
 // Compound indexes for feed
-{ author: 1, isDeleted: 1, createdAt: -1 }
-{ community: 1, isDeleted: 1, createdAt: -1 }
+{ author: 1, , createdAt: -1 }
+{ community: 1, createdAt: -1 }
 
 // Text search
 { content: "text" }
@@ -214,8 +205,6 @@
 
 - `author`: Required, valid ObjectId
 - `content`: Max 5000 chars, required if `images` is empty
-- `images`: Max 10 URLs
-- `type`: Enum ["text", "question", "project"], default: "text"
 - `tags`: Max 5 ObjectIds
 - `repostComment`: Max 500 chars
 
@@ -239,11 +228,6 @@
   likesCount: Number,         // Default: 0
   repliesCount: Number,       // Default: 0 (only for top-level)
   
-  // Moderation
-  isDeleted: Boolean,         // Soft delete, default: false
-  deletedBy: ObjectId,        // Ref: users, default: null
-  deletedAt: Date,
-  
   // Timestamps
   createdAt: Date,
   updatedAt: Date
@@ -262,7 +246,7 @@
 { parentComment: 1, createdAt: 1 }  // Get replies
 
 // Compound
-{ post: 1, isDeleted: 1, parentComment: 1, createdAt: -1 }
+{ post: 1, parentComment: 1, createdAt: -1 }
 ```
 
 ### Validation Rules
@@ -420,9 +404,6 @@
     seenAt: Date
   }],
   
-  // Moderation
-  isDeleted: Boolean,         // Default: false
-  
   // Timestamps
   createdAt: Date,
   updatedAt: Date
@@ -441,7 +422,7 @@
 { status: 1 }
 
 // Compound for pagination
-{ conversation: 1, isDeleted: 1, createdAt: -1 }
+{ conversation: 1, createdAt: -1 }
 ```
 
 ### Validation Rules
@@ -646,9 +627,6 @@
   _id: ObjectId,
   user: ObjectId,             // Ref: users, required
   post: ObjectId,             // Ref: posts, required
-  
-  // Timestamps
-  createdAt: Date
 }
 ```
 
@@ -684,9 +662,6 @@
   _id: ObjectId,
   user: ObjectId,             // Ref: users, required
   comment: ObjectId,          // Ref: comments, required
-  
-  // Timestamps
-  createdAt: Date
 }
 ```
 
@@ -722,9 +697,6 @@
   _id: ObjectId,
   user: ObjectId,             // Ref: users, required
   post: ObjectId,             // Ref: posts, required
-  
-  // Timestamps
-  createdAt: Date
 }
 ```
 
@@ -821,7 +793,6 @@
   role: String,               // Enum: "member", "moderator", default: "member"
   
   // Timestamps
-  joinedAt: Date,
   createdAt: Date
 }
 ```
@@ -895,7 +866,6 @@ When a **User** is deleted:
 - Remove from conversation participants
 
 When a **Post** is deleted:
-- Soft delete (set `isDeleted: true`)
 - Keep comments but mark as orphaned (optional)
 - Delete all post likes
 - Delete all saved post records

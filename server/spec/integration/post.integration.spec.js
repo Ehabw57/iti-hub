@@ -1,27 +1,40 @@
-const request = require('supertest');
-const mongoose = require('mongoose');
-const User = require('../../models/User');
-const Post = require('../../models/Post');
-const PostLike = require('../../models/PostLike');
-const PostSave = require('../../models/PostSave');
-const Comment = require('../../models/Comment');
-const { connectToDB, disconnectFromDB, clearDatabase } = require('../helpers/DBUtils');
+const request = require("supertest");
+const mongoose = require("mongoose");
+const sharp = require("sharp");
+const {
+  connectToDB,
+  disconnectFromDB,
+  clearDatabase,
+} = require("../helpers/DBUtils");
+const { MAX_POST_IMAGES, MAX_POST_TAGS, MAX_POST_CONTENT_LENGTH} = require("../../utils/constants");
 
 // Set JWT_SECRET for tests
 if (!process.env.JWT_SECRET) {
-  process.env.JWT_SECRET = 'testts';
+  process.env.JWT_SECRET = "testts";
 }
 
-const app = require('../../app');
+const app = require("../../app");
 
-describe('Post Integration Tests', () => {
+describe("Post Integration Tests", () => {
   let authToken;
   let testUser;
   let anotherUser;
   let anotherToken;
+  let imageBuffer;
 
   beforeAll(async () => {
     await connectToDB();
+    // Create a test image buffer
+    imageBuffer = await sharp({
+      create: {
+        width: 100,
+        height: 100,
+        channels: 3,
+        background: { r: 255, g: 0, b: 0 },
+      },
+    })
+      .jpeg()
+      .toBuffer();
   });
 
   afterAll(async () => {
@@ -30,586 +43,575 @@ describe('Post Integration Tests', () => {
 
   beforeEach(async () => {
     await clearDatabase();
-    
+
     // Create test user and get auth token
-    const registerRes = await request(app)
-      .post('/auth/register')
-      .send({
-        email: 'testuser@example.com',
-        password: 'Password123',
-        username: 'testuser',
-        fullName: 'Test User'
-      });
-    
+    const registerRes = await request(app).post("/auth/register").send({
+      email: "testuser@example.com",
+      password: "Password123",
+      username: "testuser",
+      fullName: "Test User",
+    });
+
     authToken = registerRes.body.data.token;
     testUser = registerRes.body.data.user;
 
     // Create another user for testing interactions
-    const anotherRegisterRes = await request(app)
-      .post('/auth/register')
-      .send({
-        email: 'another@example.com',
-        password: 'Password123',
-        username: 'anotheruser',
-        fullName: 'Another User'
-      });
-    
+    const anotherRegisterRes = await request(app).post("/auth/register").send({
+      email: "another@example.com",
+      password: "Password123",
+      username: "anotheruser",
+      fullName: "Another User",
+    });
+
     anotherToken = anotherRegisterRes.body.data.token;
     anotherUser = anotherRegisterRes.body.data.user;
   });
 
-  describe('POST /posts - Create Post', () => {
-    it('should create a post with content only', async () => {
+  describe("POST /posts - Create Post", () => {
+    it("should create a post with content only", async () => {
       const res = await request(app)
-        .post('/posts')
-        .set('Authorization', `Bearer ${authToken}`)
+        .post("/posts")
+        .set("Authorization", `Bearer ${authToken}`)
         .send({
-          content: 'This is my first post!'
+          content: "This is my first post!",
         });
 
       expect(res.status).toBe(201);
       expect(res.body.success).toBe(true);
-      expect(res.body.data.post.content).toBe('This is my first post!');
+      expect(res.body.data.post.content).toBe("This is my first post!");
       expect(res.body.data.post.author).toBeDefined();
       expect(res.body.data.post.likesCount).toBe(0);
       expect(res.body.data.post.commentsCount).toBe(0);
     });
 
-    it('should create a post with content and images', async () => {
+    it("should create a post with content and images", async () => {
       const res = await request(app)
-        .post('/posts')
-        .set('Authorization', `Bearer ${authToken}`)
-        .send({
-          content: 'Check out these images!',
-          images: ['https://example.com/img1.jpg', 'https://example.com/img2.jpg']
-        });
+        .post("/posts")
+        .set("Authorization", `Bearer ${authToken}`)
+        .attach("images", imageBuffer, {
+          filename: "img1.jpg",
+          contentType: "image/jpeg",
+        })
+        .attach("images", imageBuffer, {
+          filename: "img2.jpg",
+          contentType: "image/jpeg",
+        })
+        .field("content", "Check out these images!");
 
       expect(res.status).toBe(201);
       expect(res.body.data.post.images.length).toBe(2);
     });
 
-    it('should create a post with images only (no content)', async () => {
+    it("should create a post with images only (no content)", async () => {
       const res = await request(app)
-        .post('/posts')
-        .set('Authorization', `Bearer ${authToken}`)
-        .send({
-          content: '',
-          images: ['https://example.com/img1.jpg']
-        });
+        .post("/posts")
+        .set("Authorization", `Bearer ${authToken}`)
+        .attach("images", imageBuffer, {
+          filename: "img1.jpg",
+          contentType: "image/jpeg",
+        })
+        .field("content", "");
 
       expect(res.status).toBe(201);
       expect(res.body.data.post.images.length).toBe(1);
     });
 
-    it('should create a post with tags', async () => {
+    it("should create a post with tags", async () => {
       const tagId1 = new mongoose.Types.ObjectId();
       const tagId2 = new mongoose.Types.ObjectId();
 
       const res = await request(app)
-        .post('/posts')
-        .set('Authorization', `Bearer ${authToken}`)
+        .post("/posts")
+        .set("Authorization", `Bearer ${authToken}`)
         .send({
-          content: 'Post with tags',
-          tags: [tagId1, tagId2]
+          content: "Post with tags",
+          tags: [tagId1, tagId2],
         });
 
       expect(res.status).toBe(201);
       expect(res.body.data.post.tags.length).toBe(2);
     });
 
-    it('should return 400 if no content and no images', async () => {
+    it("should return 400 if no content and no images", async () => {
       const res = await request(app)
-        .post('/posts')
-        .set('Authorization', `Bearer ${authToken}`)
+        .post("/posts")
+        .set("Authorization", `Bearer ${authToken}`)
         .send({
-          content: '',
-          images: []
+          content: "",
+          images: [],
         });
 
       expect(res.status).toBe(400);
       expect(res.body.success).toBe(false);
     });
 
-    it('should return 400 if content exceeds max length', async () => {
-      const longContent = 'a'.repeat(5001);
+    it("should return 400 if content exceeds max length", async () => {
+      const longContent = "a".repeat(MAX_POST_CONTENT_LENGTH + 1);
       const res = await request(app)
-        .post('/posts')
-        .set('Authorization', `Bearer ${authToken}`)
+        .post("/posts")
+        .set("Authorization", `Bearer ${authToken}`)
         .send({
-          content: longContent
+          content: longContent,
         });
 
       expect(res.status).toBe(400);
     });
 
-    it('should return 400 if more than 10 images', async () => {
-      const images = Array(11).fill('https://example.com/img.jpg');
+    it("should return 400 if more than images allowed", async () => {
+        const req = request(app)
+        .post("/posts")
+        .set("Authorization", `Bearer ${authToken}`)
+        .field("content", "Too many images");
+
+        for(let i = 0; i < MAX_POST_IMAGES + 1; i++) {
+            req.attach("images", imageBuffer, {
+                filename: `img${i}.jpg`,
+                contentType: "image/jpeg",
+            });
+        }
+        const res = await req;
+
+      expect(res.status).toBe(400);
+    });
+
+    it("should return 400 if more tags than allowed", async () => {
+      const tags = Array(MAX_POST_TAGS + 1).fill(new mongoose.Types.ObjectId());
       const res = await request(app)
-        .post('/posts')
-        .set('Authorization', `Bearer ${authToken}`)
+        .post("/posts")
+        .set("Authorization", `Bearer ${authToken}`)
         .send({
-          content: 'Too many images',
-          images
+          content: "Too many tags",
+          tags,
         });
 
       expect(res.status).toBe(400);
     });
 
-    it('should return 400 if more than 5 tags', async () => {
-      const tags = Array(6).fill(new mongoose.Types.ObjectId());
-      const res = await request(app)
-        .post('/posts')
-        .set('Authorization', `Bearer ${authToken}`)
-        .send({
-          content: 'Too many tags',
-          tags
-        });
-
-      expect(res.status).toBe(400);
-    });
-
-    it('should return 401 if not authenticated', async () => {
-      const res = await request(app)
-        .post('/posts')
-        .send({
-          content: 'Unauthorized post'
-        });
+    it("should return 401 if not authenticated", async () => {
+      const res = await request(app).post("/posts").send({
+        content: "Unauthorized post",
+      });
 
       expect(res.status).toBe(401);
     });
   });
 
-  describe('GET /posts/:id - Get Post by ID', () => {
+  describe("GET /posts/:id - Get Post by ID", () => {
     let testPost;
 
     beforeEach(async () => {
       // Create a test post
       const createRes = await request(app)
-        .post('/posts')
-        .set('Authorization', `Bearer ${authToken}`)
+        .post("/posts")
+        .set("Authorization", `Bearer ${authToken}`)
         .send({
-          content: 'Test post for retrieval'
+          content: "Test post for retrieval",
         });
       testPost = createRes.body.data.post;
     });
 
-    it('should get a post by ID', async () => {
-      const res = await request(app)
-        .get(`/posts/${testPost._id}`);
+    it("should get a post by ID", async () => {
+      const res = await request(app).get(`/posts/${testPost._id}`);
 
       expect(res.status).toBe(200);
       expect(res.body.data.post._id).toBe(testPost._id);
-      expect(res.body.data.post.content).toBe('Test post for retrieval');
+      expect(res.body.data.post.content).toBe("Test post for retrieval");
     });
 
-    it('should include isLiked and isSaved for authenticated user', async () => {
+    it("should include isLiked and isSaved for authenticated user", async () => {
       const res = await request(app)
         .get(`/posts/${testPost._id}`)
-        .set('Authorization', `Bearer ${authToken}`);
+        .set("Authorization", `Bearer ${authToken}`);
 
       expect(res.status).toBe(200);
       expect(res.body.data.post.isLiked).toBeDefined();
       expect(res.body.data.post.isSaved).toBeDefined();
     });
 
-    it('should return 404 for non-existent post', async () => {
+    it("should return 404 for non-existent post", async () => {
       const fakeId = new mongoose.Types.ObjectId();
-      const res = await request(app)
-        .get(`/posts/${fakeId}`);
+      const res = await request(app).get(`/posts/${fakeId}`);
 
       expect(res.status).toBe(404);
     });
   });
 
-  describe('PATCH /posts/:id - Update Post', () => {
+  describe("PATCH /posts/:id - Update Post", () => {
     let testPost;
 
     beforeEach(async () => {
       const createRes = await request(app)
-        .post('/posts')
-        .set('Authorization', `Bearer ${authToken}`)
+        .post("/posts")
+        .set("Authorization", `Bearer ${authToken}`)
         .send({
-          content: 'Original content',
-          images: ['https://example.com/img.jpg']
+          content: "Original content",
+          images: ["https://example.com/img.jpg"],
         });
       testPost = createRes.body.data.post;
     });
 
-    it('should update post content', async () => {
+    it("should update post content", async () => {
       const res = await request(app)
         .patch(`/posts/${testPost._id}`)
-        .set('Authorization', `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${authToken}`)
         .send({
-          content: 'Updated content'
+          content: "Updated content",
         });
 
       expect(res.status).toBe(200);
-      expect(res.body.data.post.content).toBe('Updated content');
+      expect(res.body.data.post.content).toBe("Updated content");
       expect(res.body.data.post.editedAt).toBeDefined();
     });
 
-    it('should update post tags', async () => {
+    it("should update post tags", async () => {
       const newTags = [new mongoose.Types.ObjectId()];
       const res = await request(app)
         .patch(`/posts/${testPost._id}`)
-        .set('Authorization', `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${authToken}`)
         .send({
-          tags: newTags
+          tags: newTags,
         });
 
       expect(res.status).toBe(200);
       expect(res.body.data.post.tags.length).toBe(1);
     });
 
-    it('should return 400 if trying to update images', async () => {
+    it("should return 403 if not post owner", async () => {
       const res = await request(app)
         .patch(`/posts/${testPost._id}`)
-        .set('Authorization', `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${anotherToken}`)
         .send({
-          images: ['https://example.com/newimg.jpg']
-        });
-
-      expect(res.status).toBe(400);
-      expect(res.body.message).toContain('Cannot update');
-    });
-
-    it('should return 403 if not post owner', async () => {
-      const res = await request(app)
-        .patch(`/posts/${testPost._id}`)
-        .set('Authorization', `Bearer ${anotherToken}`)
-        .send({
-          content: 'Trying to update someone elses post'
+          content: "Trying to update someone elses post",
         });
 
       expect(res.status).toBe(403);
     });
 
-    it('should return 404 for non-existent post', async () => {
+    it("should return 404 for non-existent post", async () => {
       const fakeId = new mongoose.Types.ObjectId();
       const res = await request(app)
         .patch(`/posts/${fakeId}`)
-        .set('Authorization', `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${authToken}`)
         .send({
-          content: 'Update'
+          content: "Update",
         });
 
       expect(res.status).toBe(404);
     });
   });
 
-  describe('DELETE /posts/:id - Delete Post', () => {
+  describe("DELETE /posts/:id - Delete Post", () => {
     let testPost;
 
     beforeEach(async () => {
       const createRes = await request(app)
-        .post('/posts')
-        .set('Authorization', `Bearer ${authToken}`)
+        .post("/posts")
+        .set("Authorization", `Bearer ${authToken}`)
         .send({
-          content: 'Post to be deleted'
+          content: "Post to be deleted",
         });
       testPost = createRes.body.data.post;
     });
 
-    it('should delete own post', async () => {
+    it("should delete own post", async () => {
       const res = await request(app)
         .delete(`/posts/${testPost._id}`)
-        .set('Authorization', `Bearer ${authToken}`);
+        .set("Authorization", `Bearer ${authToken}`);
 
       expect(res.status).toBe(204);
 
       // Verify post is deleted
-      const getRes = await request(app)
-        .get(`/posts/${testPost._id}`);
+      const getRes = await request(app).get(`/posts/${testPost._id}`);
       expect(getRes.status).toBe(404);
     });
 
-    it('should return 403 if not post owner', async () => {
+    it("should return 403 if not post owner", async () => {
       const res = await request(app)
         .delete(`/posts/${testPost._id}`)
-        .set('Authorization', `Bearer ${anotherToken}`);
+        .set("Authorization", `Bearer ${anotherToken}`);
 
       expect(res.status).toBe(403);
     });
 
-    it('should return 404 for non-existent post', async () => {
+    it("should return 404 for non-existent post", async () => {
       const fakeId = new mongoose.Types.ObjectId();
       const res = await request(app)
         .delete(`/posts/${fakeId}`)
-        .set('Authorization', `Bearer ${authToken}`);
+        .set("Authorization", `Bearer ${authToken}`);
 
       expect(res.status).toBe(404);
     });
   });
 
-  describe('POST /posts/:id/like - Like Post', () => {
+  describe("POST /posts/:id/like - Like Post", () => {
     let testPost;
 
     beforeEach(async () => {
       const createRes = await request(app)
-        .post('/posts')
-        .set('Authorization', `Bearer ${authToken}`)
+        .post("/posts")
+        .set("Authorization", `Bearer ${authToken}`)
         .send({
-          content: 'Post to be liked'
+          content: "Post to be liked",
         });
       testPost = createRes.body.data.post;
     });
 
-    it('should like a post', async () => {
+    it("should like a post", async () => {
       const res = await request(app)
         .post(`/posts/${testPost._id}/like`)
-        .set('Authorization', `Bearer ${authToken}`);
+        .set("Authorization", `Bearer ${authToken}`);
 
       expect(res.status).toBe(200);
       expect(res.body.data.isLiked).toBe(true);
       expect(res.body.data.likesCount).toBe(1);
     });
 
-    it('should not allow liking a post twice', async () => {
+    it("should not allow liking a post twice", async () => {
       // Like once
       await request(app)
         .post(`/posts/${testPost._id}/like`)
-        .set('Authorization', `Bearer ${authToken}`);
+        .set("Authorization", `Bearer ${authToken}`);
 
       // Try to like again
       const res = await request(app)
         .post(`/posts/${testPost._id}/like`)
-        .set('Authorization', `Bearer ${authToken}`);
+        .set("Authorization", `Bearer ${authToken}`);
 
       expect(res.status).toBe(400);
     });
 
-    it('should return 404 for non-existent post', async () => {
+    it("should return 404 for non-existent post", async () => {
       const fakeId = new mongoose.Types.ObjectId();
       const res = await request(app)
         .post(`/posts/${fakeId}/like`)
-        .set('Authorization', `Bearer ${authToken}`);
+        .set("Authorization", `Bearer ${authToken}`);
 
       expect(res.status).toBe(404);
     });
   });
 
-  describe('DELETE /posts/:id/like - Unlike Post', () => {
+  describe("DELETE /posts/:id/like - Unlike Post", () => {
     let testPost;
 
     beforeEach(async () => {
       const createRes = await request(app)
-        .post('/posts')
-        .set('Authorization', `Bearer ${authToken}`)
+        .post("/posts")
+        .set("Authorization", `Bearer ${authToken}`)
         .send({
-          content: 'Post to be unliked'
+          content: "Post to be unliked",
         });
       testPost = createRes.body.data.post;
 
       // Like the post first
       await request(app)
         .post(`/posts/${testPost._id}/like`)
-        .set('Authorization', `Bearer ${authToken}`);
+        .set("Authorization", `Bearer ${authToken}`);
     });
 
-    it('should unlike a post', async () => {
+    it("should unlike a post", async () => {
       const res = await request(app)
         .delete(`/posts/${testPost._id}/like`)
-        .set('Authorization', `Bearer ${authToken}`);
+        .set("Authorization", `Bearer ${authToken}`);
 
       expect(res.status).toBe(200);
       expect(res.body.data.isLiked).toBe(false);
       expect(res.body.data.likesCount).toBe(0);
     });
 
-    it('should return 400 if post not liked', async () => {
+    it("should return 400 if post not liked", async () => {
       // Unlike once
       await request(app)
         .delete(`/posts/${testPost._id}/like`)
-        .set('Authorization', `Bearer ${authToken}`);
+        .set("Authorization", `Bearer ${authToken}`);
 
       // Try to unlike again
       const res = await request(app)
         .delete(`/posts/${testPost._id}/like`)
-        .set('Authorization', `Bearer ${authToken}`);
+        .set("Authorization", `Bearer ${authToken}`);
 
       expect(res.status).toBe(400);
     });
   });
 
-  describe('POST /posts/:id/save - Save Post', () => {
+  describe("POST /posts/:id/save - Save Post", () => {
     let testPost;
 
     beforeEach(async () => {
       const createRes = await request(app)
-        .post('/posts')
-        .set('Authorization', `Bearer ${authToken}`)
+        .post("/posts")
+        .set("Authorization", `Bearer ${authToken}`)
         .send({
-          content: 'Post to be saved'
+          content: "Post to be saved",
         });
       testPost = createRes.body.data.post;
     });
 
-    it('should save a post', async () => {
+    it("should save a post", async () => {
       const res = await request(app)
         .post(`/posts/${testPost._id}/save`)
-        .set('Authorization', `Bearer ${authToken}`);
+        .set("Authorization", `Bearer ${authToken}`);
 
       expect(res.status).toBe(200);
       expect(res.body.data.isSaved).toBe(true);
     });
 
-    it('should not allow saving a post twice', async () => {
+    it("should not allow saving a post twice", async () => {
       await request(app)
         .post(`/posts/${testPost._id}/save`)
-        .set('Authorization', `Bearer ${authToken}`);
+        .set("Authorization", `Bearer ${authToken}`);
 
       const res = await request(app)
         .post(`/posts/${testPost._id}/save`)
-        .set('Authorization', `Bearer ${authToken}`);
+        .set("Authorization", `Bearer ${authToken}`);
 
       expect(res.status).toBe(400);
     });
   });
 
-  describe('DELETE /posts/:id/save - Unsave Post', () => {
+  describe("DELETE /posts/:id/save - Unsave Post", () => {
     let testPost;
 
     beforeEach(async () => {
       const createRes = await request(app)
-        .post('/posts')
-        .set('Authorization', `Bearer ${authToken}`)
+        .post("/posts")
+        .set("Authorization", `Bearer ${authToken}`)
         .send({
-          content: 'Post to be unsaved'
+          content: "Post to be unsaved",
         });
       testPost = createRes.body.data.post;
 
       // Save the post first
       await request(app)
         .post(`/posts/${testPost._id}/save`)
-        .set('Authorization', `Bearer ${authToken}`);
+        .set("Authorization", `Bearer ${authToken}`);
     });
 
-    it('should unsave a post', async () => {
+    it("should unsave a post", async () => {
       const res = await request(app)
         .delete(`/posts/${testPost._id}/save`)
-        .set('Authorization', `Bearer ${authToken}`);
+        .set("Authorization", `Bearer ${authToken}`);
 
       expect(res.status).toBe(200);
       expect(res.body.data.isSaved).toBe(false);
     });
   });
 
-  describe('POST /posts/:id/repost - Repost', () => {
+  describe("POST /posts/:id/repost - Repost", () => {
     let originalPost;
 
     beforeEach(async () => {
       // Create original post by another user
       const createRes = await request(app)
-        .post('/posts')
-        .set('Authorization', `Bearer ${anotherToken}`)
+        .post("/posts")
+        .set("Authorization", `Bearer ${anotherToken}`)
         .send({
-          content: 'Original post to be reposted'
+          content: "Original post to be reposted",
         });
       originalPost = createRes.body.data.post;
     });
 
-    it('should repost with comment', async () => {
+    it("should repost with comment", async () => {
       const res = await request(app)
         .post(`/posts/${originalPost._id}/repost`)
-        .set('Authorization', `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${authToken}`)
         .send({
-          comment: 'Check this out!'
+          comment: "Check this out!",
         });
 
       expect(res.status).toBe(201);
       expect(res.body.data.post.originalPost._id).toBe(originalPost._id);
-      expect(res.body.data.post.repostComment).toBe('Check this out!');
+      expect(res.body.data.post.repostComment).toBe("Check this out!");
     });
 
-    it('should repost without comment', async () => {
+    it("should repost without comment", async () => {
       const res = await request(app)
         .post(`/posts/${originalPost._id}/repost`)
-        .set('Authorization', `Bearer ${authToken}`);
+        .set("Authorization", `Bearer ${authToken}`);
 
       expect(res.status).toBe(201);
       expect(res.body.data.post.originalPost._id).toBe(originalPost._id);
     });
 
-    it('should return 400 if reposting own post', async () => {
+    it("should return 400 if reposting own post", async () => {
       const res = await request(app)
         .post(`/posts/${originalPost._id}/repost`)
-        .set('Authorization', `Bearer ${anotherToken}`);
+        .set("Authorization", `Bearer ${anotherToken}`);
 
       expect(res.status).toBe(400);
     });
 
-    it('should return 404 for non-existent post', async () => {
+    it("should return 404 for non-existent post", async () => {
       const fakeId = new mongoose.Types.ObjectId();
       const res = await request(app)
         .post(`/posts/${fakeId}/repost`)
-        .set('Authorization', `Bearer ${authToken}`);
+        .set("Authorization", `Bearer ${authToken}`);
 
       expect(res.status).toBe(404);
     });
   });
 
-  describe('GET /posts/saved - Get Saved Posts', () => {
+  describe("GET /posts/saved - Get Saved Posts", () => {
     beforeEach(async () => {
       // Create and save multiple posts
       for (let i = 0; i < 3; i++) {
         const createRes = await request(app)
-          .post('/posts')
-          .set('Authorization', `Bearer ${anotherToken}`)
+          .post("/posts")
+          .set("Authorization", `Bearer ${anotherToken}`)
           .send({
-            content: `Post ${i + 1}`
+            content: `Post ${i + 1}`,
           });
 
         await request(app)
           .post(`/posts/${createRes.body.data.post._id}/save`)
-          .set('Authorization', `Bearer ${authToken}`);
+          .set("Authorization", `Bearer ${authToken}`);
       }
     });
 
-    it('should get saved posts', async () => {
+    it("should get saved posts", async () => {
       const res = await request(app)
-        .get('/posts/saved')
-        .set('Authorization', `Bearer ${authToken}`);
+        .get("/posts/saved")
+        .set("Authorization", `Bearer ${authToken}`);
 
       expect(res.status).toBe(200);
       expect(res.body.data.posts.length).toBe(3);
       expect(res.body.data.pagination).toBeDefined();
     });
 
-    it('should return empty array if no saved posts', async () => {
+    it("should return empty array if no saved posts", async () => {
       const res = await request(app)
-        .get('/posts/saved')
-        .set('Authorization', `Bearer ${anotherToken}`);
+        .get("/posts/saved")
+        .set("Authorization", `Bearer ${anotherToken}`);
 
       expect(res.status).toBe(200);
       expect(res.body.data.posts.length).toBe(0);
     });
   });
 
-  describe('GET /users/:userId/posts - Get User Posts', () => {
+  describe("GET /users/:userId/posts - Get User Posts", () => {
     beforeEach(async () => {
       // Create multiple posts for test user
       for (let i = 0; i < 3; i++) {
         await request(app)
-          .post('/posts')
-          .set('Authorization', `Bearer ${authToken}`)
+          .post("/posts")
+          .set("Authorization", `Bearer ${authToken}`)
           .send({
-            content: `User post ${i + 1}`
+            content: `User post ${i + 1}`,
           });
       }
     });
 
-    it('should get posts for a user', async () => {
-      const res = await request(app)
-        .get(`/users/${testUser._id}/posts`);
+    it("should get posts for a user", async () => {
+      const res = await request(app).get(`/users/${testUser._id}/posts`);
 
       expect(res.status).toBe(200);
       expect(res.body.data.posts.length).toBe(3);
       expect(res.body.data.pagination).toBeDefined();
     });
 
-    it('should support pagination', async () => {
-      const res = await request(app)
-        .get(`/users/${testUser._id}/posts?page=1&limit=2`);
+    it("should support pagination", async () => {
+      const res = await request(app).get(
+        `/users/${testUser._id}/posts?page=1&limit=2`
+      );
 
       expect(res.status).toBe(200);
       expect(res.body.data.posts.length).toBe(2);

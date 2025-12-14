@@ -5,10 +5,8 @@
 
 const {
   MAX_POST_CONTENT_LENGTH,
-  MAX_POST_IMAGES,
   MAX_POST_TAGS,
   MAX_REPOST_COMMENT_LENGTH,
-  PUBLIC_POST_FIELDS,
   UPDATABLE_POST_FIELDS
 } = require('./constants');
 
@@ -30,24 +28,6 @@ function validatePostContent(content, images = []) {
   return { isValid: true };
 }
 
-/**
- * Validate post images
- * @param {Array} images - Array of image URLs
- * @returns {Object} - { isValid: boolean, error: string }
- */
-function validatePostImages(images) {
-  if (!images) return { isValid: true };
-  
-  if (!Array.isArray(images)) {
-    return { isValid: false, error: 'Images must be an array' };
-  }
-
-  if (images.length > MAX_POST_IMAGES) {
-    return { isValid: false, error: `Cannot upload more than ${MAX_POST_IMAGES} images` };
-  }
-
-  return { isValid: true };
-}
 
 /**
  * Validate post tags
@@ -183,7 +163,6 @@ function canModifyPost(post, user) {
 
 module.exports = {
   validatePostContent,
-  validatePostImages,
   validatePostTags,
   validateRepostComment,
   validatePostUpdate,

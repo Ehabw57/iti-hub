@@ -15,11 +15,12 @@ const {
 } = require("../controllers/post");
 const createComment = require("../controllers/comment/createCommentController");
 const getComments = require("../controllers/comment/getCommentsController");
+const upload = require("../middlewares/upload");
 
 const postRoutes = express.Router();
 
-// Create post
-postRoutes.post("/", checkAuth, createPost);
+// Create post (with optional image uploads)
+postRoutes.post("/", checkAuth, upload.post, createPost);
 
 // Get saved posts (must be before /:id to avoid conflicts)
 postRoutes.get("/saved", checkAuth, getSavedPosts);

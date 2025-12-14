@@ -3,16 +3,23 @@ const {
   getUserProfile, 
   updateProfile, 
   blockUser, 
-  unblockUser 
+  unblockUser,
+  uploadProfilePicture,
+  uploadCoverImage
 } = require("../controllers/user");
 const { getUserPosts } = require("../controllers/post");
 const { checkAuth, optionalAuth } = require("../middlewares/checkAuth");
+const upload = require("../middlewares/upload");
 
 const userRouter = express.Router();
 
 
 userRouter.get("/users/:username", optionalAuth, getUserProfile); // Public, optional auth
 userRouter.put("/users/profile", checkAuth, updateProfile); // Requires auth
+
+// Image upload routes
+userRouter.post("/users/profile/picture", checkAuth, upload.profile, uploadProfilePicture); // Upload profile picture
+userRouter.post("/users/profile/cover", checkAuth, upload.cover, uploadCoverImage); // Upload cover image
 
 userRouter.post("/users/:userId/block", checkAuth, blockUser); // Requires auth
 userRouter.delete("/users/:userId/block", checkAuth, unblockUser); // Requires auth

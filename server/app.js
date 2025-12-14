@@ -12,6 +12,7 @@ const conversationRoute = require('./routes/conversationRoutes');
 const userRouter = require("./routes/userRoutes");
 const postRoutes = require("./routes/postRoutes");
 const connectionRoute = require("./routes/connectionRoutes")
+const { multerErrorHandler } = require("./middlewares/upload");
 
 dotenv.config();
 if (!process.env.JWT_SECRET && process.env.NODE_ENV !== 'test') {
@@ -36,6 +37,8 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.get("/", (req, res) => {
   res.send("Hi if you are see this message!, that means that the server is running :)");
 });
+
+app.use(multerErrorHandler);
 
 // Export app for testing
 module.exports = app;

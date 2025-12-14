@@ -153,6 +153,174 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
 
+  /users/profile/picture:
+    post:
+      tags:
+        - Users
+      summary: Upload profile picture
+      description: Upload or update the authenticated user's profile picture. Image will be processed (resized to 500x500, compressed, converted to WebP) and uploaded to cloud storage.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - image
+              properties:
+                image:
+                  type: string
+                  format: binary
+                  description: Profile picture image file (JPEG, PNG, or WebP)
+      responses:
+        '200':
+          description: Profile picture uploaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Profile picture updated successfully"
+                  profilePicture:
+                    type: string
+                    format: uri
+                    example: "https://res.cloudinary.com/example/image/upload/profile-pictures/user_123_1234567890.webp"
+        '400':
+          description: Bad request (no file, invalid type, file too large, or corrupted image)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                no_file:
+                  summary: No file uploaded
+                  value:
+                    error: "No file uploaded"
+                invalid_type:
+                  summary: Invalid file type
+                  value:
+                    error: "Invalid file type. Only JPEG, PNG, and WebP are allowed."
+                file_too_large:
+                  summary: File size exceeds limit
+                  value:
+                    success: false
+                    message: "File size exceeds the allowed limit."
+                corrupted:
+                  summary: Corrupted image
+                  value:
+                    error: "Corrupted or invalid image file"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "User not found"
+        '500':
+          description: Server error (processing or upload failed)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                processing_error:
+                  summary: Image processing failed
+                  value:
+                    error: "Failed to process image"
+                upload_error:
+                  summary: Cloud upload failed
+                  value:
+                    error: "Failed to upload image"
+
+  /users/profile/cover:
+    post:
+      tags:
+        - Users
+      summary: Upload cover image
+      description: Upload or update the authenticated user's cover image. Image will be processed (resized to 1500x500, compressed, converted to WebP) and uploaded to cloud storage.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - image
+              properties:
+                image:
+                  type: string
+                  format: binary
+                  description: Cover image file (JPEG, PNG, or WebP)
+      responses:
+        '200':
+          description: Cover image uploaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Cover image updated successfully"
+                  coverImage:
+                    type: string
+                    format: uri
+                    example: "https://res.cloudinary.com/example/image/upload/cover-images/user_123_1234567890.webp"
+        '400':
+          description: Bad request (no file, invalid type, file too large, or corrupted image)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                no_file:
+                  summary: No file uploaded
+                  value:
+                    error: "No file uploaded"
+                invalid_type:
+                  summary: Invalid file type
+                  value:
+                    error: "Invalid file type. Only JPEG, PNG, and WebP are allowed."
+                file_too_large:
+                  summary: File size exceeds limit
+                  value:
+                    success: false
+                    message: "File size exceeds the allowed limit."
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "User not found"
+        '500':
+          description: Server error (processing or upload failed)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                processing_error:
+                  summary: Image processing failed
+                  value:
+                    error: "Failed to process image"
+                upload_error:
+                  summary: Cloud upload failed
+                  value:
+                    error: "Failed to upload image"
+
 components:
   schemas:
     UserProfileResponse:
@@ -272,4 +440,41 @@ components:
 
 tags:
   - name: Users
-    description: User management operations
+    description: |
+      User management operations including profile management and image uploads.
+      
+      ## File Upload Requirements
+      
+      ### Profile Picture Upload
+      - **Endpoint**: POST /users/profile/picture
+      - **Field name**: `image`
+      - **Max size**: 5 MB
+      - **Allowed types**: JPEG, PNG, WebP
+      - **Processing**: Resized to 500x500px, compressed, converted to WebP (quality 85)
+      - **Storage**: Cloudinary folder `profile-pictures`
+      - **Behavior**: Replaces existing profile picture (old image is automatically deleted)
+      
+      ### Cover Image Upload
+      - **Endpoint**: POST /users/profile/cover
+      - **Field name**: `image`
+      - **Max size**: 10 MB
+      - **Allowed types**: JPEG, PNG, WebP
+      - **Processing**: Resized to 1500x500px, compressed, converted to WebP (quality 85)
+      - **Storage**: Cloudinary folder `cover-images`
+      - **Behavior**: Replaces existing cover image (old image is automatically deleted)
+      
+      ### Processing Details
+      All uploaded images are:
+      - Validated for file type using magic number detection (not just extension)
+      - Validated for file integrity using Sharp
+      - Processed locally with Sharp (resize, compress, WebP conversion)
+      - Stripped of metadata for privacy
+      - Uploaded to Cloudinary for CDN delivery
+      
+      ### Error Handling
+      - File size limits enforced by Multer middleware (returns 400)
+      - Invalid file types rejected (returns 400)
+      - Corrupted images rejected (returns 400)
+      - Processing failures return 500
+      - Upload failures return 500
+

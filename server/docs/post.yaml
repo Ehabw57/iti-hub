@@ -14,36 +14,71 @@ paths:
       tags:
         - Posts
       summary: Create a new post
-      description: Creates a new post or repost with content and optional media attachments.
+      description: |
+        Creates a new post with optional image uploads. Supports two modes:
+        1. **With file uploads**: Upload images as multipart/form-data (up to 4 images, 10MB each). Images are automatically processed (resized to max 2000x2000, compressed, converted to WebP).
+        2. **With URLs**: Send image URLs in JSON body (legacy support).
       security:
         - BearerAuth: []
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
               type: object
-              required:
-                - content
               properties:
                 content:
                   type: string
-                  minLength: 1
+                  maxLength: 500
+                  description: The text content of the post (optional if images provided)
+                  example: "Just finished implementing the file upload system! 🚀"
+                images:
+                  type: array
+                  maxItems: 4
+                  items:
+                    type: string
+                    format: binary
+                  description: Image files to upload (JPEG, PNG, or WebP)
+                tags:
+                  type: array
+                  maxItems: 5
+                  items:
+                    type: string
+                  description: Tags for the post
+                  example: ["coding", "javascript"]
+                community:
+                  type: string
+                  format: objectId
+                  description: ID of the community to post in (optional)
+                  example: "507f1f77bcf86cd799439011"
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
                   maxLength: 500
                   description: The content of the post
                   example: "Just finished implementing the comment system! 🚀"
-                media:
+                images:
                   type: array
                   maxItems: 4
-                  description: Array of media URLs (images/videos)
+                  description: Array of image URLs (legacy support)
                   items:
                     type: string
                     format: uri
                   example: ["https://example.com/image1.jpg", "https://example.com/image2.jpg"]
-                originalPost:
+                tags:
+                  type: array
+                  maxItems: 5
+                  items:
+                    type: string
+                  description: Tags for the post
+                  example: ["coding", "javascript"]
+                community:
                   type: string
                   format: objectId
-                  description: ID of the original post if this is a repost
+                  description: ID of the community to post in (optional)
                   example: "507f1f77bcf86cd799439011"
       responses:
         '201':
@@ -71,21 +106,41 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               examples:
-                content_too_short:
-                  summary: Content too short
+                content_required:
+                  summary: Content or images required
                   value:
                     success: false
-                    message: "Content must be at least 1 characters"
+                    message: "Post must have content or at least one image"
                 content_too_long:
                   summary: Content too long
                   value:
                     success: false
                     message: "Content cannot exceed 500 characters"
-                too_many_media:
-                  summary: Too many media items
+                too_many_images:
+                  summary: Too many images
                   value:
                     success: false
-                    message: "Maximum 4 media items allowed"
+                    message: "Maximum 4 images allowed"
+                too_many_files:
+                  summary: File count limit exceeded
+                  value:
+                    success: false
+                    message: "Too many files uploaded."
+                file_too_large:
+                  summary: File size limit exceeded
+                  value:
+                    success: false
+                    message: "File size exceeds the allowed limit."
+                invalid_file_type:
+                  summary: Invalid file type
+                  value:
+                    success: false
+                    message: "Invalid file type: example.gif"
+                corrupted_image:
+                  summary: Corrupted image
+                  value:
+                    success: false
+                    message: "Corrupted image: example.jpg"
         '401':
           $ref: '#/components/responses/Unauthorized'
         '500':
@@ -916,4 +971,59 @@ components:
 
 tags:
   - name: Posts
-    description: Operations for creating, reading, updating, and deleting posts, as well as interactions like likes, saves, and reposts
+    description: |
+      Operations for creating, reading, updating, and deleting posts, as well as interactions like likes, saves, and reposts.
+      
+      ## Image Upload Support
+      
+      ### Creating Posts with Images
+      - **Endpoint**: POST /posts
+      - **Content-Type**: multipart/form-data (for file uploads) or application/json (for URLs)
+      - **Field name**: `images` (array of files)
+      - **Max images**: 4 per post
+      - **Max size per image**: 10 MB
+      - **Allowed types**: JPEG, PNG, WebP
+      - **Processing**: Resized to max 2000x2000px (maintains aspect ratio), compressed, converted to WebP (quality 85)
+      - **Storage**: Cloudinary folder `post-images`
+      
+      ### Image Processing
+      All uploaded post images are:
+      - Validated for file type using magic number detection
+      - Validated for file integrity
+      - Processed in parallel for performance
+      - Resized to fit within 2000x2000px (maintains aspect ratio, no cropping)
+      - Compressed and converted to WebP format
+      - Stripped of metadata
+      - Uploaded to Cloudinary for CDN delivery
+      
+      ### Usage Examples
+      
+      **With file uploads (recommended):**
+      ```
+      POST /posts
+      Content-Type: multipart/form-data
+      
+      content: "Check out these amazing photos!"
+      images: [file1.jpg, file2.png]
+      tags: ["photography", "nature"]
+      ```
+      
+      **With URLs (legacy):**
+      ```json
+      POST /posts
+      Content-Type: application/json
+      
+      {
+        "content": "Check out these photos!",
+        "images": ["https://example.com/photo1.jpg"],
+        "tags": ["photography"]
+      }
+      ```
+      
+      ### Validation Rules
+      - Post must have content OR at least one image (both optional, but not both empty)
+      - Content max length: 500 characters
+      - Max 4 images per post
+      - Max 5 tags per post
+      - File size and type validated before processing
+

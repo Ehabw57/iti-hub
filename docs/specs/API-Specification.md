@@ -232,71 +232,135 @@ Authorization: Bearer <JWT_TOKEN>
 
 ## User Endpoints
 
-### 5. Get User Profile
+### 5. Get User Profile by Username
 
-**Endpoint**: `GET /users/:userId`  
-**Auth Required**: Yes (public profile) / No (limited data)
+**Endpoint**: `GET /users/:username`  
+**Auth Required**: No (public), Optional (for relationship metadata)  
+**Description**: Retrieve a user's public profile information. When authenticated, includes relationship status (isFollowing, followsYou, isBlocked).
+
+**Path Parameters:**
+- `username` (string, required): The username of the user to retrieve
 
 **Success Response (200):**
 ```json
 {
   "success": true,
   "data": {
-    "id": "userId123",
+    "_id": "507f1f77bcf86cd799439011",
     "username": "johndoe",
     "fullName": "John Doe",
     "bio": "Software developer passionate about web tech",
-    "profilePicture": "https://...",
-    "coverImage": "https://...",
+    "profilePicture": "https://example.com/pic.jpg",
+    "coverImage": "https://example.com/cover.jpg",
     "specialization": "Full-Stack Development",
     "location": "Cairo, Egypt",
     "followersCount": 150,
     "followingCount": 80,
     "postsCount": 45,
+    "createdAt": "2025-01-15T10:00:00.000Z",
+    "updatedAt": "2025-12-13T10:00:00.000Z",
     "isFollowing": true,
+    "followsYou": false,
     "isBlocked": false,
-    "createdAt": "2025-01-15T10:00:00Z"
+    "isOwnProfile": false
   }
 }
 ```
 
+**Response Fields (authenticated request):**
+- `isFollowing` (boolean): Whether the requester follows this user
+- `followsYou` (boolean): Whether this user follows the requester back
+- `isBlocked` (boolean): Whether there's a block relationship
+- `isOwnProfile` (boolean): Whether this is the requester's own profile
+- `email` (string): Only included when viewing own profile
+
 **Error Responses:**
-- `404`: User not found
+- `404 Not Found`: User with specified username not found
+```json
+{
+  "success": false,
+  "message": "User not found"
+}
+```
+- `403 Forbidden`: Blocked by the target user
+```json
+{
+  "success": false,
+  "message": "You cannot view this profile"
+}
+```
 
 ---
 
-### 6. Update User Profile
+### 6. Update Own Profile
 
-**Endpoint**: `PATCH /users/me`  
-**Auth Required**: Yes (own profile only)
+**Endpoint**: `PUT /users/profile`  
+**Auth Required**: Yes (JWT)  
+**Description**: Update the authenticated user's profile information. Only specified fields in the updatable list can be modified.
 
 **Request Body:**
 ```json
 {
   "fullName": "John Updated Doe",
-  "bio": "Updated bio text",
+  "bio": "Updated bio text - I love coding!",
   "specialization": "DevOps Engineer",
   "location": "Alexandria, Egypt",
-  "profilePicture": "https://...",
-  "coverImage": "https://..."
+  "profilePicture": "https://example.com/new-pic.jpg",
+  "coverImage": "https://example.com/new-cover.jpg"
 }
 ```
 
-**Validation Rules:**
-- `fullName`: 2-100 chars (optional)
-- `bio`: Max 500 chars (optional)
-- `specialization`: Max 100 chars (optional)
-- `location`: Max 100 chars (optional)
-- `profilePicture`, `coverImage`: Valid URL (optional)
+**Updatable Fields:**
+- `fullName` (string): 2-100 characters
+- `bio` (string): Max 300 characters
+- `specialization` (string): Max 100 characters
+- `location` (string): Max 100 characters
+- `profilePicture` (string): URL
+- `coverImage` (string): URL
+
+**Protected Fields (ignored if sent):**
+- `email`, `password`, `role`, `username`, `followersCount`, `followingCount`, `postsCount`, `isBlocked`, `blockReason`
 
 **Success Response (200):**
 ```json
 {
   "success": true,
+  "message": "Profile updated successfully",
   "data": {
-    "user": { /* updated user object */ }
-  },
-  "message": "Profile updated successfully"
+    "_id": "507f1f77bcf86cd799439011",
+    "username": "johndoe",
+    "email": "john@example.com",
+    "fullName": "John Updated Doe",
+    "bio": "Updated bio text - I love coding!",
+    "specialization": "DevOps Engineer",
+    "location": "Alexandria, Egypt",
+    "profilePicture": "https://example.com/new-pic.jpg",
+    "coverImage": "https://example.com/new-cover.jpg",
+    "followersCount": 150,
+    "followingCount": 80,
+    "postsCount": 45,
+    "createdAt": "2025-01-15T10:00:00.000Z",
+    "updatedAt": "2025-12-13T10:05:00.000Z"
+  }
+}
+```
+
+**Error Responses:**
+- `400 Bad Request`: Validation error
+```json
+{
+  "success": false,
+  "message": "Full name must be between 2 and 100 characters"
+}
+```
+- `401 Unauthorized`: Not authenticated
+```json
+{
+  "success": false,
+  "error": {
+    "code": "NO_TOKEN",
+    "message": "Authentication required"
+  }
 }
 ```
 
@@ -305,41 +369,89 @@ Authorization: Bearer <JWT_TOKEN>
 ### 7. Follow User
 
 **Endpoint**: `POST /users/:userId/follow`  
-**Auth Required**: Yes
+**Auth Required**: Yes (JWT)  
+**Description**: Follow another user. Creates a follow connection and increments follower/following counts.
+
+**Path Parameters:**
+- `userId` (string, required): MongoDB ObjectId of the user to follow
 
 **Success Response (200):**
 ```json
 {
   "success": true,
+  "message": "Successfully followed user",
   "data": {
-    "isFollowing": true,
-    "followersCount": 151
-  },
-  "message": "User followed successfully"
+    "followedUserId": "507f1f77bcf86cd799439012",
+    "followedAt": "2025-12-13T10:00:00.000Z"
+  }
 }
 ```
 
 **Error Responses:**
-- `400`: Cannot follow yourself
-- `404`: User not found
-- `409`: Already following
+- `400 Bad Request`: Cannot follow yourself
+```json
+{
+  "success": false,
+  "message": "Cannot follow yourself"
+}
+```
+- `400 Bad Request`: Already following
+```json
+{
+  "success": false,
+  "message": "Already following this user"
+}
+```
+- `400 Bad Request`: Block exists
+```json
+{
+  "success": false,
+  "message": "Cannot follow this user due to a block"
+}
+```
+- `400 Bad Request`: User not found
+```json
+{
+  "success": false,
+  "message": "User not found"
+}
+```
 
 ---
 
 ### 8. Unfollow User
 
 **Endpoint**: `DELETE /users/:userId/follow`  
-**Auth Required**: Yes
+**Auth Required**: Yes (JWT)  
+**Description**: Unfollow a user. Removes the follow connection and decrements follower/following counts.
+
+**Path Parameters:**
+- `userId` (string, required): MongoDB ObjectId of the user to unfollow
 
 **Success Response (200):**
 ```json
 {
   "success": true,
+  "message": "Successfully unfollowed user",
   "data": {
-    "isFollowing": false,
-    "followersCount": 150
-  },
-  "message": "User unfollowed successfully"
+    "unfollowedUserId": "507f1f77bcf86cd799439012"
+  }
+}
+```
+
+**Error Responses:**
+- `400 Bad Request`: Cannot unfollow yourself
+```json
+{
+  "success": false,
+  "message": "Cannot unfollow yourself"
+}
+```
+- `400 Bad Request`: Not following
+```json
+{
+  "success": false,
+  "message": "Not following this user"
 }
 ```
 
@@ -348,30 +460,73 @@ Authorization: Bearer <JWT_TOKEN>
 ### 9. Block User
 
 **Endpoint**: `POST /users/:userId/block`  
-**Auth Required**: Yes
+**Auth Required**: Yes (JWT)  
+**Description**: Block a user. Automatically removes all follow relationships in both directions and prevents future follows.
+
+**Path Parameters:**
+- `userId` (string, required): MongoDB ObjectId of the user to block
 
 **Success Response (200):**
 ```json
 {
   "success": true,
-  "message": "User blocked successfully"
+  "message": "Successfully blocked user",
+  "data": {
+    "blockedUserId": "507f1f77bcf86cd799439012",
+    "blockedAt": "2025-12-13T10:00:00.000Z"
+  }
 }
 ```
 
-*Note: Automatically unfollows both ways*
+**Behavior:**
+- Removes follower→following relationships (both directions)
+- Decrements followersCount and followingCount for both users
+- Prevents either user from following the other until unblocked
+
+**Error Responses:**
+- `400 Bad Request`: Cannot block yourself
+```json
+{
+  "success": false,
+  "message": "Cannot block yourself"
+}
+```
+- `400 Bad Request`: Already blocking
+```json
+{
+  "success": false,
+  "message": "Already blocking this user"
+}
+```
 
 ---
 
 ### 10. Unblock User
 
 **Endpoint**: `DELETE /users/:userId/block`  
-**Auth Required**: Yes
+**Auth Required**: Yes (JWT)  
+**Description**: Unblock a previously blocked user. Allows both users to follow each other again.
+
+**Path Parameters:**
+- `userId` (string, required): MongoDB ObjectId of the user to unblock
 
 **Success Response (200):**
 ```json
 {
   "success": true,
-  "message": "User unblocked successfully"
+  "message": "Successfully unblocked user",
+  "data": {
+    "unblockedUserId": "507f1f77bcf86cd799439012"
+  }
+}
+```
+
+**Error Responses:**
+- `400 Bad Request`: Not blocking this user
+```json
+{
+  "success": false,
+  "message": "Not blocking this user"
 }
 ```
 
@@ -380,35 +535,103 @@ Authorization: Bearer <JWT_TOKEN>
 ### 11. Get User's Followers
 
 **Endpoint**: `GET /users/:userId/followers`  
-**Auth Required**: Yes  
-**Query Params**: `page`, `limit`
+**Auth Required**: No (public), Optional (for isFollowing status)  
+**Description**: Get a paginated list of users who follow the specified user. When authenticated, includes whether the requester follows each follower.
+
+**Path Parameters:**
+- `userId` (string, required): MongoDB ObjectId of the user
+
+**Query Parameters:**
+- `page` (integer, optional, default: 1): Page number
+- `limit` (integer, optional, default: 20, max: 100): Items per page
 
 **Success Response (200):**
 ```json
 {
   "success": true,
-  "data": [
-    {
-      "id": "userId456",
-      "username": "janedoe",
-      "fullName": "Jane Doe",
-      "profilePicture": "https://...",
-      "isFollowing": false
+  "data": {
+    "followers": [
+      {
+        "_id": "507f1f77bcf86cd799439013",
+        "username": "janedoe",
+        "fullName": "Jane Doe",
+        "profilePicture": "https://example.com/jane.jpg",
+        "bio": "Backend developer",
+        "specialization": "Node.js Expert",
+        "followersCount": 85,
+        "followingCount": 120,
+        "createdAt": "2025-02-10T10:00:00.000Z",
+        "isFollowing": true
+      }
+    ],
+    "pagination": {
+      "currentPage": 1,
+      "pageSize": 20,
+      "totalCount": 150,
+      "totalPages": 8
     }
-  ],
-  "pagination": { /* pagination object */ }
+  }
 }
 ```
+
+**Response Fields:**
+- `isFollowing` (boolean): Only present when authenticated, indicates if requester follows this follower
+
+**Error Responses:**
+- `400 Bad Request`: Invalid user ID format
+- `500 Internal Server Error`: Database error
 
 ---
 
 ### 12. Get User's Following
 
 **Endpoint**: `GET /users/:userId/following`  
-**Auth Required**: Yes  
-**Query Params**: `page`, `limit`
+**Auth Required**: No (public), Optional (for isFollowing status)  
+**Description**: Get a paginated list of users that the specified user follows. When authenticated, includes whether the requester follows each user.
 
-**Success Response (200):** Same as followers
+**Path Parameters:**
+- `userId` (string, required): MongoDB ObjectId of the user
+
+**Query Parameters:**
+- `page` (integer, optional, default: 1): Page number
+- `limit` (integer, optional, default: 20, max: 100): Items per page
+
+**Success Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "following": [
+      {
+        "_id": "507f1f77bcf86cd799439014",
+        "username": "bobsmith",
+        "fullName": "Bob Smith",
+        "profilePicture": "https://example.com/bob.jpg",
+        "bio": "Frontend enthusiast",
+        "specialization": "React Developer",
+        "followersCount": 200,
+        "followingCount": 95,
+        "createdAt": "2025-03-05T10:00:00.000Z",
+        "isFollowing": false
+      }
+    ],
+    "pagination": {
+      "currentPage": 1,
+      "pageSize": 20,
+      "totalCount": 80,
+      "totalPages": 4
+    }
+  }
+}
+```
+
+**Response Fields:**
+- `isFollowing` (boolean): Only present when authenticated, indicates if requester follows this user
+
+**Pagination Behavior:**
+- Invalid page numbers (< 1) default to 1
+- Limits exceeding MAX_LIMIT (100) are capped at 100
+- Empty pages return empty array with correct pagination metadata
 
 ---
 
@@ -429,7 +652,6 @@ Authorization: Bearer <JWT_TOKEN>
   ],
   "tags": ["javascript", "webdev"],
   "communityId": "communityId123",
-  "type": "text"
 }
 ```
 
@@ -438,7 +660,6 @@ Authorization: Bearer <JWT_TOKEN>
 - `images`: Array, max 10 URLs, each valid image URL
 - `tags`: Array, max 5 tags, each from controlled list
 - `communityId`: Optional, must be valid community ID
-- `type`: Enum: "text", "question", "project"
 
 **Success Response (201):**
 ```json
@@ -460,7 +681,6 @@ Authorization: Bearer <JWT_TOKEN>
         "id": "communityId123",
         "name": "JavaScript Developers"
       },
-      "type": "text",
       "likesCount": 0,
       "commentsCount": 0,
       "repostsCount": 0,
@@ -525,7 +745,6 @@ Authorization: Bearer <JWT_TOKEN>
   "data": {
     "post": {
       /* updated post object */
-      "editedAt": "2025-12-12T11:00:00Z"
     }
   },
   "message": "Post updated successfully"

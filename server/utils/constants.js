@@ -46,6 +46,44 @@ const POST_RATE_LIMIT = 10; // posts per hour
 const MIN_COMMENT_CONTENT_LENGTH = 1;
 const MAX_COMMENT_CONTENT_LENGTH = 1000;
 
+// Image Upload Validation
+const ALLOWED_IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const IMAGE_CONFIGS = {
+  POST: {
+    width: 2000,
+    max_size_mb: 5,
+    quality: 85
+  },
+  PROFILE: { 
+    width: 500,
+    height: 500,
+    max_size_mb: 5,
+    quality: 85
+  },
+  COVER: { 
+    width: 1500,
+    height: 500,
+    max_size_mb: 5,
+    quality: 85,
+    fit: 'cover'
+  },
+  MESSAGE: { 
+    width: 1000,
+    max_size_mb: 5,
+    quality: 85
+  }
+};
+
+// Image Processing Fit Strategies
+const IMAGE_FIT_COVER = 'cover'; // Crop to fill dimensions
+const IMAGE_FIT_INSIDE = 'inside'; // Resize to fit within dimensions, no enlargement
+
+// Cloudinary Folders
+const CLOUDINARY_FOLDER_PROFILE = 'profile-pictures';
+const CLOUDINARY_FOLDER_COVER = 'cover-images';
+const CLOUDINARY_FOLDER_POST = 'post-images';
+const CLOUDINARY_FOLDER_MESSAGE = 'message-images';
+
 // Public fields for posts
 const PUBLIC_POST_FIELDS = [
   '_id',
@@ -113,11 +151,27 @@ module.exports = {
   MIN_COMMENT_CONTENT_LENGTH,
   MAX_COMMENT_CONTENT_LENGTH,
   
-  // Post fields
-  PUBLIC_POST_FIELDS,
-  UPDATABLE_POST_FIELDS,
   
   // Comment fields
   PUBLIC_COMMENT_FIELDS,
-  UPDATABLE_COMMENT_FIELDS
+  UPDATABLE_COMMENT_FIELDS,
+
+  // Image upload
+  ALLOWED_IMAGE_MIME_TYPES,
+  IMAGE_CONFIGS,
+  
+  
+  // Image processing fit strategies
+  IMAGE_FIT_COVER,
+  IMAGE_FIT_INSIDE,
+  
+  // Cloudinary folders
+  CLOUDINARY_FOLDER_PROFILE,
+  CLOUDINARY_FOLDER_COVER,
+  CLOUDINARY_FOLDER_POST,
+  CLOUDINARY_FOLDER_MESSAGE,
+
+  // Post fields
+  PUBLIC_POST_FIELDS,
+  UPDATABLE_POST_FIELDS,
 };
