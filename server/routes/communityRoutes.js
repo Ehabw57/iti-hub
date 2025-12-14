@@ -1,0 +1,97 @@
+const express = require('express');
+const { checkAuth, optionalAuth } = require('../middlewares/checkAuth');
+const { communityCreate, profile, cover } = require('../middlewares/upload');
+
+// Community controllers
+const getCommunityFeed = require('../controllers/community/getCommunityFeedController');
+const createCommunity = require('../controllers/community/createCommunityController');
+const getCommunity = require('../controllers/community/getCommunityController');
+const updateCommunityDetails = require('../controllers/community/updateCommunityDetailsController');
+const updateCommunityProfilePicture = require('../controllers/community/updateCommunityProfilePictureController');
+const updateCommunityCoverImage = require('../controllers/community/updateCommunityCoverImageController');
+const joinCommunity = require('../controllers/community/joinCommunityController');
+const leaveCommunity = require('../controllers/community/leaveCommunityController');
+const addModerator = require('../controllers/community/addModeratorController');
+const removeModerator = require('../controllers/community/removeModeratorController');
+const listCommunities = require('../controllers/community/listCommunitiesController');
+
+const communityRoutes = express.Router();
+
+/**
+ * @route   GET /api/communities
+ * @desc    List all communities with pagination, search, and filtering
+ * @access  Public (optional auth for isJoined status)
+ */
+communityRoutes.get('/', optionalAuth, listCommunities);
+
+/**
+ * @route   POST /api/communities
+ * @desc    Create a new community
+ * @access  Private
+ */
+communityRoutes.post('/', checkAuth, communityCreate, createCommunity);
+
+/**
+ * @route   GET /api/communities/:id
+ * @desc    Get community details
+ * @access  Public (optional auth for membership status)
+ */
+communityRoutes.get('/:id', optionalAuth, getCommunity);
+
+/**
+ * @route   PATCH /api/communities/:id
+ * @desc    Update community details (description)
+ * @access  Private (Owner only)
+ */
+communityRoutes.patch('/:id', checkAuth, updateCommunityDetails);
+
+/**
+ * @route   POST /api/communities/:id/profile-picture
+ * @desc    Update community profile picture
+ * @access  Private (Owner only)
+ */
+communityRoutes.post('/:id/profile-picture', checkAuth, profile, updateCommunityProfilePicture);
+
+/**
+ * @route   POST /api/communities/:id/cover-image
+ * @desc    Update community cover image
+ * @access  Private (Owner only)
+ */
+communityRoutes.post('/:id/cover-image', checkAuth, cover, updateCommunityCoverImage);
+
+/**
+ * @route   POST /api/communities/:id/join
+ * @desc    Join a community
+ * @access  Private
+ */
+communityRoutes.post('/:id/join', checkAuth, joinCommunity);
+
+/**
+ * @route   POST /api/communities/:id/leave
+ * @desc    Leave a community
+ * @access  Private
+ */
+communityRoutes.post('/:id/leave', checkAuth, leaveCommunity);
+
+/**
+ * @route   POST /api/communities/:id/moderators
+ * @desc    Add a moderator to the community
+ * @access  Private (Owner/Moderator only)
+ */
+communityRoutes.post('/:id/moderators', checkAuth, addModerator);
+
+/**
+ * @route   DELETE /api/communities/:id/moderators/:userId
+ * @desc    Remove a moderator from the community
+ * @access  Private (Owner/Moderator only)
+ */
+communityRoutes.delete('/:id/moderators/:userId', checkAuth, removeModerator);
+
+/**
+ * @route   GET /api/communities/:communityId/feed
+ * @desc    Get community feed (chronological posts from a specific community)
+ * @access  Public (optional auth)
+ */
+communityRoutes.get('/:communityId/feed', optionalAuth, getCommunityFeed);
+
+module.exports = communityRoutes;

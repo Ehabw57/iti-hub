@@ -3,6 +3,7 @@ const PostLike = require('../../models/PostLike');
 const PostSave = require('../../models/PostSave');
 const Comment = require('../../models/Comment');
 const { canModifyPost } = require('../../utils/postHelpers');
+const { updatePostCount } = require('../../utils/communityHelpers');
 
 /**
  * Delete post
@@ -35,6 +36,11 @@ async function deletePost(req, res) {
     await PostLike.deleteMany({ post: id });
     await PostSave.deleteMany({ post: id });
     await Comment.deleteMany({ post: id });
+
+    // Decrement community post count if this is a community post
+    if (post.community) {
+      await updatePostCount(post.community, -1);
+    }
 
     // Delete post
     await Post.findByIdAndDelete(id);

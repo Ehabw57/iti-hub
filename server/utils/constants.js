@@ -46,6 +46,76 @@ const POST_RATE_LIMIT = 10; // posts per hour
 const MIN_COMMENT_CONTENT_LENGTH = 1;
 const MAX_COMMENT_CONTENT_LENGTH = 1000;
 
+// Community Validation
+const COMMUNITY_TAGS = [
+  'Technology',
+  'Education',
+  'Science',
+  'Arts',
+  'Sports',
+  'Gaming',
+  'Music',
+  'Movies',
+  'Books',
+  'Food',
+  'Travel',
+  'Health',
+  'Fitness',
+  'Business',
+  'Career',
+  'Fashion',
+  'Photography',
+  'Nature',
+  'Politics',
+  'Hobbies'
+];
+const MIN_COMMUNITY_TAGS = 1;
+const MAX_COMMUNITY_TAGS = 3;
+
+// Community Image Size Configuration
+const COMMUNITY_PROFILE_PICTURE_SIZE = {
+  width: 500,
+  height: 500,
+  max_size_mb: 5,
+  quality: 85
+};
+const COMMUNITY_COVER_IMAGE_SIZE = {
+  width: 1500,
+  height: 500,
+  max_size_mb: 10,
+  quality: 85,
+  fit: 'cover'
+};
+
+// Feed Algorithm Configuration
+const TRENDING_FEED_DAYS = 2; // Time window for trending posts (in days)
+const HOME_FEED_DAYS = 7; // Time window for home feed posts (in days)
+const FOLLOWING_FEED_DAYS = 30; // Time window for following feed posts (in days)
+
+// Featured tags for unauthenticated home feed
+const FEATURED_TAGS = ['technology', 'programming', 'design', 'business', 'education'];
+
+// Feed algorithm weights
+const FEED_WEIGHTS = {
+  HOME: {
+    engagement: 0.5,
+    recency: 0.3,
+    source: 0.2
+  },
+  TRENDING: {
+    engagement: 0.6,
+    recency: 0.4
+  }
+};
+
+// Feed cache TTL (in seconds)
+const FEED_CACHE_TTL = {
+  HOME: 300,        // 5 minutes
+  FOLLOWING: 60,    // 1 minute
+  TRENDING: 300,    // 5 minutes
+  COMMUNITY: 300    // 5 minutes
+};
+
 // Image Upload Validation
 const ALLOWED_IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const IMAGE_CONFIGS = {
@@ -83,6 +153,8 @@ const CLOUDINARY_FOLDER_PROFILE = 'profile-pictures';
 const CLOUDINARY_FOLDER_COVER = 'cover-images';
 const CLOUDINARY_FOLDER_POST = 'post-images';
 const CLOUDINARY_FOLDER_MESSAGE = 'message-images';
+const CLOUDINARY_FOLDER_COMMUNITY_PROFILE = 'community-profile-pictures';
+const CLOUDINARY_FOLDER_COMMUNITY_COVER = 'community-cover-images';
 
 // Public fields for posts
 const PUBLIC_POST_FIELDS = [
@@ -151,6 +223,21 @@ module.exports = {
   MIN_COMMENT_CONTENT_LENGTH,
   MAX_COMMENT_CONTENT_LENGTH,
   
+  // Community validation
+  COMMUNITY_TAGS,
+  MIN_COMMUNITY_TAGS,
+  MAX_COMMUNITY_TAGS,
+  COMMUNITY_PROFILE_PICTURE_SIZE,
+  COMMUNITY_COVER_IMAGE_SIZE,
+  
+  // Feed algorithm configuration
+  TRENDING_FEED_DAYS,
+  HOME_FEED_DAYS,
+  FOLLOWING_FEED_DAYS,
+  FEATURED_TAGS,
+  FEED_WEIGHTS,
+  FEED_CACHE_TTL,
+  
   
   // Comment fields
   PUBLIC_COMMENT_FIELDS,
@@ -170,6 +257,8 @@ module.exports = {
   CLOUDINARY_FOLDER_COVER,
   CLOUDINARY_FOLDER_POST,
   CLOUDINARY_FOLDER_MESSAGE,
+  CLOUDINARY_FOLDER_COMMUNITY_PROFILE,
+  CLOUDINARY_FOLDER_COMMUNITY_COVER,
 
   // Post fields
   PUBLIC_POST_FIELDS,

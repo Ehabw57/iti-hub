@@ -1,0 +1,416 @@
+openapi: 3.0.0
+info:
+  title: Feed API
+  version: 1.0.0
+  description: API for retrieving various feed types (Home, Following, Trending, Community) with caching and pagination support
+
+servers:
+  - url: http://localhost:3030
+    description: Development server
+
+paths:
+  /feed/home:
+    get:
+      tags:
+        - Feed
+      summary: Get home feed
+      description: |
+        Returns the home feed with different behavior based on authentication:
+        
+        **For Authenticated Users:**
+        - Algorithmic feed based on user's connections and community enrollments
+        - Posts are scored using engagement, recency, and source factors
+        - Sorted by calculated feed score (highest first)
+        - Filtered to posts from last 7 days
+        - Fetches 3x the limit to ensure sufficient results after scoring
+        
+        **For Unauthenticated Users:**
+        - Returns posts tagged with featured tags (javascript, python, webdev, ai, opensource)
+        - Sorted chronologically (newest first)
+        - No time filtering
+        
+        **Caching:**
+        - Cached for 5 minutes (300 seconds)
+        - Cache key includes user ID and page number
+        - Returns `cached: true` in response when served from cache
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number for pagination
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 10
+          description: Number of posts per page
+      responses:
+        200:
+          description: Successfully retrieved home feed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  posts:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PostResponse'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+                  cached:
+                    type: boolean
+                    description: Whether the response was served from cache
+                    example: false
+        500:
+          $ref: '#/components/responses/ServerError'
+
+  /feed/following:
+    get:
+      tags:
+        - Feed
+      summary: Get following feed
+      description: |
+        Returns a chronological feed of posts from users and communities that the authenticated user follows/is enrolled in.
+        
+        **Features:**
+        - Requires authentication
+        - Chronological order (newest first)
+        - Includes posts from followed users
+        - Includes posts from enrolled communities
+        - Filtered to posts from last 30 days
+        - No algorithmic scoring (pure chronological)
+        
+        **Caching:**
+        - Cached for 1 minute (60 seconds)
+        - Cache key includes user ID and page number
+        - Shorter TTL than home feed due to real-time expectations
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number for pagination
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 10
+          description: Number of posts per page
+      responses:
+        200:
+          description: Successfully retrieved following feed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  posts:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PostResponse'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+                  cached:
+                    type: boolean
+                    description: Whether the response was served from cache
+                    example: false
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+  /feed/trending:
+    get:
+      tags:
+        - Feed
+      summary: Get trending feed
+      description: |
+        Returns a global trending feed with algorithmically ranked posts based on recent engagement.
+        
+        **Algorithm:**
+        - Uses trending-specific weights: 60% engagement, 40% recency
+        - Higher emphasis on engagement compared to home feed
+        - Filtered to posts from last 2 days only
+        - Posts scored based on likes, comments, and reposts
+        - Logarithmic scaling prevents high-engagement posts from dominating
+        
+        **Caching:**
+        - Cached for 5 minutes (300 seconds)
+        - Cache key includes user ID (if authenticated) and page number
+        - User ID in cache enables personalized interaction states
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number for pagination
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 10
+          description: Number of posts per page
+      responses:
+        200:
+          description: Successfully retrieved trending feed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  posts:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PostResponse'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+                  cached:
+                    type: boolean
+                    description: Whether the response was served from cache
+                    example: false
+        500:
+          $ref: '#/components/responses/ServerError'
+
+  /communities/{communityId}/feed:
+    get:
+      tags:
+        - Feed
+        - Communities
+      summary: Get community feed
+      description: |
+        Returns a chronological feed of posts from a specific community.
+        
+        **Features:**
+        - Public endpoint (authentication optional)
+        - Chronological order (newest first)
+        - Filtered by communityId
+        - No time filtering (shows all historical posts)
+        - No algorithmic scoring
+        
+        **Caching:**
+        - Cached for 5 minutes (300 seconds)
+        - Cache key includes community ID, user ID (if authenticated), and page number
+        - Community-specific cache can be invalidated when new posts are created
+      parameters:
+        - in: path
+          name: communityId
+          required: true
+          schema:
+            type: string
+          description: The ID of the community
+          example: "507f1f77bcf86cd799439011"
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number for pagination
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 10
+          description: Number of posts per page
+      responses:
+        200:
+          description: Successfully retrieved community feed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  posts:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PostResponse'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+                  cached:
+                    type: boolean
+                    description: Whether the response was served from cache
+                    example: false
+        400:
+          description: Invalid community ID
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Invalid community ID"
+        500:
+          $ref: '#/components/responses/ServerError'
+
+components:
+  schemas:
+    PostResponse:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: "507f1f77bcf86cd799439011"
+        content:
+          type: string
+          example: "Just finished implementing the feed system! 🚀"
+        author:
+          type: object
+          properties:
+            _id:
+              type: string
+              example: "507f191e810c19729de860ea"
+            username:
+              type: string
+              example: "johndoe"
+            firstName:
+              type: string
+              example: "John"
+            lastName:
+              type: string
+              example: "Doe"
+            profilePicture:
+              type: string
+              example: "https://res.cloudinary.com/example/image/upload/v1234567890/profile.jpg"
+        images:
+          type: array
+          items:
+            type: string
+          example: ["https://res.cloudinary.com/example/image/upload/v1234567890/post1.jpg"]
+        tags:
+          type: array
+          items:
+            type: string
+          example: ["coding", "javascript", "backend"]
+        community:
+          type: object
+          nullable: true
+          properties:
+            _id:
+              type: string
+              example: "507f1f77bcf86cd799439012"
+            name:
+              type: string
+              example: "Web Development"
+        likesCount:
+          type: integer
+          example: 42
+        commentsCount:
+          type: integer
+          example: 8
+        repostsCount:
+          type: integer
+          example: 3
+        isLiked:
+          type: boolean
+          description: Whether the authenticated user has liked this post
+          example: false
+        isSaved:
+          type: boolean
+          description: Whether the authenticated user has saved this post
+          example: false
+        isReposted:
+          type: boolean
+          description: Whether the authenticated user has reposted this post
+          example: false
+        originalPost:
+          type: object
+          nullable: true
+          description: Reference to original post if this is a repost
+        createdAt:
+          type: string
+          format: date-time
+          example: "2025-12-14T10:30:00.000Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2025-12-14T10:30:00.000Z"
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          description: Current page number
+          example: 1
+        limit:
+          type: integer
+          description: Number of items per page
+          example: 10
+        total:
+          type: integer
+          description: Total number of items
+          example: 156
+        pages:
+          type: integer
+          description: Total number of pages
+          example: 16
+
+  responses:
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              message:
+                type: string
+                example: "Authentication required"
+
+    ServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              message:
+                type: string
+                example: "Server error"
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from /auth/login or /auth/register

@@ -10,5 +10,9 @@ module.exports = function () {
     this.body = obj;
     return this;
   };
+  res.send = function (data) {
+    this.body = data;
+    return this;
+  };
   return res;
 };

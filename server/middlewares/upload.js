@@ -54,7 +54,19 @@ const upload = {
     limits: { 
       fileSize: IMAGE_CONFIGS.MESSAGE.max_size_mb * 1024 * 1024 
     }
-  }).single('image')
+  }).single('image'),
+
+  // Community creation with optional profile and cover images
+  communityCreate: multer({
+    storage,
+    fileFilter,
+    limits: { 
+      fileSize: IMAGE_CONFIGS.COVER.max_size_mb * 1024 * 1024 // 10MB max (largest)
+    }
+  }).fields([
+    { name: 'profilePicture', maxCount: 1 },
+    { name: 'coverImage', maxCount: 1 }
+  ])
 };
 
 // Middleware to handle multer errors

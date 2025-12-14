@@ -42,8 +42,9 @@ Implement a comprehensive community system where users can create, join, and par
 **So that** I can build a space for people with shared interests
 
 **Acceptance Criteria:**
-- Provide name, description, coverImage (optional)
+- Provide name, description, tags (1-3 predefined tags), profilePicture (optional), coverImage (optional)
 - Name must be unique (case-insensitive)
+- Tags must be from predefined list (see constants)
 - Creator automatically becomes owner and moderator
 - Creator automatically enrolled as member
 - Community visible in discovery immediately
@@ -118,11 +119,42 @@ Implement a comprehensive community system where users can create, join, and par
 
 **Acceptance Criteria:**
 - Public endpoint (no authentication required)
-- List all communities with basic info (name, description, memberCount)
+- List all communities with basic info (name, description, memberCount, tags)
 - Pagination supported (20 per page)
 - Optional search by name (case-insensitive substring)
+- Optional filter by tags
 - Returns `isJoined` flag for authenticated users
 - Sorted by memberCount descending (most popular first)
+
+---
+
+### 7. Edit Community Details
+**As a** community owner  
+**I want to** edit community information  
+**So that** I can keep community details up to date
+
+**Acceptance Criteria:**
+- Only owners can edit community details
+- Editable fields: description only
+- Name cannot be changed after creation
+- Returns updated community
+- 403 error if not an owner
+
+---
+
+### 8. Update Community Images
+**As a** community owner  
+**I want to** update the community profile picture and cover image  
+**So that** I can customize the community appearance
+
+**Acceptance Criteria:**
+- Only owners can update profile picture or cover image
+- Separate endpoints for profile picture and cover image
+- Profile picture: 500x500px, max 5MB
+- Cover image: 1500x500px, max 10MB
+- Old images automatically deleted from Cloudinary
+- 403 error if not an owner
+- Images processed (resized, compressed, WebP format)
 
 ---
 
@@ -148,10 +180,18 @@ const communitySchema = new mongoose.Schema({
     minlength: 10,
     maxlength: 500
   },
+  profilePicture: {
+    type: String, // URL to image
+    default: null
+  },
   coverImage: {
     type: String, // URL to image
     default: null
   },
+  tags: [{
+    type: String,
+    enum: [] // Will be populated from constants.COMMUNITY_TAGS
+  }],
   memberCount: {
     type: Number,
     default: 1 // Creator is first member
@@ -168,10 +208,6 @@ const communitySchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   }],
-  createdAt: {
-    type: Date,
-    default: Date.now
-  }
 }, { 
   timestamps: true 
 });
@@ -180,12 +216,20 @@ const communitySchema = new mongoose.Schema({
 communitySchema.index({ name: 1 }, { unique: true });
 communitySchema.index({ memberCount: -1 }); // For sorting by popularity
 communitySchema.index({ createdAt: -1 }); // For sorting by newest
+communitySchema.index({ tags: 1 }); // For filtering by tags
+
+// Validation
+communitySchema.path('tags').validate(function(tags) {
+  return tags.length >= 1 && tags.length <= 3;
+}, 'Community must have between 1 and 3 tags');
 ```
 
 **Key Fields:**
-- `name`: Unique community identifier (displayed)
-- `description`: Purpose/topic description
-- `coverImage`: Optional banner image URL
+- `name`: Unique community identifier (displayed, immutable after creation)
+- `description`: Purpose/topic description (editable by owners)
+- `profilePicture`: Community avatar/logo (500x500px, editable by owners)
+- `coverImage`: Community banner image (1500x500px, editable by owners)
+- `tags`: 1-3 predefined category tags from COMMUNITY_TAGS constant
 - `memberCount`: Cached count (updated on join/leave)
 - `postCount`: Cached count (updated on post create/delete)
 - `owners`: Array of user IDs (cannot be removed, full control)
@@ -214,10 +258,6 @@ const enrollmentSchema = new mongoose.Schema({
     enum: ['member', 'moderator', 'owner'],
     default: 'member'
   },
-  joinedAt: {
-    type: Date,
-    default: Date.now
-  }
 }, { 
   timestamps: true 
 });
@@ -232,7 +272,6 @@ enrollmentSchema.index({ user: 1 }); // For getting user's communities
 - `user`: Reference to User model
 - `community`: Reference to Community model
 - `role`: Membership role (member, moderator, owner)
-- `joinedAt`: Enrollment timestamp
 
 **Unique Constraint:** One enrollment per user-community pair
 
@@ -254,24 +293,82 @@ community: {
 
 ## Implementation Tasks
 
+### Phase 0: Constants & Refactoring (1 day)
+
+**T051: Add Community Constants** (0.5 days)
+- File: `/server/utils/constants.js` (MODIFY)
+- Add constants:
+  ```javascript
+  // Community Tags (predefined categories)
+  COMMUNITY_TAGS: [
+    'Technology',
+    'Gaming',
+    'Education',
+    'Science',
+    'Arts & Design',
+    'Music',
+    'Sports',
+    'Health & Fitness',
+    'Business',
+    'Entertainment',
+    'Food & Cooking',
+    'Travel',
+    'Books & Literature',
+    'Photography',
+    'Movies & TV',
+    'Fashion',
+    'DIY & Crafts',
+    'News & Politics',
+    'Environment',
+    'Other'
+  ],
+  
+  // Community Image Specs
+  COMMUNITY_PROFILE_PICTURE_SIZE: { width: 500, height: 500 },
+  COMMUNITY_COVER_IMAGE_SIZE: { width: 1500, height: 500 },
+  COMMUNITY_PROFILE_PICTURE_MAX_SIZE: 5 * 1024 * 1024, // 5MB
+  COMMUNITY_COVER_IMAGE_MAX_SIZE: 10 * 1024 * 1024, // 10MB
+  
+  // Community Validation
+  MIN_COMMUNITY_TAGS: 1,
+  MAX_COMMUNITY_TAGS: 3,
+  ```
+- Tests: 5+ tests for constant validation
+
+**T051B: Refactor Feed Controllers for Community/Enrollment** (0.5 days)
+- Files: 
+  - `/server/controllers/feed/getHomeFeedController.js` (MODIFY)
+  - `/server/controllers/feed/getFollowingFeedController.js` (MODIFY)
+  - `/server/controllers/community/getCommunityFeedController.js` (MODIFY)
+- Changes:
+  - Remove mocked Community/Enrollment usage
+  - Use actual Community and Enrollment models
+  - Update queries to use real database relationships
+  - Update tests to use real models instead of mocks
+- Tests: Update existing tests (~30 tests affected)
+
+---
+
 ### Phase 1: Data Models (2 days)
 
 **T052: Create Community Model** (1 day)
 - File: `/server/models/Community.js`
-- Schema definition (name, description, coverImage, counts, owners, moderators)
-- Indexes for performance
+- Schema definition (name, description, profilePicture, coverImage, tags, counts, owners, moderators)
+- Indexes for performance (name, memberCount, createdAt, tags)
+- Tag validation (1-3 tags from COMMUNITY_TAGS)
 - Virtual for `isModerator(userId)`, `isOwner(userId)`
 - Pre-save hooks to ensure at least one owner
-- Tests: 15+ unit tests covering:
+- Tests: 20+ unit tests covering:
   - Model creation with required fields
   - Name uniqueness validation
   - Owner/moderator arrays
   - Default values (memberCount: 1, postCount: 0)
+  - Tag validation (min 1, max 3, from enum)
   - Indexes created correctly
 
 **T053: Create Enrollment Model** (1 day)
 - File: `/server/models/Enrollment.js`
-- Schema definition (user, community, role, joinedAt)
+- Schema definition (user, community, role)
 - Compound unique index (user + community)
 - Static methods: `isEnrolled(userId, communityId)`, `getRole(userId, communityId)`
 - Tests: 12+ unit tests covering:
@@ -289,6 +386,7 @@ community: {
 - File: `/server/utils/communityHelpers.js`
 - Functions:
   - `isMember(userId, communityId)` - Check if user is enrolled
+  - `isOwner(userId, communityId)` - Check if user is owner
   - `canModerate(userId, communityId)` - Check if user can moderate
   - `incrementMemberCount(communityId)` - Atomic increment
   - `decrementMemberCount(communityId)` - Atomic decrement
@@ -303,17 +401,17 @@ community: {
 
 ---
 
-### Phase 3: CRUD Operations (3 days)
+### Phase 3: CRUD Operations (4 days)
 
 **T055: Create Community Controller** (1 day)
 - File: `/server/controllers/community/createCommunityController.js`
 - Route: `POST /communities`
-- Middleware: `checkAuth`, `upload.single('coverImage')` (optional)
+- Middleware: `checkAuth`, `upload.fields([{ name: 'profilePicture' }, { name: 'coverImage' }])`
 
 **Implementation:**
 ```javascript
 async function createCommunity(req, res) {
-  const { name, description } = req.body;
+  const { name, description, tags } = req.body;
   const userId = req.user._id;
   
   // 1. Validate input
@@ -324,7 +422,24 @@ async function createCommunity(req, res) {
     });
   }
   
-  // 2. Check name uniqueness (case-insensitive)
+  // 2. Validate tags
+  const parsedTags = JSON.parse(tags || '[]');
+  if (parsedTags.length < 1 || parsedTags.length > 3) {
+    return res.status(400).json({
+      success: false,
+      message: 'Community must have between 1 and 3 tags'
+    });
+  }
+  
+  const invalidTags = parsedTags.filter(tag => !COMMUNITY_TAGS.includes(tag));
+  if (invalidTags.length > 0) {
+    return res.status(400).json({
+      success: false,
+      message: `Invalid tags: ${invalidTags.join(', ')}`
+    });
+  }
+  
+  // 3. Check name uniqueness (case-insensitive)
   const exists = await Community.findOne({ 
     name: new RegExp(`^${name}$`, 'i') 
   });
@@ -336,19 +451,29 @@ async function createCommunity(req, res) {
     });
   }
   
-  // 3. Upload coverImage if provided
+  // 4. Upload images if provided
+  let profilePictureUrl = null;
   let coverImageUrl = null;
-  if (req.file) {
-    const result = await cloudinary.uploader.upload(req.file.path, {
-      folder: 'communities',
-      transformation: [
-        { width: 1500, height: 300, crop: 'fill' }
-      ]
-    });
+  
+  if (req.files?.profilePicture) {
+    const result = await processAndUploadImage(
+      req.files.profilePicture[0],
+      'community-profiles',
+      { width: 500, height: 500 }
+    );
+    profilePictureUrl = result.secure_url;
+  }
+  
+  if (req.files?.coverImage) {
+    const result = await processAndUploadImage(
+      req.files.coverImage[0],
+      'community-covers',
+      { width: 1500, height: 500 }
+    );
     coverImageUrl = result.secure_url;
   }
   
-  // 4. Create community
+  // 5. Create community
   const community = new Community({
     name,
     description,
@@ -362,6 +487,20 @@ async function createCommunity(req, res) {
   
   // 5. Create enrollment for creator
   const enrollment = new Enrollment({
+    name,
+    description,
+    profilePicture: profilePictureUrl,
+    coverImage: coverImageUrl,
+    tags: parsedTags,
+    owners: [userId],
+    moderators: [userId],
+    memberCount: 1
+  });
+  
+  await community.save();
+  
+  // 6. Create enrollment for creator
+  const enrollment = new Enrollment({
     user: userId,
     community: community._id,
     role: 'owner'
@@ -369,7 +508,7 @@ async function createCommunity(req, res) {
   
   await enrollment.save();
   
-  // 6. Return created community
+  // 7. Return created community
   return res.status(201).json({
     success: true,
     data: { community }
@@ -377,12 +516,214 @@ async function createCommunity(req, res) {
 }
 ```
 
-**Tests: 15+ tests**
+**Tests: 20+ tests**
 - Creates community with valid data
-- Uploads and stores coverImage
+- Uploads and stores profilePicture and coverImage
+- Validates tags (1-3, from predefined list)
 - Name uniqueness enforced
 - Creator enrolled as owner
 - Validation errors returned
+- Creator is owner and moderator
+
+---
+
+**T055B: Update Community Details Controller** (0.5 days)
+- File: `/server/controllers/community/updateCommunityController.js`
+- Route: `PATCH /communities/:id`
+- Middleware: `checkAuth`
+
+**Implementation:**
+```javascript
+async function updateCommunity(req, res) {
+  const { id: communityId } = req.params;
+  const { description } = req.body;
+  const userId = req.user._id;
+  
+  // 1. Verify user is owner
+  const isOwner = await isOwnerHelper(userId, communityId);
+  if (!isOwner) {
+    return res.status(403).json({
+      success: false,
+      message: 'Only owners can edit community details'
+    });
+  }
+  
+  // 2. Validate description
+  if (!description || description.length < 10 || description.length > 500) {
+    return res.status(400).json({
+      success: false,
+      message: 'Description must be between 10 and 500 characters'
+    });
+  }
+  
+  // 3. Update community
+  const community = await Community.findByIdAndUpdate(
+    communityId,
+    { description },
+    { new: true, runValidators: true }
+  );
+  
+  if (!community) {
+    return res.status(404).json({
+      success: false,
+      message: 'Community not found'
+    });
+  }
+  
+  return res.json({
+    success: true,
+    data: { community }
+  });
+}
+```
+
+**Tests: 10+ tests**
+- Owners can update description
+- Non-owners get 403
+- Validates description length
+- Returns updated community
+
+---
+
+**T055C: Update Community Profile Picture Controller** (0.5 days)
+- File: `/server/controllers/community/updateCommunityProfilePictureController.js`
+- Route: `POST /communities/:id/profile-picture`
+- Middleware: `checkAuth`, `upload.single('image')`
+
+**Implementation:**
+```javascript
+async function updateCommunityProfilePicture(req, res) {
+  const { id: communityId } = req.params;
+  const userId = req.user._id;
+  
+  // 1. Verify user is owner
+  const isOwner = await isOwnerHelper(userId, communityId);
+  if (!isOwner) {
+    return res.status(403).json({
+      success: false,
+      message: 'Only owners can update community images'
+    });
+  }
+  
+  // 2. Verify file uploaded
+  if (!req.file) {
+    return res.status(400).json({
+      success: false,
+      message: 'No image file provided'
+    });
+  }
+  
+  // 3. Get community
+  const community = await Community.findById(communityId);
+  if (!community) {
+    return res.status(404).json({
+      success: false,
+      message: 'Community not found'
+    });
+  }
+  
+  // 4. Delete old image if exists
+  if (community.profilePicture) {
+    await deleteCloudinaryImage(community.profilePicture);
+  }
+  
+  // 5. Upload new image
+  const result = await processAndUploadImage(
+    req.file,
+    'community-profiles',
+    { width: 500, height: 500 }
+  );
+  
+  // 6. Update community
+  community.profilePicture = result.secure_url;
+  await community.save();
+  
+  return res.json({
+    success: true,
+    data: { 
+      profilePicture: community.profilePicture 
+    }
+  });
+}
+```
+
+**Tests: 12+ tests**
+- Owners can update profile picture
+- Non-owners get 403
+- Old image deleted from Cloudinary
+- Image processed correctly (500x500)
+- Validates file type and size
+
+---
+
+**T055D: Update Community Cover Image Controller** (0.5 days)
+- File: `/server/controllers/community/updateCommunityCoverImageController.js`
+- Route: `POST /communities/:id/cover-image`
+- Middleware: `checkAuth`, `upload.single('image')`
+
+**Implementation:**
+```javascript
+async function updateCommunityCoverImage(req, res) {
+  const { id: communityId } = req.params;
+  const userId = req.user._id;
+  
+  // 1. Verify user is owner
+  const isOwner = await isOwnerHelper(userId, communityId);
+  if (!isOwner) {
+    return res.status(403).json({
+      success: false,
+      message: 'Only owners can update community images'
+    });
+  }
+  
+  // 2. Verify file uploaded
+  if (!req.file) {
+    return res.status(400).json({
+      success: false,
+      message: 'No image file provided'
+    });
+  }
+  
+  // 3. Get community
+  const community = await Community.findById(communityId);
+  if (!community) {
+    return res.status(404).json({
+      success: false,
+      message: 'Community not found'
+    });
+  }
+  
+  // 4. Delete old image if exists
+  if (community.coverImage) {
+    await deleteCloudinaryImage(community.coverImage);
+  }
+  
+  // 5. Upload new image
+  const result = await processAndUploadImage(
+    req.file,
+    'community-covers',
+    { width: 1500, height: 500 }
+  );
+  
+  // 6. Update community
+  community.coverImage = result.secure_url;
+  await community.save();
+  
+  return res.json({
+    success: true,
+    data: { 
+      coverImage: community.coverImage 
+    }
+  });
+}
+```
+
+**Tests: 12+ tests**
+- Owners can update cover image
+- Non-owners get 403
+- Old image deleted from Cloudinary
+- Image processed correctly (1500x500)
+- Validates file type and size
 - Creator is owner and moderator
 
 ---
@@ -783,26 +1124,33 @@ async function removeModerator(req, res) {
 ### Phase 7: Routes & Integration (2.5 days)
 
 **T062: Create Community Routes** (0.5 days)
-- File: `/server/routes/communityRoutes.js`
+- File: `/server/routes/communityRoutes.js` (MODIFY - already exists with feed route)
 - Routes:
-  - `POST /communities` → createCommunity (checkAuth, upload)
+  - `POST /communities` → createCommunity (checkAuth, upload.fields)
   - `GET /communities` → listCommunities (optionalAuth)
   - `GET /communities/:id` → getCommunity (optionalAuth)
+  - `PATCH /communities/:id` → updateCommunity (checkAuth)
+  - `POST /communities/:id/profile-picture` → updateCommunityProfilePicture (checkAuth, upload.single)
+  - `POST /communities/:id/cover-image` → updateCommunityCoverImage (checkAuth, upload.single)
   - `POST /communities/:id/join` → joinCommunity (checkAuth)
   - `POST /communities/:id/leave` → leaveCommunity (checkAuth)
-  - `GET /communities/:id/feed` → getCommunityFeed (optionalAuth) [Epic 5]
+  - `GET /communities/:id/feed` → getCommunityFeed (optionalAuth) [Already implemented in Epic 5]
   - `POST /communities/:id/moderators` → addModerator (checkAuth)
   - `DELETE /communities/:id/moderators/:userId` → removeModerator (checkAuth)
 
 **T063: Create Community Integration Tests** (1.5 days)
 - File: `/server/spec/integration/community.integration.spec.js`
-- Tests: 40+ end-to-end tests
+- Tests: 50+ end-to-end tests
 
 **Test Scenarios:**
-- Create community flow
+- Create community flow (with/without images, with tags)
+- Update community description (owner only)
+- Update profile picture (owner only)
+- Update cover image (owner only)
 - Join/leave community flow
 - Post to community flow
 - Community feed generation
+- Tag filtering in discovery
 - Moderation workflows
 - Permission checks
 - Edge cases (only owner leaving, etc.)
@@ -811,11 +1159,13 @@ async function removeModerator(req, res) {
 
 **T064: Update API Documentation** (0.5 days)
 - File: `/server/docs/community.yaml`
-- Document all 8 community endpoints
-- Schemas for Community and Enrollment
+- Document all 11 community endpoints
+- Schemas for Community (with profilePicture, coverImage, tags) and Enrollment
+- Document COMMUNITY_TAGS enum
 - Request/response examples
-- Permission requirements
+- Permission requirements (owner-only for edits)
 - Error codes
+- Image upload specifications
 
 ---
 
@@ -823,14 +1173,14 @@ async function removeModerator(req, res) {
 
 ### List All Communities
 
-**Endpoint:** `GET /communities?page=1&limit=20&search=tech`
+**Endpoint:** `GET /communities?page=1&limit=20&search=tech&tags=Technology,Gaming`
 
 **Controller:** `listCommunitiesController.js`
 
 **Implementation:**
 ```javascript
 async function listCommunities(req, res) {
-  const { page = 1, limit = 20, search } = req.query;
+  const { page = 1, limit = 20, search, tags } = req.query;
   const userId = req.user?._id;
   
   // Build query
@@ -839,12 +1189,18 @@ async function listCommunities(req, res) {
     query.name = new RegExp(search, 'i'); // Case-insensitive substring
   }
   
+  // Filter by tags if provided
+  if (tags) {
+    const tagArray = tags.split(',').map(t => t.trim());
+    query.tags = { $in: tagArray };
+  }
+  
   // Get communities
   const communities = await Community.find(query)
     .sort({ memberCount: -1 }) // Most popular first
     .skip((page - 1) * limit)
     .limit(limit)
-    .select('name description coverImage memberCount postCount createdAt')
+    .select('name description profilePicture coverImage tags memberCount postCount createdAt')
     .lean();
   
   // Add isJoined flag if authenticated
@@ -891,6 +1247,9 @@ async function listCommunities(req, res) {
 | Edit own post | ❌ | ✅ | ✅ | ✅ |
 | Delete own post | ❌ | ✅ | ✅ | ✅ |
 | Delete others' posts | ❌ | ❌ | ✅ | ✅ |
+| Edit community description | ❌ | ❌ | ❌ | ✅ |
+| Update profile picture | ❌ | ❌ | ❌ | ✅ |
+| Update cover image | ❌ | ❌ | ❌ | ✅ |
 | Add moderators | ❌ | ❌ | ✅ | ✅ |
 | Remove moderators | ❌ | ❌ | ✅ | ✅ |
 | Remove owners | ❌ | ❌ | ❌ | ❌ |
@@ -901,12 +1260,17 @@ async function listCommunities(req, res) {
 
 ## Testing Strategy
 
-### Unit Tests (134+ tests)
+### Unit Tests (159+ tests)
 
-**Community Model (15 tests):**
+**Constants (5 tests):**
+- COMMUNITY_TAGS validation
+- Image size constants
+
+**Community Model (20 tests):**
 - Schema validation
 - Uniqueness constraints
 - Default values
+- Tag validation (1-3 tags)
 - Indexes
 
 **Enrollment Model (12 tests):**
@@ -915,27 +1279,33 @@ async function listCommunities(req, res) {
 - Role enum
 - Static methods
 
-**Community Helpers (20 tests):**
-- Permission checking
+**Community Helpers (22 tests):**
+- Permission checking (including isOwner)
 - Atomic count updates
 - Error handling
 
-**Controllers (87 tests):**
-- Create community (15 tests)
+**Controllers (100 tests):**
+- Create community (20 tests)
+- Update community details (10 tests)
+- Update profile picture (12 tests)
+- Update cover image (12 tests)
 - Get community (8 tests)
 - Join/leave (20 tests)
 - Community posts (20 tests)
 - Moderation (22 tests)
-- List communities (2 tests)
+- List communities (4 tests with tag filtering)
 
-### Integration Tests (40+ tests)
+### Integration Tests (50+ tests)
 
 **End-to-End Flows:**
 - Create community → join → post → feed
+- Create community with tags and images
+- Update community details (owner only)
+- Update images (owner only, old image deletion)
 - Join → leave → cannot post
 - Add moderator → moderate content
 - Remove moderator → loses permissions
-- Community discovery with search
+- Community discovery with search and tag filtering
 - Permission enforcement
 - Cache behavior
 
@@ -954,6 +1324,8 @@ Body:
 {
   "name": "Tech Enthusiasts",
   "description": "A community for tech lovers",
+  "tags": ["Technology", "Education"],  // 1-3 tags required
+  "profilePicture": <file> (optional),
   "coverImage": <file> (optional)
 }
 
@@ -965,12 +1337,74 @@ Response 201:
       "_id": "...",
       "name": "Tech Enthusiasts",
       "description": "...",
+      "profilePicture": "https://...",
       "coverImage": "https://...",
+      "tags": ["Technology", "Education"],
       "memberCount": 1,
       "postCount": 0,
       "owners": ["..."],
       "moderators": ["..."]
     }
+  }
+}
+```
+
+```http
+PATCH /communities/:id
+Content-Type: application/json
+Authorization: Bearer <token>
+[Owner only]
+
+Body:
+{
+  "description": "Updated description"
+}
+
+Response 200:
+{
+  "success": true,
+  "data": {
+    "community": { ... }
+  }
+}
+```
+
+```http
+POST /communities/:id/profile-picture
+Content-Type: multipart/form-data
+Authorization: Bearer <token>
+[Owner only]
+
+Body:
+{
+  "image": <file>  // Max 5MB, 500x500px
+}
+
+Response 200:
+{
+  "success": true,
+  "data": {
+    "profilePicture": "https://..."
+  }
+}
+```
+
+```http
+POST /communities/:id/cover-image
+Content-Type: multipart/form-data
+Authorization: Bearer <token>
+[Owner only]
+
+Body:
+{
+  "image": <file>  // Max 10MB, 1500x500px
+}
+
+Response 200:
+{
+  "success": true,
+  "data": {
+    "coverImage": "https://..."
   }
 }
 ```
@@ -985,7 +1419,14 @@ Response 200:
   "data": {
     "community": {
       "_id": "...",
-      "name": "...",
+      "name": "Tech Enthusiasts",
+      "description": "A community for tech lovers",
+      "profilePicture": "https://...",
+      "coverImage": "https://...",
+      "tags": ["Technology", "Education"],
+      "memberCount": 1250,
+      "postCount": 342,
+      "createdAt": "2024-01-15T12:00:00Z",
       "isJoined": true,
       "role": "member"
     }
@@ -1050,7 +1491,7 @@ Response 200:
 ### Discovery
 
 ```http
-GET /communities?page=1&limit=20&search=tech
+GET /communities?page=1&limit=20&search=tech&tags=Technology,Education
 Authorization: Bearer <token> (optional)
 
 Response 200:
@@ -1061,7 +1502,10 @@ Response 200:
       {
         "_id": "...",
         "name": "Tech Enthusiasts",
-        "description": "...",
+        "description": "A community for tech lovers",
+        "profilePicture": "https://...",
+        "coverImage": "https://...",
+        "tags": ["Technology", "Education"],
         "memberCount": 523,
         "postCount": 1245,
         "isJoined": true
@@ -1081,18 +1525,22 @@ Response 200:
 
 ## Success Criteria
 
-- [ ] All 13 tasks completed (T052-T064)
-- [ ] All 134+ unit tests passing
-- [ ] All 40+ integration tests passing
-- [ ] Users can create communities
+- [ ] All 15 tasks completed (T051-T064, including T051B, T055B, T055C, T055D)
+- [ ] All 159+ unit tests passing
+- [ ] All 50+ integration tests passing
+- [ ] Users can create communities with profile pictures, cover images, and tags
 - [ ] Users can join/leave communities
 - [ ] Members can post to communities
+- [ ] Owners can edit community description and images
 - [ ] Moderation system works (add/remove moderators)
 - [ ] Community feed shows correct posts
-- [ ] Permission checks enforced
-- [ ] Community discovery functional
+- [ ] Permission checks enforced (owner-only edits)
+- [ ] Community discovery functional with tag filtering
+- [ ] Image upload and processing working (Sharp + Cloudinary)
 - [ ] Cache invalidation working
-- [ ] API documentation complete
+- [ ] Constants added (COMMUNITY_TAGS and image specs)
+- [ ] Feed controllers refactored to use real Community/Enrollment models
+- [ ] API documentation complete (11 endpoints)
 - [ ] Manual testing successful
 
 ---
@@ -1107,9 +1555,10 @@ Response 200:
 - [ ] Community rules/guidelines section
 - [ ] Member roles beyond owner/moderator/member
 - [ ] Community events/calendar
-- [ ] Community categories/tags
 - [ ] Trending communities
 - [ ] Recommended communities (based on interests)
+- [ ] Community banners/additional customization
+- [ ] Multiple tag support expansion beyond 20 predefined categories
 
 ---
 
@@ -1118,12 +1567,20 @@ Response 200:
 **Epic 1**: Authentication (checkAuth, optionalAuth middleware)  
 **Epic 2**: User Profiles (User model, profile data)  
 **Epic 3**: Posts (Post model, post controllers)  
-**Epic 4**: File Upload (coverImage upload to Cloudinary)  
-**Epic 5**: Feed Algorithm (community feed generation, cache invalidation)
+**Epic 4**: File Upload (image upload middleware, Cloudinary integration)  
+**Epic 5**: Feed Algorithm (community feed generation, cache invalidation, refactored controllers)
 
 **NPM Packages:**
-- `cloudinary` (^1.41.0) - Cover image uploads
+- `cloudinary` (^1.41.0) - Profile picture and cover image uploads
 - `multer` (^1.4.5) - Multipart form data handling
+- `sharp` (^0.33.0) - Image resizing and processing
+
+**Constants Required:**
+- `COMMUNITY_TAGS` - Array of 20 predefined tag categories
+- `COMMUNITY_PROFILE_PICTURE_SIZE` - 500x500px dimensions
+- `COMMUNITY_COVER_IMAGE_SIZE` - 1500x500px dimensions
+- `MIN_COMMUNITY_TAGS` - Minimum 1 tag required
+- `MAX_COMMUNITY_TAGS` - Maximum 3 tags allowed
 
 ---
 

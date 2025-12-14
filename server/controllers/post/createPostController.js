@@ -1,12 +1,15 @@
 const Post = require('../../models/Post');
+const Community = require('../../models/Community');
 const {
   validatePostContent,
   validatePostTags,
   buildPostResponse
 } = require('../../utils/postHelpers');
+const { canPostToCommunity, updatePostCount } = require('../../utils/communityHelpers');
 const { processImage } = require('../../utils/imageProcessor');
 const { uploadToCloudinary } = require('../../utils/cloudinary');
 const { CLOUDINARY_FOLDER_POST, IMAGE_CONFIGS} = require('../../utils/constants');
+const mongoose = require('mongoose');
 
 /**
  * Create a new post
@@ -18,6 +21,35 @@ async function createPost(req, res) {
     const { content, tags, community } = req.body;
     const userId = req.user._id;
     let imageUrls = [];
+
+    // Validate community if provided
+    if (community) {
+      // Validate community ID format
+      if (!mongoose.Types.ObjectId.isValid(community)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid community ID'
+        });
+      }
+
+      // Check if community exists
+      const communityExists = await Community.findById(community);
+      if (!communityExists) {
+        return res.status(404).json({
+          success: false,
+          message: 'Community not found'
+        });
+      }
+
+      // Check if user can post to this community
+      const canPost = await canPostToCommunity(userId, community);
+      if (!canPost) {
+        return res.status(403).json({
+          success: false,
+          message: 'You must be a member of this community to post'
+        });
+      }
+    }
 
     // Validate content
     const contentValidation = validatePostContent(content, req.files);
@@ -71,6 +103,11 @@ async function createPost(req, res) {
       tags: tags || [],
       community: community || null
     });
+
+    // Increment community post count if posting to a community
+    if (community) {
+      await updatePostCount(community, 1);
+    }
 
     // Populate author details
     await post.populate('author', 'username fullName profilePicture');

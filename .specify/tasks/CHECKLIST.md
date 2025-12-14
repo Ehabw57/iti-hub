@@ -411,7 +411,7 @@ Use this checklist to track your progress through all tasks. Mark each task as y
 ## Epic 5: Feed & Discovery (P0)
 
 **Status**: ⬜ Not Started  
-**Effort**: 8-10 days  
+**Effort**: 10-12 days  
 **File**: [epic-05-feed-algorithm.md](./epic-05-feed-algorithm.md)  
 **Depends on**: Epic 1, Epic 2, Epic 3
 
@@ -423,106 +423,132 @@ Use this checklist to track your progress through all tasks. Mark each task as y
     * `calculateRecencyScore(post)`
     * `calculateSourceScore(post, userId)`
     * `calculateFeedScore(post, userId)`
-  - Weighted scoring system (engagement: 0.5, recency: 0.3, source: 0.2)
-  - Tests: 25+ tests in `/server/spec/utils/feedAlgorithm.spec.js`
+  - Shared algorithm for Home and Trending feeds
+  - Weighted scoring system configurable via FEED_WEIGHTS constant
+  - Tests: 30+ tests in `/server/spec/utils/feedAlgorithm.spec.js`
 
 - [ ] ⚡⚠️ **T044** - Create Feed Cache Manager (1 day)
   - File: `/server/utils/feedCache.js`
   - Setup node-cache or Redis integration
-  - Cache key generation: `feed:home:${userId}:page:${page}`
-  - TTL configuration (home: 5min, following: 1min, community: 5min)
+  - Cache key generation with auth state: `feed:{type}:{userId|'public'}:page:{page}`
+  - TTL configuration via FEED_CACHE_TTL constant
+  - Support for authenticated/unauthenticated cache separation
   - Cache invalidation helpers
-  - Tests: 15+ tests in `/server/spec/utils/feedCache.spec.js`
+  - Tests: 20+ tests in `/server/spec/utils/feedCache.spec.js`
 
-### Phase 2: User Story 1 - Home Feed
-- [ ] 🔗 **T045** - Implement Home Feed Controller (2 days)
+### Phase 2: User Story 1 - Home Feed (Optional Auth)
+- [ ] 🔗 **T045** - Implement Home Feed Controller (2.5 days)
   - File: `/server/controllers/feed/getHomeFeedController.js`
   - Function: `getHomeFeed(req, res)`
-  - Aggregation pipeline:
-    * Get posts from followed users (last 7 days)
-    * Get posts from joined communities (last 7 days)
-    * Calculate feed scores for each post
-    * Sort by score descending
-    * Paginate results (20 per page)
-  - Enrich with user interaction data (isLiked, isSaved)
-  - Cache implementation
-  - Tests: 20+ tests
+  - Route: `GET /feed/home` (optionalAuth)
+  - **Unauthenticated**: Show posts filtered by FEATURED_TAGS constant
+  - **Authenticated**: Algorithmic ranking from followed users + joined communities
+  - Time window: HOME_FEED_DAYS constant (7 days)
+  - Weights: FEED_WEIGHTS.HOME (engagement 0.5, recency 0.3, source 0.2)
+  - Cache TTL: FEED_CACHE_TTL.HOME (5 minutes)
+  - Enrich with user interaction data (isLiked, isSaved) when authenticated
+  - Tests: 25+ tests covering both auth states
   - Depends on: T043, T044, Epic 1, Epic 2, Epic 3
 
-### Phase 3: User Story 2 - Following Feed
-- [ ] 🔗 **T046** - Implement Following Feed Controller (1 day)
+### Phase 3: User Story 2 - Following Feed (Auth Required)
+- [ ] 🔗 **T046** - Implement Following Feed Controller (1.5 days)
   - File: `/server/controllers/feed/getFollowingFeedController.js`
   - Function: `getFollowingFeed(req, res)`
-  - Query: Posts from followed users only (chronological, last 30 days)
-  - No algorithmic ranking (simple sort by createdAt DESC)
+  - Route: `GET /feed/following` (checkAuth - REQUIRED)
+  - Query: Posts from **both followed users AND joined communities**
+  - Pure chronological (newest first, no algorithmic ranking)
+  - Time window: FOLLOWING_FEED_DAYS constant (30 days)
+  - Cache TTL: FEED_CACHE_TTL.FOLLOWING (1 minute)
   - Enrich with user interaction data
-  - Lighter caching (1 minute TTL)
-  - Tests: 15+ tests
+  - Tests: 20+ tests
   - Depends on: T044, Epic 1, Epic 2, Epic 3
 
-### Phase 4: User Story 3 - Community Feed
-- [ ] 🔗 **T047** - Implement Community Feed Controller (1 day)
+### Phase 4: User Story 3 - Trending Feed (Optional Auth)
+- [ ] 🔗 **T047** - Implement Trending Feed Controller (2 days)
+  - File: `/server/controllers/feed/getTrendingFeedController.js`
+  - Function: `getTrendingFeed(req, res)`
+  - Route: `GET /feed/trending` (optionalAuth)
+  - **Global scope**: All public posts from everyone
+  - Algorithmic ranking using same calculation as Home feed
+  - Weights: FEED_WEIGHTS.TRENDING (engagement 0.6, recency 0.4)
+  - Time window: TRENDING_FEED_DAYS constant (2 days)
+  - Cache TTL: FEED_CACHE_TTL.TRENDING (5 minutes)
+  - Enrich with user interaction data when authenticated
+  - Tests: 20+ tests covering both auth states
+  - Depends on: T043, T044, Epic 3
+
+### Phase 5: User Story 4 - Community Feed (Optional Auth)
+- [ ] 🔗 **T048** - Implement Community Feed Controller (1 day)
   - File: `/server/controllers/community/getCommunityFeedController.js`
   - Function: `getCommunityFeed(req, res)`
-  - Query: All posts in community (chronological, no time limit)
+  - Route: `GET /communities/:id/feed` (optionalAuth)
+  - Query: All posts in specific community (chronological, no time limit)
   - Public access (no auth required)
   - Enrich with user interaction data if authenticated
-  - Community-level caching (5 minutes)
-  - Tests: 12+ tests
+  - Cache TTL: FEED_CACHE_TTL.COMMUNITY (5 minutes)
+  - Tests: 15+ tests
   - Depends on: T044, Epic 3, Epic 6
 
-### Phase 5: Cache Invalidation
-- [ ] 🔗 **T048** - Implement Cache Invalidation Logic (1 day)
-  - Update post controllers to invalidate caches
-  - Invalidate on: new post, delete post, like/unlike, new comment
-  - Selective invalidation:
-    * User creates post → invalidate followers' home feeds
-    * Community post → invalidate community feed cache
-    * Like/comment → invalidate home feed cache (optional)
+### Phase 6: Cache Invalidation
+- [ ] 🔗 **T049** - Implement Cache Invalidation Logic (1 day)
   - File: `/server/utils/cacheInvalidation.js`
-  - Tests: 10+ tests
-  - Depends on: T044, T045-T047
+  - Update post controllers to invalidate caches
+  - Invalidation rules:
+    * User creates post → invalidate followers' home/following feeds + trending feed
+    * User creates community post → invalidate community feed + trending feed
+    * Post deleted → invalidate relevant feeds
+  - Selective invalidation for performance
+  - Tests: 15+ tests
+  - Depends on: T044, T045-T048
 
-### Phase 6: Routes & Integration
-- [ ] 🔗 **T049** - Create Feed Routes (0.5 days)
+### Phase 7: Routes & Integration
+- [ ] 🔗 **T050** - Create Feed Routes (0.5 days)
   - File: `/server/routes/feedRoutes.js`
   - Routes:
-    * GET /feed/home (checkAuth)
-    * GET /feed/following (checkAuth)
-    * GET /communities/:id/feed (optionalAuth)
+    * `GET /feed/home` (optionalAuth)
+    * `GET /feed/following` (checkAuth - REQUIRED)
+    * `GET /feed/trending` (optionalAuth)
+  - Community feed route in `/server/routes/communityRoutes.js`:
+    * `GET /communities/:id/feed` (optionalAuth)
   - Query params: page, limit
-  - Depends on: T045-T047
+  - Depends on: T045-T048
 
-- [ ] 🔗 **T050** - Create Feed Integration Tests (1.5 days)
+- [ ] 🔗 **T051** - Create Feed Integration Tests (2 days)
   - File: `/server/spec/integration/feed.integration.spec.js`
-  - Tests: 30+ integration tests
+  - Tests: 40+ end-to-end tests
   - Test scenarios:
-    * Home feed ranking correctness
-    * Following feed chronological order
-    * Community feed visibility
-    * Cache hit/miss behavior
-    * Pagination accuracy
-  - Depends on: T045-T049
+    * Home feed: unauthenticated (featured tags) vs authenticated (algorithm)
+    * Following feed: auth required, includes users + communities
+    * Trending feed: global scope, 2-day window
+    * Community feed: public access, chronological
+    * Cache hit/miss behavior for all feeds
+    * Pagination accuracy across all feeds
+    * Performance benchmarks
+  - Depends on: T045-T050
 
-- [ ] ⚡🔗 **T051** - Update API Documentation for Feeds (0.5 days)
+- [ ] ⚡🔗 **T052** - Update API Documentation for Feeds (0.5 days)
   - File: `/server/docs/feed.yaml`
-  - Document all feed endpoints
-  - Explain ranking algorithm in description
+  - Document all 4 feed endpoints with auth requirements
+  - Explain ranking algorithms (Home vs Trending)
+  - Document FEATURED_TAGS behavior for unauthenticated users
   - Query parameters and pagination
-  - Response schemas
+  - Response schemas for all feed types
   - Integrated into `/server/docs/index.js`
-  - Depends on: T049
+  - Depends on: T050
 
 **Epic 5 Completion Criteria:**
-- [ ] All 9 tasks completed
-- [ ] All unit tests passing (97+ tests)
-- [ ] All integration tests passing (30+ tests)
-- [ ] Home feed algorithm ranking correctly
-- [ ] Following feed chronological
-- [ ] Cache working (verified hit/miss)
-- [ ] Cache invalidation working
-- [ ] Performance acceptable (<500ms for cached, <2s for uncached)
-- [ ] API documentation complete
+- [ ] All 10 tasks completed (T043-T052)
+- [ ] All unit tests passing (120+ tests)
+- [ ] All integration tests passing (40+ tests)
+- [ ] 4 feed types working: Home, Following, Trending, Community
+- [ ] Home feed: featured tags for unauth, algorithm for auth
+- [ ] Following feed: auth required, includes users + communities, chronological
+- [ ] Trending feed: global scope, 2-day window, algorithmic
+- [ ] Community feed: chronological, auth optional
+- [ ] Cache working (verified hit/miss for all feed types)
+- [ ] Cache invalidation working correctly
+- [ ] Performance acceptable (<50ms cached, <2s uncached)
+- [ ] API documentation complete with all 4 feeds
 - [ ] Manual testing successful
 
 ---
@@ -535,89 +561,89 @@ Use this checklist to track your progress through all tasks. Mark each task as y
 **Depends on**: Epic 1, Epic 2, Epic 3
 
 ### Phase 1: Models & Setup
-- [ ] ⚡⚠️ **T052** - Create Community Model (1 day)
+- [ ] ⚡⚠️ **T053** - Create Community Model (1 day)
   - File: `/server/models/Community.js`
   - Fields: name, description, coverImage, rules, tags, membersCount, postsCount, moderators, createdBy
   - Indexes: name (unique), tags, membersCount, text search
   - Validation: name (2-100 chars, unique), description (max 1000), rules (max 5000)
   - Tests: 20+ tests in `/server/spec/models/communityModel.spec.js`
 
-- [ ] ⚡⚠️ **T053** - Create Enrollment Model (0.5 days)
+- [ ] ⚡⚠️ **T054** - Create Enrollment Model (0.5 days)
   - File: `/server/models/Enrollment.js`
   - Fields: user, community, role (member/moderator), joinedAt
   - Compound unique index: { user, community }
   - Query indexes for user enrollments and community members
   - Tests: 10+ tests in `/server/spec/models/enrollmentModel.spec.js`
 
-- [ ] ⚡⚠️ **T054** - Create Community Helpers (0.5 days)
+- [ ] ⚡⚠️ **T055** - Create Community Helpers (0.5 days)
   - File: `/server/utils/communityHelpers.js`
   - Functions: `isMember()`, `isModerator()`, `canModerate()`, `validateCommunityData()`
   - Tests: 12+ tests in `/server/spec/utils/communityHelpers.spec.js`
 
 ### Phase 2: User Story 1 - Create/View Communities
-- [ ] 🔗 **T055** - Implement Create Community Controller (1.5 days)
+- [ ] 🔗 **T056** - Implement Create Community Controller (1.5 days)
   - File: `/server/controllers/community/createCommunityController.js`
   - Function: `createCommunity(req, res)`
   - Validation: name uniqueness, description required
   - Auto-enroll creator as moderator
   - Initialize counts to 0
   - Tests: 15+ tests
-  - Depends on: T052, T053, Epic 1
+  - Depends on: T053, T054, Epic 1
 
-- [ ] 🔗 **T056** - Implement Get Community Controllers (1 day)
+- [ ] 🔗 **T057** - Implement Get Community Controllers (1 day)
   - Files: `/server/controllers/community/getCommunityController.js`, `getCommunitiesController.js`
   - Functions: `getCommunity(req, res)`, `getCommunities(req, res)`, `getUserCommunities(req, res)`
   - Include membership status (isMember, isModerator) for authenticated users
   - Pagination for list endpoints
   - Tests: 18+ tests
-  - Depends on: T052, T053, Epic 1
+  - Depends on: T053, T054, Epic 1
 
 ### Phase 3: User Story 2 - Join/Leave Communities
-- [ ] 🔗 **T057** - Implement Join/Leave Community Controllers (1 day)
+- [ ] 🔗 **T058** - Implement Join/Leave Community Controllers (1 day)
   - File: `/server/controllers/community/enrollmentController.js`
   - Functions: `joinCommunity(req, res)`, `leaveCommunity(req, res)`
   - Create/delete enrollment record
   - Update community membersCount (with Math.max(0))
   - Prevent duplicate joins
   - Tests: 15+ tests
-  - Depends on: T052, T053, Epic 1
+  - Depends on: T053, T054, Epic 1
 
 ### Phase 4: User Story 3 - Community Posts
-- [ ] 🔗 **T058** - Update Post Model for Communities (0.5 days)
+- [ ] 🔗 **T059** - Update Post Model for Communities (0.5 days)
   - Update: `/server/models/Post.js`
   - Add `community` field (ObjectId ref, optional)
   - Add index: { community: 1, createdAt: -1 }
   - Validation: post must have author XOR community
   - Tests: Update existing tests + 5+ new tests
-  - Depends on: T052, Epic 3
+  - Depends on: T053, Epic 3
 
-- [ ] 🔗 **T059** - Implement Create Community Post Controller (1 day)
+- [ ] 🔗 **T060** - Implement Create Community Post Controller (1 day)
   - Update or extend: `/server/controllers/post/createPostController.js`
   - Support communityId in request body
   - Verify user is member before allowing post
   - Increment community postsCount
   - Tests: 12+ tests
-  - Depends on: T052, T053, T058, Epic 3
+  - Depends on: T053, T054, T059, Epic 3
 
 ### Phase 5: User Story 4 - Moderation
-- [ ] 🔗 **T060** - Implement Update Community Controller (1 day)
+- [ ] 🔗 **T061** - Implement Update Community Controller (1 day)
   - File: `/server/controllers/community/updateCommunityController.js`
   - Function: `updateCommunity(req, res)`
   - Fields: description, coverImage, rules, tags
   - Only moderators/creator can update
   - Tests: 12+ tests
-  - Depends on: T052, T054, Epic 1
+  - Depends on: T053, T055, Epic 1
 
-- [ ] 🔗 **T061** - Implement Delete Community Post Controller (0.5 days)
+- [ ] 🔗 **T062** - Implement Delete Community Post Controller (0.5 days)
   - File: `/server/controllers/community/deletePostController.js`
   - Function: `deleteCommunityPost(req, res)`
   - Moderators can delete any post in their community
   - Decrement community postsCount
   - Tests: 10+ tests
-  - Depends on: T052, T054, Epic 3
+  - Depends on: T053, T055, Epic 3
 
 ### Phase 6: Routes & Integration
-- [ ] 🔗 **T062** - Create Community Routes (0.5 days)
+- [ ] 🔗 **T063** - Create Community Routes (0.5 days)
   - File: `/server/routes/communityRoutes.js`
   - Routes:
     * POST /communities (checkAuth)
@@ -629,9 +655,9 @@ Use this checklist to track your progress through all tasks. Mark each task as y
     * GET /communities/:id/members (public)
     * POST /communities/:id/posts (checkAuth, member only)
     * DELETE /communities/:id/posts/:postId (checkAuth, moderator only)
-  - Depends on: T055-T061
+  - Depends on: T056-T062
 
-- [ ] 🔗 **T063** - Create Community Integration Tests (1.5 days)
+- [ ] 🔗 **T064** - Create Community Integration Tests (1.5 days)
   - File: `/server/spec/integration/community.integration.spec.js`
   - Tests: 35+ integration tests
   - Test scenarios:
@@ -641,19 +667,19 @@ Use this checklist to track your progress through all tasks. Mark each task as y
     * Moderator permissions
     * Community posts
     * Moderation actions
-  - Depends on: T055-T062
+  - Depends on: T056-T063
 
-- [ ] ⚡🔗 **T064** - Update API Documentation for Communities (0.5 days)
+- [ ] ⚡🔗 **T065** - Update API Documentation for Communities (0.5 days)
   - File: `/server/docs/community.yaml`
   - Document all community endpoints
   - Member vs moderator permissions
   - Community post creation
   - Moderation endpoints
   - Integrated into `/server/docs/index.js`
-  - Depends on: T062
+  - Depends on: T063
 
 **Epic 6 Completion Criteria:**
-- [ ] All 13 tasks completed
+- [ ] All 13 tasks completed (T053-T065)
 - [ ] All unit tests passing (119+ tests)
 - [ ] All integration tests passing (35+ tests)
 - [ ] Communities can be created and managed
