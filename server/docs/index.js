@@ -8,6 +8,7 @@ const commentDoc = YAML.load("./docs/comment.yaml");
 const feedDoc = YAML.load("./docs/feed.yaml");
 const communityDoc = YAML.load("./docs/community.yaml");
 const conversationDoc = YAML.load("./docs/conversation.yaml");
+const notificationDoc = YAML.load("./docs/notification.yaml");
 
 const base = {
   openapi: "3.0.0",
@@ -51,6 +52,10 @@ const base = {
     {
       name: "Conversations",
       description: "Messaging and conversation operations (individual and group chats)"
+    },
+    {
+      name: "Notifications",
+      description: "Notification management and real-time updates with smart grouping"
     }
   ],
   paths: {}
@@ -67,7 +72,8 @@ const swaggerDocument = {
     ...commentDoc.paths,
     ...feedDoc.paths,
     ...communityDoc.paths,
-    ...conversationDoc.paths
+    ...conversationDoc.paths,
+    ...notificationDoc.paths
   },
   components: {
     schemas: {
@@ -79,7 +85,8 @@ const swaggerDocument = {
       ...(commentDoc.components?.schemas || {}),
       ...(feedDoc.components?.schemas || {}),
       ...(communityDoc.components?.schemas || {}),
-      ...(conversationDoc.components?.schemas || {})
+      ...(conversationDoc.components?.schemas || {}),
+      ...(notificationDoc.components?.schemas || {})
     },
     securitySchemes: {
       ...(base.components?.securitySchemes || {}),
@@ -90,7 +97,8 @@ const swaggerDocument = {
       ...(commentDoc.components?.securitySchemes || {}),
       ...(feedDoc.components?.securitySchemes || {}),
       ...(communityDoc.components?.securitySchemes || {}),
-      ...(conversationDoc.components?.securitySchemes || {})
+      ...(conversationDoc.components?.securitySchemes || {}),
+      ...(notificationDoc.components?.securitySchemes || {})
     },
     responses: {
       ...(base.components?.responses || {}),
@@ -101,7 +109,8 @@ const swaggerDocument = {
       ...(commentDoc.components?.responses || {}),
       ...(feedDoc.components?.responses || {}),
       ...(communityDoc.components?.responses || {}),
-      ...(conversationDoc.components?.responses || {})
+      ...(conversationDoc.components?.responses || {}),
+      ...(notificationDoc.components?.responses || {})
     }
   },
   tags: [
@@ -113,7 +122,8 @@ const swaggerDocument = {
     ...(commentDoc.tags || []),
     ...(feedDoc.tags || []),
     ...(communityDoc.tags || []),
-    ...(conversationDoc.tags || [])
+    ...(conversationDoc.tags || []),
+    ...(notificationDoc.tags || [])
   ]
 };
 module.exports = swaggerDocument;

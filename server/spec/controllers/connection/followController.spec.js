@@ -1,6 +1,7 @@
 const { followUser, unfollowUser } = require('../../../controllers/connection/followController');
 const User = require('../../../models/User');
 const Connection = require('../../../models/Connection');
+const Notification = require('../../../models/Notification');
 const { connectToDB, clearDatabase, disconnectFromDB } = require('../../helpers/DBUtils');
 const responseMock = require('../../helpers/responseMock');
 
@@ -199,6 +200,83 @@ describe('followController', () => {
       expect(updatedUser1.followingCount).toBe(1);
       expect(updatedUser2.followersCount).toBe(1);
       expect(updatedUser2.followingCount).toBe(1);
+    });
+
+    it('should create a notification for the followed user', async () => {
+      const req = {
+        user: { _id: user1._id },
+        params: { userId: user2._id.toString() }
+      };
+      const res = responseMock();
+
+      await followUser(req, res);
+
+      const notification = await Notification.findOne({
+        recipient: user2._id,
+        type: 'follow'
+      });
+
+      expect(notification).toBeDefined();
+      expect(notification.actor.toString()).toBe(user1._id.toString());
+      expect(notification.type).toBe('follow');
+      expect(notification.target).toBeUndefined();
+      expect(notification.targetModel).toBeUndefined();
+      expect(notification.actorCount).toBe(1);
+      expect(notification.isRead).toBe(false);
+    });
+
+    it('should create individual notifications for each follow (not grouped)', async () => {
+      // User1 follows User2
+      const req1 = {
+        user: { _id: user1._id },
+        params: { userId: user2._id.toString() }
+      };
+      const res1 = responseMock();
+      await followUser(req1, res1);
+
+      // User3 also follows User2
+      const req2 = {
+        user: { _id: user3._id },
+        params: { userId: user2._id.toString() }
+      };
+      const res2 = responseMock();
+      await followUser(req2, res2);
+
+      // Should have 2 separate notifications (follow is not grouped)
+      const notifications = await Notification.find({
+        recipient: user2._id,
+        type: 'follow'
+      });
+
+      expect(notifications.length).toBe(2);
+      expect(notifications[0].actor.toString()).toBe(user1._id.toString());
+      expect(notifications[1].actor.toString()).toBe(user3._id.toString());
+      expect(notifications[0].actorCount).toBe(1);
+      expect(notifications[1].actorCount).toBe(1);
+    });
+
+    it('should still succeed even if notification creation fails', async () => {
+      spyOn(Notification, 'createOrUpdateNotification').and.callFake(() => {
+        return Promise.reject(new Error('Notification service down'));
+      });
+
+      const req = {
+        user: { _id: user1._id },
+        params: { userId: user2._id.toString() }
+      };
+      const res = responseMock();
+
+      await followUser(req, res);
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body.success).toBe(true);
+
+      // Connection should still be created
+      const connection = await Connection.findOne({
+        follower: user1._id,
+        following: user2._id
+      });
+      expect(connection).toBeDefined();
     });
   });
 

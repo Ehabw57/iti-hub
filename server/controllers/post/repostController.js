@@ -1,4 +1,6 @@
 const Post = require('../../models/Post');
+const Notification = require('../../models/Notification');
+const { NOTIFICATION_TYPES } = require('../../utils/constants');
 const { validateRepostComment, buildPostResponse } = require('../../utils/postHelpers');
 
 /**
@@ -51,6 +53,19 @@ async function repost(req, res) {
     // Increment repost count on original post
     originalPost.repostsCount += 1;
     await originalPost.save();
+
+    // Create notification (don't block on failure) - NOT GROUPED (individual notification)
+    try {
+      await Notification.createOrUpdateNotification(
+        originalPost.author,
+        userId,
+        NOTIFICATION_TYPES.REPOST,
+        originalPost._id
+      );
+    } catch (notificationError) {
+      console.error('Failed to create notification:', notificationError);
+      // Continue anyway - notification failure shouldn't block the repost
+    }
 
     // Populate author details
     await repost.populate('author', 'username fullName profilePicture');

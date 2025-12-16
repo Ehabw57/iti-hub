@@ -1,5 +1,7 @@
 const Comment = require('../../models/Comment');
 const Post = require('../../models/Post');
+const Notification = require('../../models/Notification');
+const { NOTIFICATION_TYPES } = require('../../utils/constants');
 const { validateCommentContent, buildCommentResponse, canHaveReplies } = require('../../utils/commentHelpers');
 
 /**
@@ -76,6 +78,30 @@ async function createComment(req, res) {
     // Increment comments count on post
     post.commentsCount += 1;
     await post.save();
+
+    // Create notifications (don't block on failure)
+    try {
+      if (parentCommentId && parentComment) {
+        // This is a reply - notify the parent comment author
+        await Notification.createOrUpdateNotification(
+          parentComment.author,
+          userId,
+          NOTIFICATION_TYPES.REPLY,
+          parentComment._id
+        );
+      } else {
+        // This is a top-level comment - notify the post author
+        await Notification.createOrUpdateNotification(
+          post.author,
+          userId,
+          NOTIFICATION_TYPES.COMMENT,
+          post._id
+        );
+      }
+    } catch (notificationError) {
+      console.error('Failed to create notification:', notificationError);
+      // Continue anyway - notification failure shouldn't block the comment
+    }
 
     // Populate author details
     await comment.populate('author', 'username fullName profilePicture');

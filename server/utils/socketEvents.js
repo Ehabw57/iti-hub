@@ -1,4 +1,5 @@
 const Conversation = require('../models/Conversation');
+const Notification = require('../models/Notification');
 const { getUserSocketId, emitToUser } = require('./socketServer');
 
 // Throttle map for typing events: { userId-conversationId: timestamp }
@@ -186,6 +187,66 @@ const setupSocketEvents = (io) => {
         console.error('Error in typing:stop event:', error);
       }
     });
+
+    /**
+     * notification:markAsRead - Mark notification as read
+     * Updates notification and emits count to user
+     */
+    socket.on('notification:markAsRead', async (data) => {
+      try {
+        const { notificationId } = data;
+
+        if (!notificationId || !userId) {
+          return;
+        }
+
+        // Mark notification as read
+        const notification = await Notification.markAsRead(notificationId, userId);
+        
+        if (notification) {
+          // Get updated unread count
+          const unreadCount = await Notification.getUnreadCount(userId);
+          
+          // Emit updated notification to user
+          const socketIds = getUserSocketId(userId);
+          socketIds.forEach(socketId => {
+            io.to(socketId).emit('notification:read', {
+              notificationId,
+              unreadCount,
+              timestamp: new Date()
+            });
+          });
+        }
+      } catch (error) {
+        console.error('Error in notification:markAsRead event:', error);
+      }
+    });
+
+    /**
+     * notification:markAllAsRead - Mark all notifications as read
+     * Updates all notifications and emits count to user
+     */
+    socket.on('notification:markAllAsRead', async () => {
+      try {
+        if (!userId) {
+          return;
+        }
+
+        // Mark all notifications as read
+        await Notification.markAllAsRead(userId);
+        
+        // Emit updated count to user (should be 0)
+        const socketIds = getUserSocketId(userId);
+        socketIds.forEach(socketId => {
+          io.to(socketId).emit('notification:count', {
+            unreadCount: 0,
+            timestamp: new Date()
+          });
+        });
+      } catch (error) {
+        console.error('Error in notification:markAllAsRead event:', error);
+      }
+    });
   });
 };
 
@@ -196,7 +257,76 @@ const clearTypingThrottle = () => {
   typingThrottleMap.clear();
 };
 
+/**
+ * Emit new notification to user
+ * @param {string} recipientId - User ID to send notification to
+ * @param {Object} notification - Notification object (populated)
+ */
+const emitNotification = (recipientId, notification) => {
+  try {
+    const socketIds = getUserSocketId(recipientId);
+    socketIds.forEach(socketId => {
+      const io = require('./socketServer').getIO();
+      if (io) {
+        io.to(socketId).emit('notification:new', {
+          notification,
+          timestamp: new Date()
+        });
+      }
+    });
+  } catch (error) {
+    console.error('Error emitting notification:', error);
+  }
+};
+
+/**
+ * Emit notification update to user (for grouped notifications)
+ * @param {string} recipientId - User ID to send update to
+ * @param {Object} notification - Updated notification object (populated)
+ */
+const emitNotificationUpdate = (recipientId, notification) => {
+  try {
+    const socketIds = getUserSocketId(recipientId);
+    socketIds.forEach(socketId => {
+      const io = require('./socketServer').getIO();
+      if (io) {
+        io.to(socketId).emit('notification:update', {
+          notification,
+          timestamp: new Date()
+        });
+      }
+    });
+  } catch (error) {
+    console.error('Error emitting notification update:', error);
+  }
+};
+
+/**
+ * Emit unread count to user
+ * @param {string} userId - User ID to send count to
+ * @param {number} unreadCount - Current unread count
+ */
+const emitNotificationCount = (userId, unreadCount) => {
+  try {
+    const socketIds = getUserSocketId(userId);
+    socketIds.forEach(socketId => {
+      const io = require('./socketServer').getIO();
+      if (io) {
+        io.to(socketId).emit('notification:count', {
+          unreadCount,
+          timestamp: new Date()
+        });
+      }
+    });
+  } catch (error) {
+    console.error('Error emitting notification count:', error);
+  }
+};
+
 module.exports = {
   setupSocketEvents,
-  clearTypingThrottle
+  clearTypingThrottle,
+  emitNotification,
+  emitNotificationUpdate,
+  emitNotificationCount
 };

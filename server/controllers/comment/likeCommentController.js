@@ -1,5 +1,7 @@
 const Comment = require('../../models/Comment');
 const CommentLike = require('../../models/CommentLike');
+const Notification = require('../../models/Notification');
+const { NOTIFICATION_TYPES } = require('../../utils/constants');
 
 /**
  * Like a comment
@@ -35,6 +37,19 @@ async function likeComment(req, res) {
     // Increment likes count
     comment.likesCount += 1;
     await comment.save();
+
+    // Create or update notification (don't block on failure)
+    try {
+      await Notification.createOrUpdateNotification(
+        comment.author,
+        userId,
+        NOTIFICATION_TYPES.COMMENT_LIKE,
+        comment._id
+      );
+    } catch (notificationError) {
+      console.error('Failed to create notification:', notificationError);
+      // Continue anyway - notification failure shouldn't block the like
+    }
 
     return res.status(200).json({
       success: true,

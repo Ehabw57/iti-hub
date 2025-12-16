@@ -1,4 +1,6 @@
 const Connection = require('../../models/Connection');
+const Notification = require('../../models/Notification');
+const { NOTIFICATION_TYPES } = require('../../utils/constants');
 const { validateConnectionAction } = require('../../utils/connectionHelpers');
 
 /**
@@ -26,6 +28,19 @@ async function followUser(req, res) {
     
     // Create follow connection
     const connection = await Connection.createFollow(requesterId, targetId);
+    
+    // Create notification (don't block on failure) - NOT GROUPED (individual notification)
+    try {
+      await Notification.createOrUpdateNotification(
+        targetId,
+        requesterId,
+        NOTIFICATION_TYPES.FOLLOW,
+        null // No target for follow notifications
+      );
+    } catch (notificationError) {
+      console.error('Failed to create notification:', notificationError);
+      // Continue anyway - notification failure shouldn't block the follow
+    }
     
     return res.status(200).json({
       success: true,

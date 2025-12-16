@@ -84,7 +84,7 @@
   actor: ObjectId,            // Ref: users (most recent actor for grouped notifications)
   actorCount: Number,         // Total count of actors (for grouped notifications, default: 1)
   type: String,               // "like" | "comment" | "reply" | "repost" | "follow" | "comment_like"
-  target: ObjectId,           // Ref: posts or comments (determined by type)
+  target: ObjectId,           // Ref: posts or comments or user (determined by type)
   isRead: Boolean,            // Default: false
   createdAt: Date,
   updatedAt: Date
@@ -644,7 +644,7 @@ File: `/server/spec/controllers/notification/markAllAsReadController.spec.js`
 **Priority**: P0
 
 **Target File:**
-- `/server/utils/notificationEvents.js`
+- `/server/utils/socketEvents.js`
 
 **Events to Implement:**
 
@@ -661,7 +661,7 @@ File: `/server/spec/controllers/notification/markAllAsReadController.spec.js`
 - Support multi-device sync
 
 **Test Cases:**
-File: `/server/spec/utils/notificationEvents.spec.js`
+File: `/server/spec/utils/socketEvents.spec.js`
 
 **notification:new:**
 - ✓ Should emit to recipient user only
@@ -878,7 +878,7 @@ server/
 │       ├── markAsReadController.js
 │       └── markAllAsReadController.js
 ├── utils/
-│   ├── notificationEvents.js
+│   ├── socketEvents.js
 │   └── socketServer.js (from Epic 7)
 ├── models/
 │   └── Notification.js

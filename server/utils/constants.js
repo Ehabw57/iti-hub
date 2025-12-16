@@ -46,6 +46,30 @@ const POST_RATE_LIMIT = 10; // posts per hour
 const MIN_COMMENT_CONTENT_LENGTH = 1;
 const MAX_COMMENT_CONTENT_LENGTH = 1000;
 
+// Notification Types
+const NOTIFICATION_TYPES = {
+  LIKE: 'like',
+  COMMENT: 'comment',
+  REPLY: 'reply',
+  COMMENT_LIKE: 'comment_like',
+  REPOST: 'repost',
+  FOLLOW: 'follow'
+};
+
+// Groupable notification types (for aggregation)
+const GROUPABLE_NOTIFICATION_TYPES = [
+  NOTIFICATION_TYPES.LIKE,
+  NOTIFICATION_TYPES.COMMENT,
+  NOTIFICATION_TYPES.REPLY,
+  NOTIFICATION_TYPES.COMMENT_LIKE
+];
+
+// Non-groupable notification types (individual notifications)
+const NON_GROUPABLE_NOTIFICATION_TYPES = [
+  NOTIFICATION_TYPES.REPOST,
+  NOTIFICATION_TYPES.FOLLOW
+];
+
 // Messaging Validation
 const MAX_MESSAGE_CONTENT_LENGTH = 2000;
 const MIN_GROUP_NAME_LENGTH = 2;
@@ -243,6 +267,11 @@ module.exports = {
   // Comment validation
   MIN_COMMENT_CONTENT_LENGTH,
   MAX_COMMENT_CONTENT_LENGTH,
+  
+  // Notification types and grouping
+  NOTIFICATION_TYPES,
+  GROUPABLE_NOTIFICATION_TYPES,
+  NON_GROUPABLE_NOTIFICATION_TYPES,
   
   // Messaging validation
   MAX_MESSAGE_CONTENT_LENGTH,

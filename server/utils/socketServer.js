@@ -206,11 +206,20 @@ const clearUserSocketMap = () => {
   userSocketMap.clear();
 };
 
+/**
+ * Get Socket.io instance
+ * @returns {Server|null} Socket.io server instance
+ */
+const getIO = () => {
+  return io;
+};
+
 module.exports = {
   initializeSocketServer,
   getSocketServer,
   getUserSocketId,
   emitToUser,
   emitToUsers,
-  clearUserSocketMap
+  clearUserSocketMap,
+  getIO
 };

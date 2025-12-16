@@ -1,6 +1,8 @@
 const { likePost, unlikePost } = require('../../../controllers/post/likePostController');
 const Post = require('../../../models/Post');
 const PostLike = require('../../../models/PostLike');
+const Notification = require('../../../models/Notification');
+const { NOTIFICATION_TYPES } = require('../../../utils/constants');
 
 describe('Like Post Controller', () => {
   let mockResponse;
@@ -89,6 +91,73 @@ describe('Like Post Controller', () => {
       expect(res.statusCode).toBe(500);
       expect(res.jsonData.success).toBe(false);
       expect(res.jsonData.message).toBe('Failed to like post');
+    });
+
+    it('should create notification when liking post', async () => {
+      const mockPost = {
+        _id: 'post123',
+        author: 'author123',
+        likesCount: 5,
+        save: jasmine.createSpy().and.returnValue(Promise.resolve())
+      };
+
+      spyOn(Post, 'findById').and.returnValue(Promise.resolve(mockPost));
+      spyOn(PostLike, 'findOne').and.returnValue(Promise.resolve(null));
+      spyOn(PostLike, 'create').and.returnValue(Promise.resolve({ _id: 'like123' }));
+      spyOn(Notification, 'createOrUpdateNotification').and.returnValue(Promise.resolve({ _id: 'notif123' }));
+
+      const res = mockResponse();
+      await likePost(mockRequest, res);
+
+      expect(res.statusCode).toBe(200);
+      expect(Notification.createOrUpdateNotification).toHaveBeenCalledWith(
+        'author123',
+        'user123',
+        NOTIFICATION_TYPES.LIKE,
+        'post123'
+      );
+    });
+
+    it('should not create notification for own post', async () => {
+      const mockPost = {
+        _id: 'post123',
+        author: 'user123', // Same as the user liking
+        likesCount: 5,
+        save: jasmine.createSpy().and.returnValue(Promise.resolve())
+      };
+
+      spyOn(Post, 'findById').and.returnValue(Promise.resolve(mockPost));
+      spyOn(PostLike, 'findOne').and.returnValue(Promise.resolve(null));
+      spyOn(PostLike, 'create').and.returnValue(Promise.resolve({ _id: 'like123' }));
+      spyOn(Notification, 'createOrUpdateNotification').and.returnValue(Promise.resolve(null)); // Returns null for self-notification
+
+      const res = mockResponse();
+      await likePost(mockRequest, res);
+
+      expect(res.statusCode).toBe(200);
+      expect(Notification.createOrUpdateNotification).toHaveBeenCalled();
+    });
+
+    it('should not block like action if notification fails', async () => {
+      const mockPost = {
+        _id: 'post123',
+        author: 'author123',
+        likesCount: 5,
+        save: jasmine.createSpy().and.returnValue(Promise.resolve())
+      };
+
+      spyOn(Post, 'findById').and.returnValue(Promise.resolve(mockPost));
+      spyOn(PostLike, 'findOne').and.returnValue(Promise.resolve(null));
+      spyOn(PostLike, 'create').and.returnValue(Promise.resolve({ _id: 'like123' }));
+      spyOn(Notification, 'createOrUpdateNotification').and.returnValue(Promise.reject(new Error('Notification error')));
+      spyOn(console, 'error'); // Suppress error log
+
+      const res = mockResponse();
+      await likePost(mockRequest, res);
+
+      expect(res.statusCode).toBe(200);
+      expect(res.jsonData.success).toBe(true);
+      expect(console.error).toHaveBeenCalledWith('Failed to create notification:', jasmine.any(Error));
     });
   });
 

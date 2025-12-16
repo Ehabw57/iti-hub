@@ -1,0 +1,375 @@
+openapi: 3.0.0
+info:
+  title: Notification API
+  version: 1.0.0
+  description: API for managing notifications with real-time updates and smart grouping
+
+servers:
+  - url: http://localhost:3030
+    description: Development server
+
+paths:
+  /notifications:
+    get:
+      tags:
+        - Notifications
+      summary: Get paginated notifications
+      description: |
+        Retrieves a paginated list of notifications for the authenticated user.
+        Notifications are automatically grouped by type and target when applicable:
+        - **Grouped types**: like, comment, reply, comment_like (aggregates multiple actors)
+        - **Individual types**: repost, follow (separate notification for each action)
+        
+        Notifications are sorted by creation date (newest first) and include populated actor and target information.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number for pagination
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 20
+          description: Number of notifications per page (max 50)
+      responses:
+        '200':
+          description: Notifications retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Notifications retrieved successfully"
+                  data:
+                    type: object
+                    properties:
+                      notifications:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Notification'
+                      unreadCount:
+                        type: integer
+                        example: 5
+                        description: Total number of unread notifications
+                      pagination:
+                        type: object
+                        properties:
+                          page:
+                            type: integer
+                            example: 1
+                          limit:
+                            type: integer
+                            example: 20
+                          total:
+                            type: integer
+                            example: 45
+                          totalPages:
+                            type: integer
+                            example: 3
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /notifications/unread/count:
+    get:
+      tags:
+        - Notifications
+      summary: Get unread notifications count
+      description: |
+        Retrieves the count of unread notifications for the authenticated user.
+        This is a lightweight endpoint useful for displaying notification badges.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Unread count retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Unread count retrieved successfully"
+                  data:
+                    type: object
+                    properties:
+                      unreadCount:
+                        type: integer
+                        example: 5
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /notifications/read:
+    put:
+      tags:
+        - Notifications
+      summary: Mark all notifications as read
+      description: |
+        Marks all notifications as read for the authenticated user.
+        This operation is idempotent and returns the number of notifications that were updated.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: All notifications marked as read
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "All notifications marked as read"
+                  data:
+                    type: object
+                    properties:
+                      modifiedCount:
+                        type: integer
+                        example: 12
+                        description: Number of notifications that were updated
+                      unreadCount:
+                        type: integer
+                        example: 0
+                        description: Remaining unread notifications (should be 0)
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /notifications/{id}/read:
+    put:
+      tags:
+        - Notifications
+      summary: Mark specific notification as read
+      description: |
+        Marks a specific notification as read for the authenticated user.
+        Returns the updated notification with populated actor and target information.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: objectId
+          description: The notification ID
+          example: "507f1f77bcf86cd799439011"
+      responses:
+        '200':
+          description: Notification marked as read
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Notification marked as read"
+                  data:
+                    type: object
+                    properties:
+                      notification:
+                        $ref: '#/components/schemas/Notification'
+        '400':
+          description: Invalid notification ID format
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Invalid notification ID"
+        '404':
+          description: Notification not found or does not belong to user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Notification not found"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  schemas:
+    Notification:
+      type: object
+      properties:
+        _id:
+          type: string
+          format: objectId
+          example: "507f1f77bcf86cd799439011"
+        recipient:
+          type: string
+          format: objectId
+          example: "507f1f77bcf86cd799439012"
+          description: User receiving the notification
+        actor:
+          type: object
+          description: User who triggered the notification (populated)
+          properties:
+            _id:
+              type: string
+              format: objectId
+            username:
+              type: string
+            fullName:
+              type: string
+            profilePicture:
+              type: string
+              format: uri
+            bio:
+              type: string
+        actorCount:
+          type: integer
+          minimum: 1
+          example: 3
+          description: Number of actors (for grouped notifications)
+        type:
+          type: string
+          enum: [like, comment, reply, comment_like, repost, follow]
+          example: "like"
+          description: |
+            Type of notification:
+            - **like**: Someone liked your post (grouped)
+            - **comment**: Someone commented on your post (grouped)
+            - **reply**: Someone replied to your comment (grouped)
+            - **comment_like**: Someone liked your comment (grouped)
+            - **repost**: Someone reposted your post (individual)
+            - **follow**: Someone followed you (individual)
+        target:
+          type: object
+          description: The post or comment that was interacted with (populated, null for follow)
+          nullable: true
+          oneOf:
+            - $ref: '#/components/schemas/Post'
+            - $ref: '#/components/schemas/Comment'
+        targetModel:
+          type: string
+          enum: [Post, Comment]
+          example: "Post"
+          description: Model type of the target (null for follow notifications)
+          nullable: true
+        isRead:
+          type: boolean
+          example: false
+          description: Whether the notification has been read
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+
+    Post:
+      type: object
+      properties:
+        _id:
+          type: string
+          format: objectId
+        author:
+          type: string
+          format: objectId
+        content:
+          type: string
+        images:
+          type: array
+          items:
+            type: string
+        likesCount:
+          type: integer
+        commentsCount:
+          type: integer
+
+    Comment:
+      type: object
+      properties:
+        _id:
+          type: string
+          format: objectId
+        author:
+          type: string
+          format: objectId
+        post:
+          type: string
+          format: objectId
+        content:
+          type: string
+        likesCount:
+          type: integer
+
+  responses:
+    UnauthorizedError:
+      description: Authentication token is missing or invalid
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              message:
+                type: string
+                example: "Unauthorized"
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              message:
+                type: string
+                example: "Internal server error"
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from login/register
