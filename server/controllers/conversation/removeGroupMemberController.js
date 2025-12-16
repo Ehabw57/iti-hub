@@ -65,21 +65,6 @@ exports.removeGroupMember = async (req, res) => {
       });
     }
 
-    // Cannot remove admin
-    if (userId.toString() === conversation.admin.toString()) {
-      return res.status(400).json({
-        success: false,
-        message: 'Cannot remove group admin. Transfer admin rights first.'
-      });
-    }
-
-    // Check if removal would go below minimum participants
-    if (conversation.participants.length <= MIN_GROUP_PARTICIPANTS) {
-      return res.status(400).json({
-        success: false,
-        message: `Group must have at least ${MIN_GROUP_PARTICIPANTS} members`
-      });
-    }
 
     // Remove user from participants
     conversation.participants = conversation.participants.filter(

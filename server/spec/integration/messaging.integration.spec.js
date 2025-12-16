@@ -285,29 +285,27 @@ describe('Messaging Integration Tests', () => {
         .expect(403);
     });
 
-    // test commented because the controller doesent let admin remove any memebers under 3
-    // it('should allow admin to remove members from group', async () => {
-    //   // Create group
-    //   const convResponse = await request(app)
-    //     .post('/conversations/group')
-    //     .set('Authorization', `Bearer ${token1}`)
-    //     .send({
-    //       participantIds: [user2._id.toString(), user3._id.toString()],
-    //       name: 'Test Group'
-    //     });
+    it('should allow admin to remove members from group', async () => {
+      // Create group
+      const convResponse = await request(app)
+        .post('/conversations/group')
+        .set('Authorization', `Bearer ${token1}`)
+        .send({
+          participantIds: [user2._id.toString(), user3._id.toString()],
+          name: 'Test Group'
+        });
 
-    //   const conversationId = convResponse.body.data.conversation._id;
+      const conversationId = convResponse.body.data.conversation._id;
 
-    //   // Admin removes User3
-    //   const response = await request(app)
-    //     .delete(`/conversations/${conversationId}/members/${user3._id}`)
-    //     .set('Authorization', `Bearer ${token1}`)
-    //     console.log(response.body.data)
+      // Admin removes User3
+      const response = await request(app)
+        .delete(`/conversations/${conversationId}/members/${user3._id}`)
+        .set('Authorization', `Bearer ${token1}`)
 
-    //   expect(response.body.data.conversation.participants.length).toBe(2);
-    //   expect(response.body.data.conversation.participants.map(p => p._id))
-    //     .not.toContain(user3._id.toString());
-    // });
+      expect(response.body.data.conversation.participants.length).toBe(2);
+      expect(response.body.data.conversation.participants.map(p => p._id))
+        .not.toContain(user3._id.toString());
+    });
 
     it('should not allow non-admin to remove members', async () => {
       // Create group
@@ -340,14 +338,11 @@ describe('Messaging Integration Tests', () => {
 
       const conversationId = convResponse.body.data.conversation._id;
 
-    //test commented because the controller doesent let the user leave when thers is 3 members
-    // User2 leaves group
-    //   const response = await request(app)
-    //     .post(`/conversations/${conversationId}/leave`)
-    //     .set('Authorization', `Bearer ${token2}`)
+      const response = await request(app)
+        .post(`/conversations/${conversationId}/leave`)
+        .set('Authorization', `Bearer ${token2}`)
 
-    //   expect(response.body.data.message).toContain('left');
-    //   expect(response.body.data.conversation.participants.length).toBe(2);
+      expect(response.body.message).toContain('left');
     });
 
     it('should not allow admin to leave group', async () => {
@@ -652,24 +647,6 @@ describe('Messaging Integration Tests', () => {
         .expect(400);
     });
 
-    it('should handle removing last admin from group', async () => {
-      // Create group
-      const convResponse = await request(app)
-        .post('/conversations/group')
-        .set('Authorization', `Bearer ${token1}`)
-        .send({
-          participantIds: [user2._id.toString(), user3._id.toString()],
-          name: 'Test Group'
-        });
-
-      const conversationId = convResponse.body.data.conversation._id;
-
-      // Try to remove last admin
-      await request(app)
-        .delete(`/conversations/${conversationId}/members/${user1._id}`)
-        .set('Authorization', `Bearer ${token1}`)
-        .expect(400);
-    });
 
     it('should handle adding duplicate member to group', async () => {
       // Create group

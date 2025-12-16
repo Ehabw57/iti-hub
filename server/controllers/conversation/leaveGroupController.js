@@ -50,18 +50,14 @@ exports.leaveGroup = async (req, res) => {
 
     // Admin cannot leave (must transfer admin rights first)
     if (currentUserId.toString() === conversation.admin.toString()) {
-      return res.status(400).json({
-        success: false,
-        message: 'Admin cannot leave group. Transfer admin rights first.'
-      });
-    }
+      // Find the oldest member in the conversation (excluding the current admin)
+      const oldestMember = conversation.participants.find(
+      p => p.toString() !== currentUserId.toString()
+      );
 
-    // Check if leaving would go below minimum participants
-    if (conversation.participants.length <= MIN_GROUP_PARTICIPANTS) {
-      return res.status(400).json({
-        success: false,
-        message: `Group must have at least ${MIN_GROUP_PARTICIPANTS} members`
-      });
+      if (oldestMember) {
+        conversation.admin = oldestMember;
+      }
     }
 
     // Remove user from participants
