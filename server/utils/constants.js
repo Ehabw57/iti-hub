@@ -35,6 +35,11 @@ const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 100;
 
+// Search Configuration
+const MAX_SEARCH_RESULTS = 50;          // Maximum results per page for search
+const DEFAULT_SEARCH_LIMIT = 20;        // Default number of results per page
+const MIN_SEARCH_QUERY_LENGTH = 2;      // Minimum characters required for search
+
 // Post Validation
 const MAX_POST_CONTENT_LENGTH = 5000;
 const MAX_POST_IMAGES = 10;
@@ -256,6 +261,11 @@ module.exports = {
   DEFAULT_PAGE,
   DEFAULT_LIMIT,
   MAX_LIMIT,
+  
+  // Search configuration
+  MAX_SEARCH_RESULTS,
+  DEFAULT_SEARCH_LIMIT,
+  MIN_SEARCH_QUERY_LENGTH,
   
   // Post validation
   MAX_POST_CONTENT_LENGTH,

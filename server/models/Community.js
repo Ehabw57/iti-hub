@@ -67,16 +67,30 @@ const communitySchema = new mongoose.Schema({
 });
 
 // Indexes for performance
-communitySchema.index({ name: 1 }, { unique: true });
+communitySchema.index({ name: 1 }, { 
+  unique: true,
+  collation: { locale: 'en', strength: 2 } // Case-insensitive unique
+});
 communitySchema.index({ memberCount: -1 }); // For sorting by popularity
 communitySchema.index({ createdAt: -1 }); // For sorting by newest
 communitySchema.index({ tags: 1 }); // For filtering by tags
 
-// Case-insensitive unique name index
-communitySchema.index({ name: 1 }, { 
-  unique: true,
-  collation: { locale: 'en', strength: 2 }
-});
+// Text index for search functionality (Epic 9)
+communitySchema.index(
+  { 
+    name: 'text', 
+    description: 'text',
+    tags: 'text'
+  },
+  {
+    weights: {
+      name: 10,        // Name highest priority
+      tags: 5,         // Tags medium priority
+      description: 1   // Description lowest priority
+    },
+    name: 'community_search_index'
+  }
+);
 
 // Virtual method to check if a user is an owner
 communitySchema.methods.isOwner = function(userId) {

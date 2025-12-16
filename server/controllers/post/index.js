@@ -7,6 +7,7 @@ const savePostController = require('./savePostController');
 const repostController = require('./repostController');
 const getUserPostsController = require('./getUserPostsController');
 const getSavedPostsController = require('./getSavedPostsController');
+const searchPostsController = require('./searchPostsController');
 
 module.exports = {
   createPost: createPostController,
@@ -19,5 +20,6 @@ module.exports = {
   unsavePost: savePostController.unsavePost,
   repost: repostController,
   getUserPosts: getUserPostsController,
-  getSavedPosts: getSavedPostsController
+  getSavedPosts: getSavedPostsController,
+  searchPosts: searchPostsController
 };

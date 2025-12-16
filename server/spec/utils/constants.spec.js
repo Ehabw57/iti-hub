@@ -5,7 +5,10 @@ const {
   COMMUNITY_PROFILE_PICTURE_SIZE,
   COMMUNITY_COVER_IMAGE_SIZE,
   CLOUDINARY_FOLDER_COMMUNITY_PROFILE,
-  CLOUDINARY_FOLDER_COMMUNITY_COVER
+  CLOUDINARY_FOLDER_COMMUNITY_COVER,
+  MAX_SEARCH_RESULTS,
+  DEFAULT_SEARCH_LIMIT,
+  MIN_SEARCH_QUERY_LENGTH
 } = require('../../utils/constants');
 
 describe('Community Constants', () => {
@@ -87,6 +90,40 @@ describe('Community Constants', () => {
 
     it('should define community cover image folder', () => {
       expect(CLOUDINARY_FOLDER_COMMUNITY_COVER).toBe('community-cover-images');
+    });
+  });
+
+  describe('Search Configuration Constants', () => {
+    it('should export MAX_SEARCH_RESULTS constant', () => {
+      expect(MAX_SEARCH_RESULTS).toBeDefined();
+      expect(typeof MAX_SEARCH_RESULTS).toBe('number');
+    });
+
+    it('should export DEFAULT_SEARCH_LIMIT constant', () => {
+      expect(DEFAULT_SEARCH_LIMIT).toBeDefined();
+      expect(typeof DEFAULT_SEARCH_LIMIT).toBe('number');
+    });
+
+    it('should export MIN_SEARCH_QUERY_LENGTH constant', () => {
+      expect(MIN_SEARCH_QUERY_LENGTH).toBeDefined();
+      expect(typeof MIN_SEARCH_QUERY_LENGTH).toBe('number');
+    });
+
+    it('MAX_SEARCH_RESULTS should be greater than DEFAULT_SEARCH_LIMIT', () => {
+      expect(MAX_SEARCH_RESULTS).toBeGreaterThan(DEFAULT_SEARCH_LIMIT);
+    });
+
+    it('MIN_SEARCH_QUERY_LENGTH should be at least 2', () => {
+      expect(MIN_SEARCH_QUERY_LENGTH).toBeGreaterThanOrEqual(2);
+    });
+
+    it('DEFAULT_SEARCH_LIMIT should be reasonable (between 10 and 50)', () => {
+      expect(DEFAULT_SEARCH_LIMIT).toBeGreaterThanOrEqual(10);
+      expect(DEFAULT_SEARCH_LIMIT).toBeLessThanOrEqual(50);
+    });
+
+    it('MAX_SEARCH_RESULTS should be reasonable (not more than 100)', () => {
+      expect(MAX_SEARCH_RESULTS).toBeLessThanOrEqual(100);
     });
   });
 });

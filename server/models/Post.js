@@ -97,6 +97,18 @@ PostSchema.index({ community: 1, createdAt: -1 });
 PostSchema.index({ tags: 1, createdAt: -1 });
 PostSchema.index({ createdAt: -1 });
 PostSchema.index({ originalPost: 1 });
-PostSchema.index({ content: 'text' });
+
+// Text index for search functionality (Epic 9)
+PostSchema.index(
+  { 
+    content: 'text'
+  },
+  {
+    weights: {
+      content: 1
+    },
+    name: 'post_search_index'
+  }
+);
 
 module.exports = mongoose.model("Post", PostSchema);

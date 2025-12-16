@@ -103,6 +103,23 @@ const UserSchema = new mongoose.Schema(
   { timestamps: true, versionKey: false }
 );
 
+// Text index for search functionality
+UserSchema.index(
+  { 
+    username: 'text', 
+    fullName: 'text', 
+    bio: 'text' 
+  }, 
+  { 
+    weights: { 
+      username: 10,    // Highest priority
+      fullName: 5,     // Medium priority
+      bio: 1           // Lowest priority
+    },
+    name: 'user_search_index'
+  }
+);
+
 UserSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
 

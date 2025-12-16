@@ -1,0 +1,311 @@
+paths:
+  /search/users:
+    get:
+      summary: Search for users
+      description: Search users by username, fullName, or bio with optional filters. Returns results sorted alphabetically.
+      tags:
+        - Search
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: q
+          required: true
+          schema:
+            type: string
+            minLength: 2
+          description: Search query (minimum 2 characters)
+          example: john
+        - in: query
+          name: specialization
+          schema:
+            type: string
+          description: Filter by specialization
+          example: Web Development
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: Page number for pagination
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
+            maximum: 50
+          description: Number of results per page (max 50)
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  users:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SearchUserResult'
+                  pagination:
+                    $ref: '#/components/schemas/SearchPagination'
+        '400':
+          description: Invalid search query
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Search query must be at least 2 characters
+        '500':
+          description: Internal server error
+
+  /search/posts:
+    get:
+      summary: Search for posts
+      description: Search posts by content with optional filters. Returns results sorted alphabetically by content.
+      tags:
+        - Search
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: q
+          required: true
+          schema:
+            type: string
+            minLength: 2
+          description: Search query (minimum 2 characters)
+          example: javascript
+        - in: query
+          name: type
+          schema:
+            type: string
+            enum: [original, repost]
+          description: Filter by post type
+        - in: query
+          name: communityId
+          schema:
+            type: string
+          description: Filter by community ID
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: Page number for pagination
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
+            maximum: 50
+          description: Number of results per page (max 50)
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  posts:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SearchPostResult'
+                  pagination:
+                    $ref: '#/components/schemas/SearchPagination'
+        '400':
+          description: Invalid search query
+        '500':
+          description: Internal server error
+
+  /search/communities:
+    get:
+      summary: Search for communities
+      description: Search communities by name, description, or tags. Returns results sorted by member count (most popular first).
+      tags:
+        - Search
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: q
+          required: true
+          schema:
+            type: string
+            minLength: 2
+          description: Search query (minimum 2 characters)
+          example: programming
+        - in: query
+          name: tags
+          schema:
+            type: string
+          description: Comma-separated community tags
+          example: Technology,Education
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: Page number for pagination
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
+            maximum: 50
+          description: Number of results per page (max 50)
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  communities:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SearchCommunityResult'
+                  pagination:
+                    $ref: '#/components/schemas/SearchPagination'
+        '400':
+          description: Invalid search query
+        '500':
+          description: Internal server error
+
+components:
+  schemas:
+    SearchUserResult:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: User ID
+        username:
+          type: string
+          description: Username
+        fullName:
+          type: string
+          description: Full name
+        profilePicture:
+          type: string
+          nullable: true
+          description: Profile picture URL
+        bio:
+          type: string
+          description: User bio
+        specialization:
+          type: string
+          description: User specialization
+        followersCount:
+          type: integer
+          description: Number of followers
+        followingCount:
+          type: integer
+          description: Number of following
+        isFollowing:
+          type: boolean
+          description: Whether current user follows this user (authenticated only)
+
+    SearchPostResult:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: Post ID
+        content:
+          type: string
+          description: Post content
+        author:
+          type: object
+          properties:
+            _id:
+              type: string
+            username:
+              type: string
+            fullName:
+              type: string
+            avatar:
+              type: string
+              nullable: true
+        community:
+          type: object
+          nullable: true
+          properties:
+            _id:
+              type: string
+            name:
+              type: string
+            avatar:
+              type: string
+              nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        hasLiked:
+          type: boolean
+          description: Whether current user liked this post (authenticated only)
+        hasSaved:
+          type: boolean
+          description: Whether current user saved this post (authenticated only)
+
+    SearchCommunityResult:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: Community ID
+        name:
+          type: string
+          description: Community name
+        description:
+          type: string
+          description: Community description
+        profilePicture:
+          type: string
+          nullable: true
+          description: Profile picture URL
+        tags:
+          type: array
+          items:
+            type: string
+          description: Community tags
+        memberCount:
+          type: integer
+          description: Number of members
+        isMember:
+          type: boolean
+          description: Whether current user is a member (authenticated only)
+
+    SearchPagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          description: Current page number
+        limit:
+          type: integer
+          description: Results per page
+        total:
+          type: integer
+          description: Total number of results
+        pages:
+          type: integer
+          description: Total number of pages
+

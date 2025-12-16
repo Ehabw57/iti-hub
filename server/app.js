@@ -14,6 +14,7 @@ const connectionRoute = require("./routes/connectionRoutes");
 const feedRoutes = require("./routes/feedRoutes");
 const communityRoutes = require("./routes/communityRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
+const searchRoutes = require("./routes/searchRoutes");
 const { multerErrorHandler } = require("./middlewares/upload");
 
 dotenv.config();
@@ -37,6 +38,7 @@ app.use(connectionRoute);
 app.use('/feed', feedRoutes);
 app.use('/communities', communityRoutes);
 app.use('/notifications', notificationRoutes);
+app.use('/search', searchRoutes);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.get("/", (req, res) => {
   res.send("Hi if you are see this message!, that means that the server is running :)");
