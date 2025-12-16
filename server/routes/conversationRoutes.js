@@ -1,23 +1,45 @@
 const express = require("express");
+const { checkAuth } = require("../middlewares/checkAuth");
+const upload = require("../middlewares/upload");
+
+// Import conversation controllers
 const {
   getConversations,
+  getConversation,
   createConversation,
-  getConversationById,
-  deleteConversation
-} = require("../controllers/conversationController");
+  createGroupConversation,
+  addGroupMember,
+  removeGroupMember,
+  leaveGroup,
+  updateGroup,
+  markConversationAsSeen
+} = require("../controllers/conversation");
 
-const router = express.Router();
+// Import message controllers
+const {
+  getMessages,
+  sendMessage
+} = require("../controllers/message");
 
-// GET /conversations → getConversations
-router.get("/api/conversations", getConversations);
+const conversationRoutes = express.Router();
 
-// POST /conversations → createConversation
-router.post("/api/conversations", createConversation);
+// Conversation routes
+conversationRoutes.get("/", checkAuth, getConversations);
+conversationRoutes.get("/:conversationId", checkAuth, getConversation);
+conversationRoutes.post("/", checkAuth, createConversation);
+conversationRoutes.post("/group", checkAuth, createGroupConversation);
 
-// GET /conversations/:id → getConversationById
-router.get("/api/conversations/:id", getConversationById);
+// Group management routes
+conversationRoutes.post("/:conversationId/members", checkAuth, addGroupMember);
+conversationRoutes.delete("/:conversationId/members/:userId", checkAuth, removeGroupMember);
+conversationRoutes.post("/:conversationId/leave", checkAuth, leaveGroup);
+conversationRoutes.patch("/:conversationId", checkAuth, upload.message, updateGroup);
 
-// DELETE /conversations/:id → deleteConversation
-router.delete("/api/conversations/:id", deleteConversation);
+// Message routes (nested under conversations)
+conversationRoutes.get("/:conversationId/messages", checkAuth, getMessages);
+conversationRoutes.post("/:conversationId/messages", checkAuth, upload.message, sendMessage);
 
-module.exports = router;
+// Message status routes
+conversationRoutes.put("/:conversationId/seen", checkAuth, markConversationAsSeen);
+
+module.exports = conversationRoutes;

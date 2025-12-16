@@ -1,6 +1,38 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
+// Map to track last lastSeen update time for each user
+// Format: { userId: timestamp }
+const lastSeenThrottle = new Map();
+const THROTTLE_INTERVAL = 60 * 1000; // 60 seconds in milliseconds
+
+/**
+ * Update user's lastSeen timestamp with throttling
+ * @param {string} userId - User ID
+ */
+const updateLastSeen = async (userId) => {
+  try {
+    const now = Date.now();
+    const lastUpdate = lastSeenThrottle.get(userId.toString());
+
+    // Check if enough time has passed since last update
+    if (lastUpdate && (now - lastUpdate) < THROTTLE_INTERVAL) {
+      return; // Skip update if within throttle period
+    }
+
+    // Update lastSeen in database
+    await User.findByIdAndUpdate(userId, {
+      lastSeen: new Date()
+    });
+
+    // Update throttle map
+    lastSeenThrottle.set(userId.toString(), now);
+  } catch (error) {
+    // Silently fail - don't block request if lastSeen update fails
+    console.error('Error updating lastSeen:', error);
+  }
+};
+
 /**
  * checkAuth - Requires valid JWT token and attaches user to req.user
  * Returns 401 if token is missing, invalid, or expired
@@ -49,6 +81,12 @@ const checkAuth = async (req, res, next) => {
 
     // 5. Attach user to request
     req.user = user;
+
+    // 6. Update lastSeen asynchronously (throttled, don't await)
+    updateLastSeen(user._id).catch(err => {
+      // Already logged in updateLastSeen, just prevent unhandled rejection
+    });
+
     next();
   } catch (error) {
     if (error.name === 'JsonWebTokenError') {

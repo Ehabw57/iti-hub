@@ -46,6 +46,27 @@ const POST_RATE_LIMIT = 10; // posts per hour
 const MIN_COMMENT_CONTENT_LENGTH = 1;
 const MAX_COMMENT_CONTENT_LENGTH = 1000;
 
+// Messaging Validation
+const MAX_MESSAGE_CONTENT_LENGTH = 2000;
+const MIN_GROUP_NAME_LENGTH = 2;
+const MAX_GROUP_NAME_LENGTH = 100;
+const MIN_GROUP_PARTICIPANTS = 3;
+const MAX_GROUP_PARTICIPANTS = 100;
+const MIN_CONVERSATION_PARTICIPANTS = 2;
+
+// Message Status
+const MESSAGE_STATUS = {
+  SENT: 'sent',
+  DELIVERED: 'delivered',
+  SEEN: 'seen'
+};
+
+// Conversation Types
+const CONVERSATION_TYPES = {
+  INDIVIDUAL: 'individual',
+  GROUP: 'group'
+};
+
 // Community Validation
 const COMMUNITY_TAGS = [
   'Technology',
@@ -222,6 +243,16 @@ module.exports = {
   // Comment validation
   MIN_COMMENT_CONTENT_LENGTH,
   MAX_COMMENT_CONTENT_LENGTH,
+  
+  // Messaging validation
+  MAX_MESSAGE_CONTENT_LENGTH,
+  MIN_GROUP_NAME_LENGTH,
+  MAX_GROUP_NAME_LENGTH,
+  MIN_GROUP_PARTICIPANTS,
+  MAX_GROUP_PARTICIPANTS,
+  MIN_CONVERSATION_PARTICIPANTS,
+  MESSAGE_STATUS,
+  CONVERSATION_TYPES,
   
   // Community validation
   COMMUNITY_TAGS,

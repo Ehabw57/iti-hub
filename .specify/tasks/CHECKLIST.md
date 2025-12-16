@@ -317,26 +317,27 @@ Use this checklist to track your progress through all tasks. Mark each task as y
 
 ## Epic 4: File Upload & Media (P0)
 
-**Status**: ⬜ Not Started  
+**Status**: ✅ Complete  
+**Completion Date**: December 15, 2025  
 **Effort**: 5-7 days  
 **File**: [epic-04-file-upload.md](./epic-04-file-upload.md)  
 **Depends on**: Epic 1
 
 ### Phase 1: Setup & Configuration
-- [ ] ⚡⚠️ **T034** - Setup Cloudinary Integration (0.5 days)
+- [x] ⚡⚠️ **T034** - Setup Cloudinary Integration (0.5 days) ✅
   - Install dependencies: `cloudinary`, `multer`, `file-type`
   - Configure Cloudinary credentials in `.env`
   - Create Cloudinary utility wrapper
   - File: `/server/utils/cloudinary.js`
 
-- [ ] ⚡⚠️ **T035** - Create File Validation Utilities (1 day)
+- [x] ⚡⚠️ **T035** - Create File Validation Utilities (1 day) ✅
   - File: `/server/utils/fileValidation.js`
   - Functions: `validateFileType()`, `validateFileSize()`, `validateUploadContext()`
   - Validation rules for profile, cover, post, message images
   - Tests: 15+ tests in `/server/spec/utils/fileValidation.spec.js`
 
 ### Phase 2: Upload Middleware
-- [ ] 🔗 **T036** - Create Upload Middleware (1.5 days)
+- [x] 🔗 **T036** - Create Upload Middleware (1.5 days) ✅
   - File: `/server/middlewares/upload.js`
   - Setup Multer with memory storage
   - Context-aware file validation (profile, cover, post, message)
@@ -345,7 +346,7 @@ Use this checklist to track your progress through all tasks. Mark each task as y
   - Depends on: T034, T035
 
 ### Phase 3: User Story 1 - Profile Picture Upload
-- [ ] 🔗 **T037** - Implement Profile Picture Upload Controller (1 day)
+- [x] 🔗 **T037** - Implement Profile Picture Upload Controller (1 day) ✅
   - File: `/server/controllers/user/uploadProfilePictureController.js`
   - Function: `uploadProfilePicture(req, res)`
   - Cloudinary upload with transformations (500x500, crop, optimize)
@@ -355,7 +356,7 @@ Use this checklist to track your progress through all tasks. Mark each task as y
   - Depends on: T034, T036, Epic 1
 
 ### Phase 4: User Story 2 - Cover Image Upload
-- [ ] 🔗 **T038** - Implement Cover Image Upload Controller (0.5 days)
+- [x] 🔗 **T038** - Implement Cover Image Upload Controller (0.5 days) ✅
   - File: `/server/controllers/user/uploadCoverImageController.js`
   - Function: `uploadCoverImage(req, res)`
   - Cloudinary upload with transformations (1500x500, crop, optimize)
@@ -364,7 +365,7 @@ Use this checklist to track your progress through all tasks. Mark each task as y
   - Depends on: T034, T036, Epic 1
 
 ### Phase 5: User Story 3 - Post Images Upload
-- [ ] 🔗 **T039** - Update Create Post Controller for Media (1 day)
+- [x] 🔗 **T039** - Update Create Post Controller for Media (1 day) ✅
   - Update: `/server/controllers/post/createPostController.js`
   - Support multiple image uploads (max 10)
   - Cloudinary batch upload with transformations (2000x2000 max)
@@ -373,13 +374,13 @@ Use this checklist to track your progress through all tasks. Mark each task as y
   - Depends on: T034, T036, Epic 3
 
 ### Phase 6: Routes & Integration
-- [ ] 🔗 **T040** - Create Upload Routes (0.5 days)
+- [x] 🔗 **T040** - Create Upload Routes (0.5 days) ✅
   - Update: `/server/routes/userRoutes.js`
   - Routes: POST /users/profile/picture, POST /users/profile/cover
   - Apply upload middleware with context
   - Depends on: T037, T038
 
-- [ ] 🔗 **T041** - Create File Upload Integration Tests (1 day)
+- [x] 🔗 **T041** - Create File Upload Integration Tests (1 day) ✅
   - File: `/server/spec/integration/fileUpload.integration.spec.js`
   - Tests: 20+ integration tests
   - Test all upload contexts with actual Cloudinary (or mocked)
@@ -387,7 +388,7 @@ Use this checklist to track your progress through all tasks. Mark each task as y
   - Test image transformations
   - Depends on: T037-T040
 
-- [ ] ⚡🔗 **T042** - Update API Documentation for File Upload (0.5 days)
+- [x] ⚡🔗 **T042** - Update API Documentation for File Upload (0.5 days) ✅
   - File: `/server/docs/upload.yaml`
   - Document all upload endpoints with multipart/form-data
   - Example requests with file uploads
@@ -396,27 +397,28 @@ Use this checklist to track your progress through all tasks. Mark each task as y
   - Depends on: T040
 
 **Epic 4 Completion Criteria:**
-- [ ] All 9 tasks completed
-- [ ] All unit tests passing (60+ tests)
-- [ ] All integration tests passing (20+ tests)
-- [ ] Cloudinary integration working
-- [ ] File validation preventing invalid uploads
-- [ ] Image transformations applied correctly
-- [ ] Old images deleted when replaced
-- [ ] API documentation complete
-- [ ] Manual testing with real images successful
+- [x] All 9 tasks completed ✅
+- [x] All unit tests passing (60+ tests) ✅
+- [x] All integration tests passing (20+ tests) ✅
+- [x] Cloudinary integration working ✅
+- [x] File validation preventing invalid uploads ✅
+- [x] Image transformations applied correctly ✅
+- [x] Old images deleted when replaced ✅
+- [x] API documentation complete ✅
+- [x] Manual testing with real images successful ✅
 
 ---
 
 ## Epic 5: Feed & Discovery (P0)
 
-**Status**: ⬜ Not Started  
+**Status**: ✅ Complete  
+**Completion Date**: December 15, 2025  
 **Effort**: 10-12 days  
 **File**: [epic-05-feed-algorithm.md](./epic-05-feed-algorithm.md)  
 **Depends on**: Epic 1, Epic 2, Epic 3
 
 ### Phase 1: Feed Algorithm Core
-- [ ] ⚡⚠️ **T043** - Create Feed Algorithm Utilities (2 days)
+- [x] ⚡⚠️ **T043** - Create Feed Algorithm Utilities (2 days) ✅
   - File: `/server/utils/feedAlgorithm.js`
   - Functions: 
     * `calculateEngagementScore(post)`
@@ -427,7 +429,7 @@ Use this checklist to track your progress through all tasks. Mark each task as y
   - Weighted scoring system configurable via FEED_WEIGHTS constant
   - Tests: 30+ tests in `/server/spec/utils/feedAlgorithm.spec.js`
 
-- [ ] ⚡⚠️ **T044** - Create Feed Cache Manager (1 day)
+- [x] ⚡⚠️ **T044** - Create Feed Cache Manager (1 day) ✅
   - File: `/server/utils/feedCache.js`
   - Setup node-cache or Redis integration
   - Cache key generation with auth state: `feed:{type}:{userId|'public'}:page:{page}`
@@ -437,7 +439,7 @@ Use this checklist to track your progress through all tasks. Mark each task as y
   - Tests: 20+ tests in `/server/spec/utils/feedCache.spec.js`
 
 ### Phase 2: User Story 1 - Home Feed (Optional Auth)
-- [ ] 🔗 **T045** - Implement Home Feed Controller (2.5 days)
+- [x] 🔗 **T045** - Implement Home Feed Controller (2.5 days) ✅
   - File: `/server/controllers/feed/getHomeFeedController.js`
   - Function: `getHomeFeed(req, res)`
   - Route: `GET /feed/home` (optionalAuth)
@@ -451,7 +453,7 @@ Use this checklist to track your progress through all tasks. Mark each task as y
   - Depends on: T043, T044, Epic 1, Epic 2, Epic 3
 
 ### Phase 3: User Story 2 - Following Feed (Auth Required)
-- [ ] 🔗 **T046** - Implement Following Feed Controller (1.5 days)
+- [x] 🔗 **T046** - Implement Following Feed Controller (1.5 days) ✅
   - File: `/server/controllers/feed/getFollowingFeedController.js`
   - Function: `getFollowingFeed(req, res)`
   - Route: `GET /feed/following` (checkAuth - REQUIRED)
@@ -464,7 +466,7 @@ Use this checklist to track your progress through all tasks. Mark each task as y
   - Depends on: T044, Epic 1, Epic 2, Epic 3
 
 ### Phase 4: User Story 3 - Trending Feed (Optional Auth)
-- [ ] 🔗 **T047** - Implement Trending Feed Controller (2 days)
+- [x] 🔗 **T047** - Implement Trending Feed Controller (2 days) ✅
   - File: `/server/controllers/feed/getTrendingFeedController.js`
   - Function: `getTrendingFeed(req, res)`
   - Route: `GET /feed/trending` (optionalAuth)
@@ -478,7 +480,7 @@ Use this checklist to track your progress through all tasks. Mark each task as y
   - Depends on: T043, T044, Epic 3
 
 ### Phase 5: User Story 4 - Community Feed (Optional Auth)
-- [ ] 🔗 **T048** - Implement Community Feed Controller (1 day)
+- [x] 🔗 **T048** - Implement Community Feed Controller (1 day) ✅
   - File: `/server/controllers/community/getCommunityFeedController.js`
   - Function: `getCommunityFeed(req, res)`
   - Route: `GET /communities/:id/feed` (optionalAuth)
@@ -490,7 +492,7 @@ Use this checklist to track your progress through all tasks. Mark each task as y
   - Depends on: T044, Epic 3, Epic 6
 
 ### Phase 6: Cache Invalidation
-- [ ] 🔗 **T049** - Implement Cache Invalidation Logic (1 day)
+- [x] 🔗 **T049** - Implement Cache Invalidation Logic (1 day) ✅
   - File: `/server/utils/cacheInvalidation.js`
   - Update post controllers to invalidate caches
   - Invalidation rules:
@@ -502,7 +504,7 @@ Use this checklist to track your progress through all tasks. Mark each task as y
   - Depends on: T044, T045-T048
 
 ### Phase 7: Routes & Integration
-- [ ] 🔗 **T050** - Create Feed Routes (0.5 days)
+- [x] 🔗 **T050** - Create Feed Routes (0.5 days) ✅
   - File: `/server/routes/feedRoutes.js`
   - Routes:
     * `GET /feed/home` (optionalAuth)
@@ -513,7 +515,7 @@ Use this checklist to track your progress through all tasks. Mark each task as y
   - Query params: page, limit
   - Depends on: T045-T048
 
-- [ ] 🔗 **T051** - Create Feed Integration Tests (2 days)
+- [x] 🔗 **T051** - Create Feed Integration Tests (2 days) ✅
   - File: `/server/spec/integration/feed.integration.spec.js`
   - Tests: 40+ end-to-end tests
   - Test scenarios:
@@ -526,7 +528,7 @@ Use this checklist to track your progress through all tasks. Mark each task as y
     * Performance benchmarks
   - Depends on: T045-T050
 
-- [ ] ⚡🔗 **T052** - Update API Documentation for Feeds (0.5 days)
+- [x] ⚡🔗 **T052** - Update API Documentation for Feeds (0.5 days) ✅
   - File: `/server/docs/feed.yaml`
   - Document all 4 feed endpoints with auth requirements
   - Explain ranking algorithms (Home vs Trending)
@@ -537,51 +539,52 @@ Use this checklist to track your progress through all tasks. Mark each task as y
   - Depends on: T050
 
 **Epic 5 Completion Criteria:**
-- [ ] All 10 tasks completed (T043-T052)
-- [ ] All unit tests passing (120+ tests)
-- [ ] All integration tests passing (40+ tests)
-- [ ] 4 feed types working: Home, Following, Trending, Community
-- [ ] Home feed: featured tags for unauth, algorithm for auth
-- [ ] Following feed: auth required, includes users + communities, chronological
-- [ ] Trending feed: global scope, 2-day window, algorithmic
-- [ ] Community feed: chronological, auth optional
-- [ ] Cache working (verified hit/miss for all feed types)
-- [ ] Cache invalidation working correctly
-- [ ] Performance acceptable (<50ms cached, <2s uncached)
-- [ ] API documentation complete with all 4 feeds
-- [ ] Manual testing successful
+- [x] All 10 tasks completed (T043-T052) ✅
+- [x] All unit tests passing (120+ tests) ✅
+- [x] All integration tests passing (40+ tests) ✅
+- [x] 4 feed types working: Home, Following, Trending, Community ✅
+- [x] Home feed: featured tags for unauth, algorithm for auth ✅
+- [x] Following feed: auth required, includes users + communities, chronological ✅
+- [x] Trending feed: global scope, 2-day window, algorithmic ✅
+- [x] Community feed: chronological, auth optional ✅
+- [x] Cache working (verified hit/miss for all feed types) ✅
+- [x] Cache invalidation working correctly ✅
+- [x] Performance acceptable (<50ms cached, <2s uncached) ✅
+- [x] API documentation complete with all 4 feeds ✅
+- [x] Manual testing successful ✅
 
 ---
 
 ## Epic 6: Communities (P1)
 
-**Status**: ⬜ Not Started  
+**Status**: ✅ Complete  
+**Completion Date**: December 15, 2025  
 **Effort**: 7-9 days  
 **File**: [epic-06-communities.md](./epic-06-communities.md)  
 **Depends on**: Epic 1, Epic 2, Epic 3
 
 ### Phase 1: Models & Setup
-- [ ] ⚡⚠️ **T053** - Create Community Model (1 day)
+- [x] ⚡⚠️ **T053** - Create Community Model (1 day) ✅
   - File: `/server/models/Community.js`
   - Fields: name, description, coverImage, rules, tags, membersCount, postsCount, moderators, createdBy
   - Indexes: name (unique), tags, membersCount, text search
   - Validation: name (2-100 chars, unique), description (max 1000), rules (max 5000)
   - Tests: 20+ tests in `/server/spec/models/communityModel.spec.js`
 
-- [ ] ⚡⚠️ **T054** - Create Enrollment Model (0.5 days)
+- [x] ⚡⚠️ **T054** - Create Enrollment Model (0.5 days) ✅
   - File: `/server/models/Enrollment.js`
   - Fields: user, community, role (member/moderator), joinedAt
   - Compound unique index: { user, community }
   - Query indexes for user enrollments and community members
   - Tests: 10+ tests in `/server/spec/models/enrollmentModel.spec.js`
 
-- [ ] ⚡⚠️ **T055** - Create Community Helpers (0.5 days)
+- [x] ⚡⚠️ **T055** - Create Community Helpers (0.5 days) ✅
   - File: `/server/utils/communityHelpers.js`
   - Functions: `isMember()`, `isModerator()`, `canModerate()`, `validateCommunityData()`
   - Tests: 12+ tests in `/server/spec/utils/communityHelpers.spec.js`
 
 ### Phase 2: User Story 1 - Create/View Communities
-- [ ] 🔗 **T056** - Implement Create Community Controller (1.5 days)
+- [x] 🔗 **T056** - Implement Create Community Controller (1.5 days) ✅
   - File: `/server/controllers/community/createCommunityController.js`
   - Function: `createCommunity(req, res)`
   - Validation: name uniqueness, description required
@@ -590,7 +593,7 @@ Use this checklist to track your progress through all tasks. Mark each task as y
   - Tests: 15+ tests
   - Depends on: T053, T054, Epic 1
 
-- [ ] 🔗 **T057** - Implement Get Community Controllers (1 day)
+- [x] 🔗 **T057** - Implement Get Community Controllers (1 day) ✅
   - Files: `/server/controllers/community/getCommunityController.js`, `getCommunitiesController.js`
   - Functions: `getCommunity(req, res)`, `getCommunities(req, res)`, `getUserCommunities(req, res)`
   - Include membership status (isMember, isModerator) for authenticated users
@@ -599,7 +602,7 @@ Use this checklist to track your progress through all tasks. Mark each task as y
   - Depends on: T053, T054, Epic 1
 
 ### Phase 3: User Story 2 - Join/Leave Communities
-- [ ] 🔗 **T058** - Implement Join/Leave Community Controllers (1 day)
+- [x] 🔗 **T058** - Implement Join/Leave Community Controllers (1 day) ✅
   - File: `/server/controllers/community/enrollmentController.js`
   - Functions: `joinCommunity(req, res)`, `leaveCommunity(req, res)`
   - Create/delete enrollment record
@@ -609,7 +612,7 @@ Use this checklist to track your progress through all tasks. Mark each task as y
   - Depends on: T053, T054, Epic 1
 
 ### Phase 4: User Story 3 - Community Posts
-- [ ] 🔗 **T059** - Update Post Model for Communities (0.5 days)
+- [x] 🔗 **T059** - Update Post Model for Communities (0.5 days) ✅
   - Update: `/server/models/Post.js`
   - Add `community` field (ObjectId ref, optional)
   - Add index: { community: 1, createdAt: -1 }
@@ -617,7 +620,7 @@ Use this checklist to track your progress through all tasks. Mark each task as y
   - Tests: Update existing tests + 5+ new tests
   - Depends on: T053, Epic 3
 
-- [ ] 🔗 **T060** - Implement Create Community Post Controller (1 day)
+- [x] 🔗 **T060** - Implement Create Community Post Controller (1 day) ✅
   - Update or extend: `/server/controllers/post/createPostController.js`
   - Support communityId in request body
   - Verify user is member before allowing post
@@ -626,7 +629,7 @@ Use this checklist to track your progress through all tasks. Mark each task as y
   - Depends on: T053, T054, T059, Epic 3
 
 ### Phase 5: User Story 4 - Moderation
-- [ ] 🔗 **T061** - Implement Update Community Controller (1 day)
+- [x] 🔗 **T061** - Implement Update Community Controller (1 day) ✅
   - File: `/server/controllers/community/updateCommunityController.js`
   - Function: `updateCommunity(req, res)`
   - Fields: description, coverImage, rules, tags
@@ -634,7 +637,7 @@ Use this checklist to track your progress through all tasks. Mark each task as y
   - Tests: 12+ tests
   - Depends on: T053, T055, Epic 1
 
-- [ ] 🔗 **T062** - Implement Delete Community Post Controller (0.5 days)
+- [x] 🔗 **T062** - Implement Delete Community Post Controller (0.5 days) ✅
   - File: `/server/controllers/community/deletePostController.js`
   - Function: `deleteCommunityPost(req, res)`
   - Moderators can delete any post in their community
@@ -643,7 +646,7 @@ Use this checklist to track your progress through all tasks. Mark each task as y
   - Depends on: T053, T055, Epic 3
 
 ### Phase 6: Routes & Integration
-- [ ] 🔗 **T063** - Create Community Routes (0.5 days)
+- [x] 🔗 **T063** - Create Community Routes (0.5 days) ✅
   - File: `/server/routes/communityRoutes.js`
   - Routes:
     * POST /communities (checkAuth)
@@ -657,7 +660,7 @@ Use this checklist to track your progress through all tasks. Mark each task as y
     * DELETE /communities/:id/posts/:postId (checkAuth, moderator only)
   - Depends on: T056-T062
 
-- [ ] 🔗 **T064** - Create Community Integration Tests (1.5 days)
+- [x] 🔗 **T064** - Create Community Integration Tests (1.5 days) ✅
   - File: `/server/spec/integration/community.integration.spec.js`
   - Tests: 35+ integration tests
   - Test scenarios:
@@ -669,7 +672,7 @@ Use this checklist to track your progress through all tasks. Mark each task as y
     * Moderation actions
   - Depends on: T056-T063
 
-- [ ] ⚡🔗 **T065** - Update API Documentation for Communities (0.5 days)
+- [x] ⚡🔗 **T065** - Update API Documentation for Communities (0.5 days) ✅
   - File: `/server/docs/community.yaml`
   - Document all community endpoints
   - Member vs moderator permissions
@@ -679,38 +682,379 @@ Use this checklist to track your progress through all tasks. Mark each task as y
   - Depends on: T063
 
 **Epic 6 Completion Criteria:**
-- [ ] All 13 tasks completed (T053-T065)
-- [ ] All unit tests passing (119+ tests)
-- [ ] All integration tests passing (35+ tests)
-- [ ] Communities can be created and managed
-- [ ] Join/leave functionality working
-- [ ] Community posts integrated with feed
-- [ ] Moderation permissions enforced
-- [ ] Member counts accurate
+- [x] All 13 tasks completed (T053-T065) ✅
+- [x] All unit tests passing (119+ tests) ✅
+- [x] All integration tests passing (35+ tests) ✅
+- [x] Communities can be created and managed ✅
+- [x] Join/leave functionality working ✅
+- [x] Community posts integrated with feed ✅
+- [x] Moderation permissions enforced ✅
+- [x] Member counts accurate ✅
+- [x] API documentation complete ✅
+- [x] Manual testing successful ✅
+
+---
+
+## Epic 7: Messaging & Real-time (P0)
+
+**Status**: ⬜ Not Started  
+**Effort**: 12-15 days  
+**File**: [epic-07-messaging.md](./epic-07-messaging.md)  
+**Depends on**: Epic 1, Epic 2, Epic 4
+
+### Phase 1: Models & Setup
+- [ ] ⚡⚠️ **T066** - Create Conversation Model (1 day)
+  - File: `/server/models/Conversation.js`
+  - Fields: type (individual/group), participants, name, image, admin, lastMessage, unreadCount
+  - Indexes: participants, type, updatedAt (for sorting)
+  - Compound index: { participants: 1, type: 1 } for finding conversations
+  - Validation: individual (2 participants), group (3-100 participants, name required)
+  - Test cases: 25+ scenarios in `/server/spec/models/conversationModel.spec.js`
+
+- [ ] ⚡⚠️ **T067** - Create Message Model (1 day)
+  - File: `/server/models/Message.js`
+  - Fields: conversation, sender, content, image, status (sent/delivered/seen), seenBy
+  - Indexes: { conversation: 1, createdAt: -1 }, sender
+  - Validation: content (max 2000 chars, required if no image), status enum
+  - Test cases: 20+ scenarios in `/server/spec/models/messageModel.spec.js`
+
+- [ ] ⚡⚠️ **T068** - Create Message Helpers (0.5 days)
+  - File: `/server/utils/messageHelpers.js`
+  - Functions: `isParticipant()`, `canSendMessage()`, `formatConversation()`, `formatMessage()`
+  - Test cases: 12+ scenarios in `/server/spec/utils/messageHelpers.spec.js`
+
+### Phase 2: User Story 1 - View Conversations
+- [ ] 🔗 **T069** - Implement Get Conversations Controller (1.5 days)
+  - File: `/server/controllers/conversation/getConversationsController.js`
+  - Function: `getConversations(req, res)`
+  - Route: `GET /conversations` (checkAuth)
+  - Query: All conversations where user is participant
+  - Sort by updatedAt (most recent first)
+  - Include: last message, unread count, participant status (online/lastSeen)
+  - Pagination support
+  - Test cases: 18+ scenarios
+  - Depends on: T066, T067, Epic 1, Epic 2
+
+- [ ] 🔗 **T070** - Implement Get Conversation by ID Controller (1 day)
+  - File: `/server/controllers/conversation/getConversationController.js`
+  - Function: `getConversation(req, res)`
+  - Route: `GET /conversations/:conversationId` (checkAuth)
+  - Verify user is participant
+  - Include full conversation details with all participants
+  - Test cases: 12+ scenarios
+  - Depends on: T066, T068, Epic 1
+
+### Phase 3: User Story 2 - Create Conversations
+- [ ] 🔗 **T071** - Implement Create Individual Conversation Controller (1 day)
+  - File: `/server/controllers/conversation/createConversationController.js`
+  - Function: `createConversation(req, res)`
+  - Route: `POST /conversations` (checkAuth)
+  - Check if conversation already exists (same 2 participants)
+  - Return existing or create new conversation
+  - Prevent blocked users from creating conversations
+  - Test cases: 15+ scenarios
+  - Depends on: T066, T068, Epic 1, Epic 2
+
+- [ ] 🔗 **T072** - Implement Create Group Conversation Controller (1.5 days)
+  - File: `/server/controllers/conversation/createGroupConversationController.js`
+  - Function: `createGroupConversation(req, res)`
+  - Route: `POST /conversations/group` (checkAuth)
+  - Validate: name required, 3-100 total participants (including creator)
+  - Set creator as admin
+  - Sort participants array for consistent querying
+  - Test cases: 18+ scenarios
+  - Depends on: T066, T068, Epic 1
+
+### Phase 4: User Story 3 - Send/View Messages
+- [ ] 🔗 **T073** - Implement Get Messages Controller (1.5 days)
+  - File: `/server/controllers/message/getMessagesController.js`
+  - Function: `getMessages(req, res)`
+  - Route: `GET /conversations/:conversationId/messages` (checkAuth)
+  - Query param: `before` (timestamp) for loading older messages
+  - Verify user is participant
+  - Load messages in reverse chronological order (newest first)
+  - Pagination support (20 messages per page)
+  - Include sender details and seen status
+  - Test cases: 20+ scenarios
+  - Depends on: T066, T067, T068, Epic 1
+
+- [ ] 🔗 **T074** - Implement Send Message Controller (2 days)
+  - File: `/server/controllers/message/sendMessageController.js`
+  - Function: `sendMessage(req, res)`
+  - Route: `POST /conversations/:conversationId/messages` (checkAuth)
+  - Verify user is participant
+  - Validate: content or image required (not both empty)
+  - Create message with status: "sent"
+  - Update conversation lastMessage and updatedAt
+  - Increment unreadCount for other participants
+  - Emit real-time event to participants (Socket.io)
+  - Test cases: 22+ scenarios
+  - Depends on: T066, T067, T068, Epic 1, T082 (WebSocket setup)
+
+### Phase 5: User Story 4 - Group Management
+- [ ] 🔗 **T075** - Implement Add/Remove Group Members Controllers (1.5 days)
+  - File: `/server/controllers/conversation/groupMembersController.js`
+  - Functions: `addGroupMember(req, res)`, `removeGroupMember(req, res)`
+  - Routes: 
+    * `POST /conversations/:conversationId/members` (checkAuth, admin only)
+    * `DELETE /conversations/:conversationId/members/:userId` (checkAuth, admin only)
+  - Validate: group type, max 100 members, admin permissions
+  - Test cases: 20+ scenarios
+  - Depends on: T066, T068, Epic 1
+
+- [ ] 🔗 **T076** - Implement Leave Group Controller (0.5 days)
+  - File: `/server/controllers/conversation/leaveGroupController.js`
+  - Function: `leaveGroup(req, res)`
+  - Route: `POST /conversations/:conversationId/leave` (checkAuth)
+  - Remove user from participants array
+  - If admin leaves and group has members, assign new admin (oldest member)
+  - If last member leaves, optionally delete conversation
+  - Test cases: 12+ scenarios
+  - Depends on: T066, T068, Epic 1
+
+- [ ] 🔗 **T077** - Implement Update Group Info Controller (0.5 days)
+  - File: `/server/controllers/conversation/updateGroupController.js`
+  - Function: `updateGroupInfo(req, res)`
+  - Route: `PATCH /conversations/:conversationId` (checkAuth, admin only)
+  - Fields: name, image
+  - Validate: group type, admin permissions
+  - Test cases: 10+ scenarios
+  - Depends on: T066, T068, Epic 1
+
+### Phase 6: User Story 5 - Message Status & Real-time
+- [ ] 🔗 **T078** - Implement Mark as Seen Controller (1 day)
+  - File: `/server/controllers/message/markAsSeenController.js`
+  - Function: `markAsSeen(req, res)`
+  - Route: `POST /conversations/:conversationId/seen` (checkAuth)
+  - Update all unread messages in conversation to "seen"
+  - Add userId and timestamp to seenBy array
+  - Reset unreadCount for user in conversation
+  - Emit real-time "seen" event to other participants
+  - Test cases: 15+ scenarios
+  - Depends on: T066, T067, Epic 1, T082 (WebSocket setup)
+
+- [ ] 🔗 **T079** - Update User Last Seen (0.5 days)
+  - Update: `/server/middlewares/checkAuth.js`
+  - Add middleware to update user.lastSeen on authenticated requests
+  - Only update every 60 seconds to avoid excessive DB writes
+  - No dedicated endpoint (passive update)
+  - Test cases: 8+ scenarios
+  - Depends on: Epic 1
+
+### Phase 7: WebSocket & Real-time (MVP Essential)
+- [ ] ⚡⚠️ **T080** - Setup Socket.io Server (1 day)
+  - File: `/server/utils/socketServer.js`
+  - Setup Socket.io with authentication middleware
+  - Connect to Express app
+  - Handle user connections/disconnections
+  - Store user socket mappings (userId -> socketId)
+  - Test cases: 15+ scenarios for connection/auth
+  - Depends on: Epic 1
+
+- [ ] 🔗 **T081** - Implement Real-time Message Events (1.5 days)
+  - File: `/server/utils/socketEvents.js`
+  - Events to handle:
+    * `message:send` - Real-time message delivery
+    * `message:seen` - Seen status updates
+    * `typing:start` - User starts typing
+    * `typing:stop` - User stops typing
+  - Emit events to specific conversation participants
+  - Update online status on socket connect/disconnect
+  - Test cases: 20+ scenarios for all events
+  - Depends on: T080, T066, T067
+
+### Phase 8: Routes & Integration
+- [ ] 🔗 **T082** - Create Message and Conversation Routes (0.5 days)
+  - Files: `/server/routes/conversationRoutes.js`, `/server/routes/messageRoutes.js`
+  - Conversation routes:
+    * `GET /conversations` (checkAuth)
+    * `GET /conversations/:conversationId` (checkAuth)
+    * `POST /conversations` (checkAuth)
+    * `POST /conversations/group` (checkAuth)
+    * `POST /conversations/:conversationId/members` (checkAuth)
+    * `DELETE /conversations/:conversationId/members/:userId` (checkAuth)
+    * `POST /conversations/:conversationId/leave` (checkAuth)
+    * `PATCH /conversations/:conversationId` (checkAuth)
+  - Message routes:
+    * `GET /conversations/:conversationId/messages` (checkAuth)
+    * `POST /conversations/:conversationId/messages` (checkAuth)
+    * `POST /conversations/:conversationId/seen` (checkAuth)
+  - Depends on: T069-T079
+
+- [ ] 🔗 **T083** - Create Controller Index Files (0.25 days)
+  - Files: `/server/controllers/conversation/index.js`, `/server/controllers/message/index.js`
+  - Export all controller functions for clean imports
+  - Depends on: T069-T079
+
+- [ ] 🔗 **T084** - Create Messaging Integration Tests (2 days)
+  - File: `/server/spec/integration/messaging.integration.spec.js`
+  - Test cases: 50+ end-to-end scenarios
+  - Test scenarios:
+    * Individual conversations: create, find existing, send messages
+    * Group conversations: create, add/remove members, admin permissions
+    * Message sending and retrieval with pagination
+    * Mark as seen functionality
+    * Unread counts accuracy
+    * Blocking prevents messaging
+    * Last seen updates
+    * Real-time message delivery
+    * Real-time typing indicators
+  - Depends on: T069-T083
+
+- [ ] ⚡🔗 **T085** - Update API Documentation for Messaging (0.5 days)
+  - Files: `/server/docs/conversation.yaml`, `/server/docs/message.yaml`
+  - Document all messaging endpoints
+  - Conversation types (individual vs group)
+  - Message status lifecycle (sent → delivered → seen)
+  - Group admin permissions
+  - WebSocket events documentation
+  - Integrated into `/server/docs/index.js`
+  - Depends on: T082
+
+**Epic 7 Completion Criteria:**
+- [ ] All 20 tasks completed (T066-T085)
+- [ ] All unit test cases passing (180+ scenarios)
+- [ ] All integration test cases passing (50+ scenarios)
+- [ ] Individual conversations working
+- [ ] Group conversations with admin management working
+- [ ] Message sending and retrieval working
+- [ ] Message status (sent/delivered/seen) working
+- [ ] Real-time message delivery working (Socket.io)
+- [ ] Real-time typing indicators working
+- [ ] Unread counts accurate
+- [ ] Online/last seen status working
+- [ ] Blocking prevents messaging
 - [ ] API documentation complete
 - [ ] Manual testing successful
 
 ---
 
-## Epic 7: Messaging & Real-time (P1)
+## Epic 8: Notifications & Real-time (P0)
 
 **Status**: ⬜ Not Started  
-**Effort**: 10-12 days  
-**Depends on**: Epic 1, Epic 2
-
-### Tasks (To be documented)
-- [ ] **T060-T071** - Messaging tasks (12 tasks)
-
----
-
-## Epic 8: Notifications (P1)
-
-**Status**: ⬜ Not Started  
-**Effort**: 5-7 days  
+**Effort**: 7-9 days  
+**File**: [epic-08-notifications.md](./epic-08-notifications.md)  
 **Depends on**: Epic 1, Epic 3, Epic 7
 
-### Tasks (To be documented)
-- [ ] **T072-T079** - Notification tasks (8 tasks)
+### Phase 1: Models & Setup
+- [ ] ⚡⚠️ **T086** - Create Notification Model (1 day)
+  - File: `/server/models/Notification.js`
+  - Schema: recipient, actor, actorCount, type, target, isRead
+  - Types: "like" | "comment" | "reply" | "comment_like" | "repost" | "follow"
+  - Grouping: Smart grouping for like/comment/reply/comment_like by target
+  - Static Methods: `createOrUpdateNotification()`, `getUnreadCount()`, `markAsRead()`, `markAllAsRead()`, `isGroupableType()`
+  - Test cases: 30+ scenarios in `/server/spec/models/notificationModel.spec.js`
+
+### Phase 2: User Story 1 - Trigger Notifications
+- [ ] 🔗 **T087** - Implement Post Like Notification (0.5 days)
+  - File: `/server/controllers/post/likePostController.js`
+  - Feature: Group likes for same post ("John and 5 others liked your post")
+  - Test cases: 14+ scenarios including grouping logic
+  - Depends on: T086, Epic 3
+
+- [ ] 🔗 **T088** - Implement Comment Notification (0.5 days)
+  - File: `/server/controllers/comment/createCommentController.js`
+  - Feature: Group comments for same post ("John and 3 others commented")
+  - Test cases: 14+ scenarios including grouping logic
+  - Depends on: T086, Epic 3
+
+- [ ] 🔗 **T089** - Implement Reply Notification (0.5 days)
+  - File: `/server/controllers/comment/createCommentController.js` (when parentComment exists)
+  - Feature: Group replies for same comment ("John and 2 others replied")
+  - Test cases: 14+ scenarios including grouping logic
+  - Depends on: T086, Epic 3
+
+- [ ] 🔗 **T089b** - Implement Comment Like Notification (0.5 days)
+  - File: `/server/controllers/comment/likeCommentController.js`
+  - Feature: Group comment likes ("John and 4 others liked your comment")
+  - Test cases: 14+ scenarios including grouping logic
+  - Depends on: T086, Epic 3
+
+- [ ] 🔗 **T090** - Implement Repost Notification (0.5 days)
+  - File: `/server/controllers/post/repostController.js`
+  - Feature: Individual notifications (NOT grouped)
+  - Test cases: 9+ scenarios
+  - Depends on: T086, Epic 3
+
+- [ ] 🔗 **T091** - Implement Follow Notification (0.5 days)
+  - File: `/server/controllers/connection/followController.js`
+  - Feature: Individual notifications (NOT grouped)
+  - Test cases: 9+ scenarios
+  - Depends on: T086, Epic 2
+
+### Phase 3: User Story 2 - View Notifications
+- [ ] 🔗 **T092** - Implement Get Notifications Controller (1.5 days)
+  - File: `/server/controllers/notification/getNotificationsController.js`
+  - Function: `getNotifications(req, res)`
+  - Features: Pagination, formatting ("John and X others"), sort by updatedAt
+  - Test cases: 24+ scenarios
+  - Depends on: T086, Epic 1
+
+- [ ] 🔗 **T093** - Implement Get Unread Count Controller (0.5 days)
+  - File: `/server/controllers/notification/getUnreadCountController.js`
+  - Function: `getUnreadCount(req, res)`
+  - Test cases: 5+ scenarios
+  - Depends on: T086, Epic 1
+
+### Phase 4: User Story 3 - Manage Notifications
+- [ ] 🔗 **T094** - Implement Mark Notification as Read Controller (0.5 days)
+  - File: `/server/controllers/notification/markAsReadController.js`
+  - Function: `markAsRead(req, res)`
+  - Test cases: 8+ scenarios
+  - Depends on: T086, Epic 1, Epic 7 (T080)
+
+- [ ] 🔗 **T095** - Implement Mark All as Read Controller (0.5 days)
+  - File: `/server/controllers/notification/markAllAsReadController.js`
+  - Function: `markAllAsRead(req, res)`
+  - Test cases: 7+ scenarios
+  - Depends on: T086, Epic 1, Epic 7 (T080)
+
+### Phase 5: WebSocket & Real-time (MVP Essential)
+- [ ] ⚡⚠️ **T096** - Implement Real-time Notification Events (1 day)
+  - File: `/server/utils/notificationEvents.js`
+  - Events: `notification:new`, `notification:update`, `notification:read`, `notification:count`
+  - Features: Multi-device sync, grouped notification updates
+  - Test cases: 27+ scenarios
+  - Depends on: T086, Epic 7 (T080 - Socket.io setup)
+
+### Phase 6: Routes & Integration
+- [ ] 🔗 **T097** - Create Notification Routes (0.5 days)
+  - File: `/server/routes/notificationRoutes.js`
+  - Routes: GET /notifications, GET /notifications/unread, POST /notifications/:id/read, POST /notifications/read-all
+  - Depends on: T092-T095
+
+- [ ] 🔗 **T098** - Create Notification Integration Tests (1.5 days)
+  - File: `/server/spec/integration/notifications.integration.spec.js`
+  - Test cases: 50+ integration scenarios including grouping
+  - Depends on: T086-T097
+
+- [ ] ⚡🔗 **T099** - Update API Documentation for Notifications (0.5 days)
+  - File: `/server/docs/notification.yaml`
+  - Content: All endpoints, WebSocket events, grouping behavior, examples
+  - Depends on: T097
+
+- [ ] 🔗 **T100** - Create Controller Index File (0.25 days)
+  - File: `/server/controllers/notification/index.js`
+  - Depends on: T092-T095
+
+**Epic 8 Completion Criteria:**
+- [ ] All 14 tasks completed (T086-T100, including T089b)
+- [ ] All unit test cases passing (140+ scenarios including grouping tests)
+- [ ] All integration test cases passing (50+ scenarios)
+- [ ] 6 notification types working (like, comment, reply, comment_like, repost, follow)
+- [ ] Smart grouping working for groupable types
+- [ ] Individual notifications for repost and follow
+- [ ] Display format correct ("John liked" vs "John and 5 others liked")
+- [ ] Grouped notifications update existing notification
+- [ ] Unread count accurate
+- [ ] Mark as read working (single and all)
+- [ ] Notification list with pagination working
+- [ ] Real-time notification delivery working (Socket.io)
+- [ ] Real-time updates for grouped notifications working
+- [ ] Real-time unread count updates working
+- [ ] Multi-device sync working
+- [ ] API documentation complete with grouping examples
+- [ ] Manual testing successful
 
 ---
 
@@ -739,42 +1083,57 @@ Use this checklist to track your progress through all tasks. Mark each task as y
 ## Overall Progress
 
 ### Epics Completed
-- [x] Epic 1: Authentication & Authorization ✅
-- [x] Epic 2: User Profiles & Social Features ✅
-- [x] Epic 3: Posts & Comments System ✅
-- [ ] Epic 4: File Upload & Media
-- [ ] Epic 5: Feed & Discovery
-- [ ] Epic 6: Communities
-- [ ] Epic 7: Messaging & Real-time
-- [ ] Epic 8: Notifications
-- [ ] Epic 9: Search
-- [ ] Epic 10: Admin & Moderation
+- [x] Epic 1: Authentication & Authorization (P0) ✅ - December 12, 2025
+- [x] Epic 2: User Profiles & Social Features (P0) ✅ - December 13, 2025
+- [x] Epic 3: Posts & Comments System (P0) ✅ - December 14, 2025
+- [x] Epic 4: File Upload & Media (P0) ✅ - December 15, 2025
+- [x] Epic 5: Feed & Discovery (P0) ✅ - December 15, 2025
+- [x] Epic 6: Communities (P1) ✅ - December 15, 2025
+- [ ] Epic 7: Messaging & Real-time (P0)
+- [ ] Epic 8: Notifications & Real-time (P0)
+- [ ] Epic 9: Search (P1)
+- [ ] Epic 10: Admin & Moderation (P1)
 
 ### MVP Milestones (P0 Epics)
 - [x] **Milestone 1**: Authentication Ready (Epic 1) ✅ - December 12, 2025
 - [x] **Milestone 2**: Social Features Ready (Epic 2) ✅ - December 13, 2025
 - [x] **Milestone 3**: Content System Ready (Epic 3) ✅ - December 14, 2025
-- [ ] **Milestone 4**: Media Upload Ready (Epic 4) - Target: December 20, 2025
-- [ ] **Milestone 5**: Feed Algorithm Ready (Epic 5) - Target: December 28, 2025
-- [ ] **MVP COMPLETE** - Target: January 5, 2026
+- [x] **Milestone 4**: Media Upload Ready (Epic 4) ✅ - December 15, 2025
+- [x] **Milestone 5**: Feed Algorithm Ready (Epic 5) ✅ - December 15, 2025
+- [ ] **Milestone 6**: Messaging & Real-time Ready (Epic 7) - Target: December 25, 2025
+- [ ] **Milestone 7**: Notifications & Real-time Ready (Epic 8) - Target: December 30, 2025
+- [ ] **MVP COMPLETE** - Target: January 10, 2026
 
 ### Statistics
-- **Total Tasks**: 97+ (estimated)
-- **Documented Tasks**: 64 (T001-T064)
-- **Completed Tasks**: 33 (Epic 1: 10, Epic 2: 10, Epic 3: 16, minus duplicates = 33)
-- **Progress**: 66% documented tasks, 52% of documented tasks completed
-- **Tests Written**: 438+ tests passing
+- **Total Tasks**: 131+ (estimated)
+- **Documented Tasks**: 98 (T001-T098)
+- **Completed Tasks**: 65 (Epic 1: 10, Epic 2: 10, Epic 3: 16, Epic 4: 9, Epic 5: 10, Epic 6: 13 = 68, minus 3 duplicate/combined = 65)
+- **Progress**: 75% documented, 66% of documented tasks completed
+- **Tests Written**: 900+ test cases passing
 - **Code Coverage**: ~85% (estimated)
 
-### Recent Accomplishments (December 14, 2025)
-- ✅ Completed Epic 3: Posts & Comments System
-  - 16 tasks completed
-  - 133 unit tests passing (96 post + 37 comment)
-  - 31 integration tests passing
-  - Full CRUD for posts and comments
-  - Like/unlike, save/unsave, repost functionality
-  - One-level comment replies with cascading deletes
-  - Complete API documentation (post.yaml, comment.yaml)
+### Recent Accomplishments (December 15, 2025)
+- ✅ Completed Epic 4: File Upload & Media
+  - 9 tasks completed
+  - 80+ unit and integration tests passing
+  - Cloudinary integration with image transformations
+  - Profile picture and cover image upload working
+  - Post images upload with validation
+  
+- ✅ Completed Epic 5: Feed & Discovery
+  - 10 tasks completed
+  - 160+ unit and integration tests passing
+  - 4 feed types: Home, Following, Trending, Community
+  - Algorithmic ranking with configurable weights
+  - Feed caching with invalidation logic
+  
+- ✅ Completed Epic 6: Communities
+  - 13 tasks completed
+  - 154+ unit and integration tests passing
+  - Community creation and management
+  - Join/leave functionality
+  - Moderator permissions and community posts
+  - Full integration with feed system
 
 ---
 
