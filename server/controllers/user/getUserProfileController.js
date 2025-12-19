@@ -1,5 +1,8 @@
 const User = require('../../models/User');
 const { buildProfileResponse, checkUserBlocked } = require('../../utils/userHelpers');
+const { asyncHandler } = require('../../middlewares/errorHandler');
+const { NotFoundError, ForbiddenError } = require('../../utils/errors');
+const { sendSuccess } = require('../../utils/responseHelpers');
 
 /**
  * Get User Profile by Username
@@ -9,49 +12,31 @@ const { buildProfileResponse, checkUserBlocked } = require('../../utils/userHelp
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
-async function getUserProfile(req, res) {
-  try {
-    const { username } = req.params;
-    const requesterId = req.user?._id; // Optional authentication
-    
-    // Find user by username
-    const user = await User.findOne({ username: username.toLowerCase() });
-    
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found'
-      });
-    }
-    
-    // Check for blocks if requester is authenticated
-    if (requesterId) {
-      const blockStatus = await checkUserBlocked(requesterId, user._id);
-      
-      if (blockStatus.isBlocked && blockStatus.blockedBy === 'target') {
-        // Target user has blocked the requester
-        return res.status(403).json({
-          success: false,
-          message: 'You cannot view this profile'
-        });
-      }
-    }
-    
-    // Build profile response with relationship metadata
-    const profile = await buildProfileResponse(user, requesterId);
-    
-    return res.status(200).json({
-      success: true,
-      data: profile
-    });
-  } catch (error) {
-    console.error('Error in getUserProfile:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Internal server error',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
-    });
+const getUserProfile = asyncHandler(async (req, res) => {
+  const { username } = req.params;
+  const requesterId = req.user?._id; // Optional authentication
+  
+  // Find user by username
+  const user = await User.findOne({ username: username.toLowerCase() });
+  
+  if (!user) {
+    throw new NotFoundError('User');
   }
-}
+  
+  // Check for blocks if requester is authenticated
+  if (requesterId) {
+    const blockStatus = await checkUserBlocked(requesterId, user._id);
+    
+    if (blockStatus.isBlocked && blockStatus.blockedBy === 'target') {
+      // Target user has blocked the requester
+      throw new ForbiddenError('You cannot view this profile');
+    }
+  }
+  
+  // Build profile response with relationship metadata
+  const profile = await buildProfileResponse(user, requesterId);
+  
+  return sendSuccess(res, profile);
+});
 
 module.exports = getUserProfile;

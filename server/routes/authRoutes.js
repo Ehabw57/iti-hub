@@ -1,5 +1,7 @@
 const authRoute = require("express").Router();
 const rateLimit = require("express-rate-limit");
+const User = require("../models/User");
+const {sendSuccess} = require("../utils/responseHelpers")
 
 // Import controllers from auth directory
 const {register, login, requestPasswordReset, confirmPasswordReset} = require("../controllers/auth");
@@ -34,7 +36,7 @@ const loginLimiter = isTestEnv ? (req, res, next) => next() : rateLimit({
 
 const passwordResetLimiter = isTestEnv ? (req, res, next) => next() : rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
-  max: 3, // 3 requests per hour
+  max: 10, // 10 requests per hour
   message: {
     success: false,
     error: {
@@ -45,9 +47,27 @@ const passwordResetLimiter = isTestEnv ? (req, res, next) => next() : rateLimit(
 });
 
 // Authentication routes
-authRoute.post("/register", registerLimiter, register);
+authRoute.post("/register", register);
 authRoute.post("/login", loginLimiter, login);
 authRoute.post("/password-reset/request", passwordResetLimiter, requestPasswordReset);
 authRoute.post("/password-reset/confirm", passwordResetLimiter, confirmPasswordReset);
+authRoute.post("/check-username", async (req, res) => {
+  const { username } = req.body;
+  const user = await User.findOne({ username });
+  if (user) {
+    sendSuccess(res, { available: false });
+  } else {
+    sendSuccess(res, { available: true });
+  }
+});
+authRoute.post("/check-email", async (req, res) => {
+  const { email } = req.body;
+  const user = await User.findOne({ email });
+  if (user) {
+    sendSuccess(res, { available: false });
+  } else {
+    sendSuccess(res, { available: true });
+  }
+});
 
 module.exports = authRoute;

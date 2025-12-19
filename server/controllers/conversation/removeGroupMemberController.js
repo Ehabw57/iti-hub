@@ -2,96 +2,68 @@ const mongoose = require('mongoose');
 const Conversation = require('../../models/Conversation');
 const { formatConversation } = require('../../utils/messageHelpers');
 const { MIN_GROUP_PARTICIPANTS } = require('../../utils/constants');
+const { asyncHandler } = require('../../middlewares/errorHandler');
+const { ValidationError, NotFoundError, ForbiddenError } = require('../../utils/errors');
+const { sendSuccess } = require('../../utils/responseHelpers');
 
 /**
  * Remove member from group conversation (admin only)
  * DELETE /conversations/:conversationId/members/:userId
  */
-exports.removeGroupMember = async (req, res) => {
-  try {
-    const currentUserId = req.user._id;
-    const { conversationId, userId } = req.params;
+exports.removeGroupMember = asyncHandler(async (req, res) => {
+  const currentUserId = req.user._id;
+  const { conversationId, userId } = req.params;
 
-    // Validate conversationId
-    if (!mongoose.Types.ObjectId.isValid(conversationId)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid conversationId'
-      });
-    }
-
-    // Validate userId
-    if (!mongoose.Types.ObjectId.isValid(userId)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid userId'
-      });
-    }
-
-    // Check if conversation exists
-    const conversation = await Conversation.findById(conversationId);
-    if (!conversation) {
-      return res.status(404).json({
-        success: false,
-        message: 'Conversation not found'
-      });
-    }
-
-    // Check if conversation is a group
-    if (conversation.type !== 'group') {
-      return res.status(400).json({
-        success: false,
-        message: 'Can only remove members from group conversations'
-      });
-    }
-
-    // Check if current user is admin
-    if (conversation.admin.toString() !== currentUserId.toString()) {
-      return res.status(403).json({
-        success: false,
-        message: 'Only group admin can remove members'
-      });
-    }
-
-    // Check if user to remove is a member
-    const isMember = conversation.participants.some(
-      p => p.toString() === userId.toString()
-    );
-
-    if (!isMember) {
-      return res.status(400).json({
-        success: false,
-        message: 'User is not a member of this group'
-      });
-    }
-
-
-    // Remove user from participants
-    conversation.participants = conversation.participants.filter(
-      p => p.toString() !== userId.toString()
-    );
-
-    // Remove unreadCount for removed member
-    conversation.unreadCount.delete(userId.toString());
-
-    await conversation.save();
-
-    // Format and return updated conversation
-    const formatted = await formatConversation(conversation, currentUserId);
-
-    return res.status(200).json({
-      success: true,
-      message: 'Member removed from group successfully',
-      data: {
-        conversation: formatted
-      }
-    });
-  } catch (error) {
-    console.error('Error in removeGroupMember:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Server error while removing member',
-      error: error.message
-    });
+  // Validate conversationId
+  if (!mongoose.Types.ObjectId.isValid(conversationId)) {
+    throw new ValidationError('Invalid conversationId');
   }
-};
+
+  // Validate userId
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    throw new ValidationError('Invalid userId');
+  }
+
+  // Check if conversation exists
+  const conversation = await Conversation.findById(conversationId);
+  if (!conversation) {
+    throw new NotFoundError('Conversation not found');
+  }
+
+  // Check if conversation is a group
+  if (conversation.type !== 'group') {
+    throw new ValidationError('Can only remove members from group conversations');
+  }
+
+  // Check if current user is admin
+  if (conversation.admin.toString() !== currentUserId.toString()) {
+    throw new ForbiddenError('Only group admin can remove members');
+  }
+
+  // Check if user to remove is a member
+  const isMember = conversation.participants.some(
+    p => p.toString() === userId.toString()
+  );
+
+  if (!isMember) {
+    throw new ValidationError('User is not a member of this group');
+  }
+
+  // Remove user from participants
+  conversation.participants = conversation.participants.filter(
+    p => p.toString() !== userId.toString()
+  );
+
+  // Remove unreadCount for removed member
+  conversation.unreadCount.delete(userId.toString());
+
+  await conversation.save();
+
+  // Format and return updated conversation
+  const formatted = await formatConversation(conversation, currentUserId);
+
+  sendSuccess(res, {
+    message: 'Member removed from group successfully',
+    conversation: formatted
+  });
+});

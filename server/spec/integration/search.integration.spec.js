@@ -168,10 +168,10 @@ describe("Search Routes Integration Tests", () => {
 
         expect(res.status).toBe(200);
         expect(res.body.success).toBe(true);
-        expect(res.body.users).toBeDefined();
-        expect(res.body.users.length).toBeGreaterThan(0);
-        expect(res.body.users[0].username).toContain("john");
-        expect(res.body.pagination).toBeDefined();
+        expect(res.body.data.users).toBeDefined();
+        expect(res.body.data.users.length).toBeGreaterThan(0);
+        expect(res.body.data.users[0].username).toContain("john");
+        expect(res.body.data.pagination).toBeDefined();
       });
 
       it("should return 400 if query is missing", async () => {
@@ -179,7 +179,7 @@ describe("Search Routes Integration Tests", () => {
 
         expect(res.status).toBe(400);
         expect(res.body.success).toBe(false);
-        expect(res.body.message).toBe("Search query is required");
+        expect(res.body.error.message).toBe("Search query is required");
       });
 
       it("should return 400 if query is too short", async () => {
@@ -187,7 +187,7 @@ describe("Search Routes Integration Tests", () => {
 
         expect(res.status).toBe(400);
         expect(res.body.success).toBe(false);
-        expect(res.body.message).toBe(
+        expect(res.body.error.message).toBe(
           "Search query must be at least 2 characters"
         );
       });
@@ -197,8 +197,8 @@ describe("Search Routes Integration Tests", () => {
 
         expect(res.status).toBe(200);
         expect(res.body.success).toBe(true);
-        expect(res.body.users.length).toBeGreaterThan(0);
-        expect(res.body.users[0].fullName).toContain("Jane");
+        expect(res.body.data.users.length).toBeGreaterThan(0);
+        expect(res.body.data.users[0].fullName).toContain("Jane");
       });
 
       it("should search by bio", async () => {
@@ -206,7 +206,7 @@ describe("Search Routes Integration Tests", () => {
 
         expect(res.status).toBe(200);
         expect(res.body.success).toBe(true);
-        expect(res.body.users.length).toBeGreaterThan(0);
+        expect(res.body.data.users.length).toBeGreaterThan(0);
       });
 
       it("should filter by specialization", async () => {
@@ -216,8 +216,8 @@ describe("Search Routes Integration Tests", () => {
 
         expect(res.status).toBe(200);
         expect(res.body.success).toBe(true);
-        expect(res.body.users.length).toBe(1);
-        expect(res.body.users[0].specialization).toBe("Web Development");
+        expect(res.body.data.users.length).toBe(1);
+        expect(res.body.data.users[0].specialization).toBe("Web Development");
       });
 
       it("should return empty results for non-matching query", async () => {
@@ -225,7 +225,7 @@ describe("Search Routes Integration Tests", () => {
 
         expect(res.status).toBe(200);
         expect(res.body.success).toBe(true);
-        expect(res.body.users.length).toBe(0);
+        expect(res.body.data.users.length).toBe(0);
       });
     });
 
@@ -244,8 +244,8 @@ describe("Search Routes Integration Tests", () => {
 
         expect(res.status).toBe(200);
         expect(res.body.success).toBe(true);
-        expect(res.body.users[0].isFollowing).toBeDefined();
-        expect(res.body.users[0].isFollowing).toBe(true);
+        expect(res.body.data.users[0].isFollowing).toBeDefined();
+        expect(res.body.data.users[0].isFollowing).toBe(true);
       });
 
       it("should exclude blocked users from results", async () => {
@@ -263,8 +263,8 @@ describe("Search Routes Integration Tests", () => {
         expect(res.status).toBe(200);
         expect(res.body.success).toBe(true);
         // Should only return johndoe, not janedoe (blocked)
-        expect(res.body.users.length).toBe(1);
-        expect(res.body.users[0].username).toBe("johndoe");
+        expect(res.body.data.users.length).toBe(1);
+        expect(res.body.data.users[0].username).toBe("johndoe");
       });
     });
 
@@ -274,10 +274,10 @@ describe("Search Routes Integration Tests", () => {
 
         expect(res.status).toBe(200);
         expect(res.body.success).toBe(true);
-        expect(res.body.users.length).toBe(1);
-        expect(res.body.pagination.page).toBe(1);
-        expect(res.body.pagination.limit).toBe(1);
-        expect(res.body.pagination.total).toBeGreaterThan(1);
+        expect(res.body.data.users.length).toBe(1);
+        expect(res.body.data.pagination.page).toBe(1);
+        expect(res.body.data.pagination.limit).toBe(1);
+        expect(res.body.data.pagination.total).toBeGreaterThan(1);
       });
 
       it("should enforce maximum limit", async () => {
@@ -285,7 +285,7 @@ describe("Search Routes Integration Tests", () => {
 
         expect(res.status).toBe(200);
         expect(res.body.success).toBe(true);
-        expect(res.body.pagination.limit).toBe(50); // MAX_SEARCH_RESULTS
+        expect(res.body.data.pagination.limit).toBe(50); // MAX_SEARCH_RESULTS
       });
     });
 
@@ -295,10 +295,10 @@ describe("Search Routes Integration Tests", () => {
 
         expect(res.status).toBe(200);
         expect(res.body.success).toBe(true);
-        expect(res.body.users.length).toBe(2);
+        expect(res.body.data.users.length).toBe(2);
         // janedoe comes before johndoe alphabetically
-        expect(res.body.users[0].username).toBe("janedoe");
-        expect(res.body.users[1].username).toBe("johndoe");
+        expect(res.body.data.users[0].username).toBe("janedoe");
+        expect(res.body.data.users[1].username).toBe("johndoe");
       });
     });
   });
@@ -310,9 +310,9 @@ describe("Search Routes Integration Tests", () => {
 
         expect(res.status).toBe(200);
         expect(res.body.success).toBe(true);
-        expect(res.body.posts).toBeDefined();
-        expect(res.body.posts.length).toBeGreaterThan(0);
-        expect(res.body.pagination).toBeDefined();
+        expect(res.body.data.posts).toBeDefined();
+        expect(res.body.data.posts.length).toBeGreaterThan(0);
+        expect(res.body.data.pagination).toBeDefined();
       });
 
       it("should return 400 if query is missing", async () => {
@@ -320,7 +320,7 @@ describe("Search Routes Integration Tests", () => {
 
         expect(res.status).toBe(400);
         expect(res.body.success).toBe(false);
-        expect(res.body.message).toBe("Search query is required");
+        expect(res.body.error.message).toBe("Search query is required");
       });
 
       xit("should filter by tags (SKIPPED: tags are ObjectIds, not strings)", async () => {
@@ -332,7 +332,7 @@ describe("Search Routes Integration Tests", () => {
 
         expect(res.status).toBe(200);
         expect(res.body.success).toBe(true);
-        expect(res.body.posts.length).toBeGreaterThan(0);
+        expect(res.body.data.posts.length).toBeGreaterThan(0);
       });
 
       it("should filter by type (original)", async () => {
@@ -342,7 +342,7 @@ describe("Search Routes Integration Tests", () => {
 
         expect(res.status).toBe(200);
         expect(res.body.success).toBe(true);
-        expect(res.body.posts.length).toBeGreaterThan(0);
+        expect(res.body.data.posts.length).toBeGreaterThan(0);
       });
 
       it("should filter by communityId", async () => {
@@ -352,8 +352,8 @@ describe("Search Routes Integration Tests", () => {
 
         expect(res.status).toBe(200);
         expect(res.body.success).toBe(true);
-        expect(res.body.posts.length).toBeGreaterThan(0);
-        expect(res.body.posts[0].community._id.toString()).toBe(
+        expect(res.body.data.posts.length).toBeGreaterThan(0);
+        expect(res.body.data.posts[0].community._id.toString()).toBe(
           testCommunities[0]._id.toString()
         );
       });
@@ -363,9 +363,9 @@ describe("Search Routes Integration Tests", () => {
 
         expect(res.status).toBe(200);
         expect(res.body.success).toBe(true);
-        expect(res.body.posts[0].author).toBeDefined();
-        expect(res.body.posts[0].author.username).toBeDefined();
-        expect(res.body.posts[0].community).toBeDefined();
+        expect(res.body.data.posts[0].author).toBeDefined();
+        expect(res.body.data.posts[0].author.username).toBeDefined();
+        expect(res.body.data.posts[0].community).toBeDefined();
       });
     });
 
@@ -383,9 +383,9 @@ describe("Search Routes Integration Tests", () => {
 
         expect(res.status).toBe(200);
         expect(res.body.success).toBe(true);
-        expect(res.body.posts[0].hasLiked).toBeDefined();
+        expect(res.body.data.posts[0].hasLiked).toBeDefined();
         // First post should have hasLiked = true
-        const likedPost = res.body.posts.find(
+        const likedPost = res.body.data.posts.find(
           (p) => p._id.toString() === testPosts[0]._id.toString()
         );
         expect(likedPost.hasLiked).toBe(true);
@@ -404,8 +404,8 @@ describe("Search Routes Integration Tests", () => {
 
         expect(res.status).toBe(200);
         expect(res.body.success).toBe(true);
-        expect(res.body.posts[0].hasSaved).toBeDefined();
-        const savedPost = res.body.posts.find(
+        expect(res.body.data.posts[0].hasSaved).toBeDefined();
+        const savedPost = res.body.data.posts.find(
           (p) => p._id.toString() === testPosts[0]._id.toString()
         );
         expect(savedPost.hasSaved).toBe(true);
@@ -420,9 +420,9 @@ describe("Search Routes Integration Tests", () => {
 
         expect(res.status).toBe(200);
         expect(res.body.success).toBe(true);
-        expect(res.body.posts.length).toBeLessThanOrEqual(2);
-        expect(res.body.pagination.page).toBe(1);
-        expect(res.body.pagination.limit).toBe(2);
+        expect(res.body.data.posts.length).toBeLessThanOrEqual(2);
+        expect(res.body.data.pagination.page).toBe(1);
+        expect(res.body.data.pagination.limit).toBe(2);
       });
 
       it("should sort results alphabetically by content", async () => {
@@ -431,9 +431,9 @@ describe("Search Routes Integration Tests", () => {
         expect(res.status).toBe(200);
         expect(res.body.success).toBe(true);
         // Verify alphabetical ordering
-        for (let i = 1; i < res.body.posts.length; i++) {
-          const prev = res.body.posts[i - 1].content.toLowerCase();
-          const curr = res.body.posts[i].content.toLowerCase();
+        for (let i = 1; i < res.body.data.posts.length; i++) {
+          const prev = res.body.data.posts[i - 1].content.toLowerCase();
+          const curr = res.body.data.posts[i].content.toLowerCase();
           expect(prev <= curr).toBe(true);
         }
       });
@@ -447,9 +447,9 @@ describe("Search Routes Integration Tests", () => {
 
         expect(res.status).toBe(200);
         expect(res.body.success).toBe(true);
-        expect(res.body.communities).toBeDefined();
-        expect(res.body.communities.length).toBeGreaterThan(0);
-        expect(res.body.pagination).toBeDefined();
+        expect(res.body.data.communities).toBeDefined();
+        expect(res.body.data.communities.length).toBeGreaterThan(0);
+        expect(res.body.data.pagination).toBeDefined();
       });
 
       it("should return 400 if query is missing", async () => {
@@ -457,7 +457,7 @@ describe("Search Routes Integration Tests", () => {
 
         expect(res.status).toBe(400);
         expect(res.body.success).toBe(false);
-        expect(res.body.message).toBe("Search query is required");
+        expect(res.body.error.message).toBe("Search query is required");
       });
 
       it("should filter by tags", async () => {
@@ -467,8 +467,8 @@ describe("Search Routes Integration Tests", () => {
 
         expect(res.status).toBe(200);
         expect(res.body.success).toBe(true);
-        expect(res.body.communities.length).toBeGreaterThan(0);
-        expect(res.body.communities[0].tags).toContain("Technology");
+        expect(res.body.data.communities.length).toBeGreaterThan(0);
+        expect(res.body.data.communities[0].tags).toContain("Technology");
       });
 
       it("should sort by memberCount descending", async () => {
@@ -477,9 +477,9 @@ describe("Search Routes Integration Tests", () => {
         expect(res.status).toBe(200);
         expect(res.body.success).toBe(true);
         // Verify descending order by memberCount
-        for (let i = 1; i < res.body.communities.length; i++) {
-          expect(res.body.communities[i - 1].memberCount).toBeGreaterThanOrEqual(
-            res.body.communities[i].memberCount
+        for (let i = 1; i < res.body.data.communities.length; i++) {
+          expect(res.body.data.communities[i - 1].memberCount).toBeGreaterThanOrEqual(
+            res.body.data.communities[i].memberCount
           );
         }
       });
@@ -500,8 +500,8 @@ describe("Search Routes Integration Tests", () => {
 
         expect(res.status).toBe(200);
         expect(res.body.success).toBe(true);
-        expect(res.body.communities[0].isMember).toBeDefined();
-        const joinedCommunity = res.body.communities.find(
+        expect(res.body.data.communities[0].isMember).toBeDefined();
+        const joinedCommunity = res.body.data.communities.find(
           (c) => c._id.toString() === testCommunities[0]._id.toString()
         );
         expect(joinedCommunity.isMember).toBe(true);
@@ -516,9 +516,9 @@ describe("Search Routes Integration Tests", () => {
 
         expect(res.status).toBe(200);
         expect(res.body.success).toBe(true);
-        expect(res.body.communities.length).toBeLessThanOrEqual(2);
-        expect(res.body.pagination.page).toBe(1);
-        expect(res.body.pagination.limit).toBe(2);
+        expect(res.body.data.communities.length).toBeLessThanOrEqual(2);
+        expect(res.body.data.pagination.page).toBe(1);
+        expect(res.body.data.pagination.limit).toBe(2);
       });
 
       it("should enforce maximum limit", async () => {
@@ -528,7 +528,7 @@ describe("Search Routes Integration Tests", () => {
 
         expect(res.status).toBe(200);
         expect(res.body.success).toBe(true);
-        expect(res.body.pagination.limit).toBe(50); // MAX_SEARCH_RESULTS
+        expect(res.body.data.pagination.limit).toBe(50); // MAX_SEARCH_RESULTS
       });
     });
   });
@@ -552,9 +552,9 @@ describe("Search Routes Integration Tests", () => {
       expect(postsRes.body.success).toBe(true);
       expect(communitiesRes.body.success).toBe(true);
 
-      expect(usersRes.body.pagination).toBeDefined();
-      expect(postsRes.body.pagination).toBeDefined();
-      expect(communitiesRes.body.pagination).toBeDefined();
+      expect(usersRes.body.data.pagination).toBeDefined();
+      expect(postsRes.body.data.pagination).toBeDefined();
+      expect(communitiesRes.body.data.pagination).toBeDefined();
     });
 
     it("should handle pagination consistently across endpoints", async () => {
@@ -574,8 +574,8 @@ describe("Search Routes Integration Tests", () => {
 
       [usersRes, postsRes, communitiesRes].forEach((res) => {
         expect(res.status).toBe(200);
-        expect(res.body.pagination.page).toBe(page);
-        expect(res.body.pagination.limit).toBe(limit);
+        expect(res.body.data.pagination.page).toBe(page);
+        expect(res.body.data.pagination.limit).toBe(limit);
       });
     });
   });
@@ -600,8 +600,8 @@ describe("Search Routes Integration Tests", () => {
       [usersRes, postsRes, communitiesRes].forEach((res) => {
         expect(res.status).toBe(200);
         expect(res.body.success).toBe(true);
-        expect(res.body.pagination.total).toBe(0);
-        expect(res.body.pagination.pages).toBe(0);
+        expect(res.body.data.pagination.total).toBe(0);
+        expect(res.body.data.pagination.pages).toBe(0);
       });
     });
 

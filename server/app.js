@@ -1,4 +1,5 @@
 const mongoose = require("mongoose")
+const http = require("http");
 const express = require("express");
 const dotenv = require("dotenv");
 const cors = require('cors')
@@ -15,7 +16,8 @@ const feedRoutes = require("./routes/feedRoutes");
 const communityRoutes = require("./routes/communityRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const searchRoutes = require("./routes/searchRoutes");
-const { multerErrorHandler } = require("./middlewares/upload");
+const { initializeSocketServer } = require("./utils/socketServer");
+const { errorHandler } = require("./middlewares/errorHandler");
 
 dotenv.config();
 if (!process.env.JWT_SECRET && process.env.NODE_ENV !== 'test') {
@@ -23,7 +25,8 @@ if (!process.env.JWT_SECRET && process.env.NODE_ENV !== 'test') {
   process.exit(1);
 }
 const app = express();
-
+const server = http.createServer(app);
+initializeSocketServer(server);
 const PORT = process.env.PORT || 3030;
 const DBURL = process.env.DB_URL || "mongodb://127.0.0.1:27017/iti-hub";
 
@@ -44,7 +47,20 @@ app.get("/", (req, res) => {
   res.send("Hi if you are see this message!, that means that the server is running :)");
 });
 
-app.use(multerErrorHandler);
+// 404 handler - must be before error handler
+app.use((req, res, next) => {
+  res.status(404).json({
+    success: false,
+    error: {
+      code: 'ROUTE_NOT_FOUND',
+      message: `Cannot ${req.method} ${req.url}`
+    }
+  });
+});
+
+
+// Global error handler - must be LAST
+app.use(errorHandler);
 
 // Export app for testing
 module.exports = app;
@@ -55,7 +71,7 @@ if (process.env.NODE_ENV !== 'test') {
     .connect(DBURL)
     .then(() => {
       console.log("Connected to DB");
-      app.listen(PORT, () => {
+      server.listen(PORT, () => {
         console.log(`Server is running on http://localhost:${PORT}`);
         console.log(`Docs at http://localhost:${PORT}/api-docs`)
       });

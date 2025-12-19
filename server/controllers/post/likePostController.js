@@ -2,127 +2,84 @@ const Post = require('../../models/Post');
 const PostLike = require('../../models/PostLike');
 const Notification = require('../../models/Notification');
 const { NOTIFICATION_TYPES } = require('../../utils/constants');
+const { asyncHandler } = require('../../middlewares/errorHandler');
+const { ValidationError, NotFoundError } = require('../../utils/errors');
+const { sendSuccess } = require('../../utils/responseHelpers');
 
 /**
  * Like a post
  * @route POST /posts/:id/like
  * @access Private
  */
-async function likePost(req, res) {
-  try {
-    const { id } = req.params;
-    const userId = req.user._id;
+const likePost = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const userId = req.user._id;
 
-    // Check if post exists
-    const post = await Post.findById(id);
-    if (!post) {
-      return res.status(404).json({
-        success: false,
-        message: 'Post not found'
-      });
-    }
-
-    // Check if already liked
-    const existingLike = await PostLike.findOne({ user: userId, post: id });
-    if (existingLike) {
-      return res.status(400).json({
-        success: false,
-        message: 'Post already liked'
-      });
-    }
-
-    // Create like
-    await PostLike.create({ user: userId, post: id });
-
-    // Increment likes count
-    post.likesCount += 1;
-    await post.save();
-
-    // Create or update notification (don't block on failure)
-    try {
-      await Notification.createOrUpdateNotification(
-        post.author,
-        userId,
-        NOTIFICATION_TYPES.LIKE,
-        post._id
-      );
-    } catch (notificationError) {
-      console.error('Failed to create notification:', notificationError);
-      // Continue anyway - notification failure shouldn't block the like
-    }
-
-    return res.status(200).json({
-      success: true,
-      message: 'Post liked successfully',
-      data: {
-        isLiked: true,
-        likesCount: post.likesCount
-      }
-    });
-
-  } catch (error) {
-    console.error('Like post error:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to like post',
-      error: error.message
-    });
+  // Check if post exists
+  const post = await Post.findById(id);
+  if (!post) {
+    throw new NotFoundError('Post not found');
   }
-}
+
+  // Check if already liked
+  const existingLike = await PostLike.findOne({ user: userId, post: id });
+  if (existingLike) {
+    throw new ValidationError('Post already liked');
+  }
+
+  // Create like
+  await PostLike.create({ user: userId, post: id });
+
+  // Increment likes count
+  post.likesCount += 1;
+  await post.save();
+
+  // Create or update notification (don't block on failure)
+  try {
+    await Notification.createOrUpdateNotification(
+      post.author,
+      userId,
+      NOTIFICATION_TYPES.LIKE,
+      post._id
+    );
+  } catch (notificationError) {
+    console.error('Failed to create notification:', notificationError);
+    // Continue anyway - notification failure shouldn't block the like
+  }
+
+  sendSuccess(res, { isLiked: true, likesCount: post.likesCount }, 'Post liked successfully');
+});
 
 /**
  * Unlike a post
  * @route DELETE /posts/:id/like
  * @access Private
  */
-async function unlikePost(req, res) {
-  try {
-    const { id } = req.params;
-    const userId = req.user._id;
+const unlikePost = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const userId = req.user._id;
 
-    // Check if post exists
-    const post = await Post.findById(id);
-    if (!post) {
-      return res.status(404).json({
-        success: false,
-        message: 'Post not found'
-      });
-    }
-
-    // Check if liked
-    const existingLike = await PostLike.findOne({ user: userId, post: id });
-    if (!existingLike) {
-      return res.status(400).json({
-        success: false,
-        message: 'Post not liked'
-      });
-    }
-
-    // Delete like
-    await PostLike.deleteOne({ user: userId, post: id });
-
-    // Decrement likes count
-    post.likesCount = Math.max(0, post.likesCount - 1);
-    await post.save();
-
-    return res.status(200).json({
-      success: true,
-      message: 'Post unliked successfully',
-      data: {
-        isLiked: false,
-        likesCount: post.likesCount
-      }
-    });
-
-  } catch (error) {
-    console.error('Unlike post error:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to unlike post',
-      error: error.message
-    });
+  // Check if post exists
+  const post = await Post.findById(id);
+  if (!post) {
+    throw new NotFoundError('Post not found');
   }
-}
+
+  // Check if liked
+  const existingLike = await PostLike.findOne({ user: userId, post: id });
+  if (!existingLike) {
+    throw new ValidationError('Post not liked');
+  }
+
+  // Delete like
+  await PostLike.deleteOne({ user: userId, post: id });
+
+  // Decrement likes count
+  post.likesCount = Math.max(0, post.likesCount - 1);
+  await post.save();
+
+  sendSuccess(res, { isLiked: false, likesCount: post.likesCount }, 'Post unliked successfully');
+});
 
 module.exports = {
   likePost,

@@ -240,7 +240,7 @@ describe('Messaging Integration Tests', () => {
         .expect(400);
 
 
-      expect(response.body.message).toContain('at least 3 participants');
+      expect(response.body.error.message).toContain('at least 3 participants');
     });
 
     it('should allow admin to add members to group', async () => {

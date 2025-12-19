@@ -142,7 +142,7 @@ describe('Comment Integration Tests', () => {
         .send({ content: 'Test comment' });
 
       expect(res.status).toBe(404);
-      expect(res.body.message).toBe('Post not found');
+      expect(res.body.error.message).toBe('Post not found');
     });
 
     it('should return 400 if content is too short', async () => {
@@ -152,7 +152,7 @@ describe('Comment Integration Tests', () => {
         .send({ content: '' });
 
       expect(res.status).toBe(400);
-      expect(res.body.message).toContain('Content must be at least');
+      expect(res.body.error.message).toContain('Content must be at least');
     });
 
     it('should return 400 if trying to reply to a reply', async () => {
@@ -180,7 +180,7 @@ describe('Comment Integration Tests', () => {
         });
 
       expect(res.status).toBe(400);
-      expect(res.body.message).toContain('Cannot reply to a reply');
+      expect(res.body.error.message).toContain('Cannot reply to a reply');
     });
   });
 
@@ -260,7 +260,7 @@ describe('Comment Integration Tests', () => {
       expect(res.status).toBe(200);
       expect(res.body.data.comments.length).toBe(10);
       expect(res.body.data.pagination.page).toBe(2);
-      expect(res.body.data.pagination.pages).toBe(3);
+      expect(res.body.data.pagination.totalPages).toBe(3);
     });
 
     it('should return 404 if post not found', async () => {
@@ -269,7 +269,7 @@ describe('Comment Integration Tests', () => {
         .get(`/posts/${fakeId}/comments`);
 
       expect(res.status).toBe(404);
-      expect(res.body.message).toBe('Post not found');
+      expect(res.body.error.message).toBe('Post not found');
     });
   });
 
@@ -322,7 +322,7 @@ describe('Comment Integration Tests', () => {
         .send({ content: 'Trying to update' });
 
       expect(res.status).toBe(403);
-      expect(res.body.message).toBe('Not authorized to update this comment');
+      expect(res.body.error.message).toBe('Not authorized to update this comment');
     });
 
     it('should return 400 if trying to update invalid fields', async () => {
@@ -341,7 +341,7 @@ describe('Comment Integration Tests', () => {
         });
 
       expect(res.status).toBe(400);
-      expect(res.body.message).toContain('Cannot update fields');
+      expect(res.body.error.message).toContain('Cannot update fields');
     });
 
     it('should return 404 if comment not found', async () => {
@@ -352,7 +352,7 @@ describe('Comment Integration Tests', () => {
         .send({ content: 'Updated content' });
 
       expect(res.status).toBe(404);
-      expect(res.body.message).toBe('Comment not found');
+      expect(res.body.error.message).toBe('Comment not found');
     });
   });
 
@@ -491,7 +491,7 @@ describe('Comment Integration Tests', () => {
         .set('Authorization', `Bearer ${token2}`);
 
       expect(res.status).toBe(403);
-      expect(res.body.message).toBe('Not authorized to delete this comment');
+      expect(res.body.error.message).toBe('Not authorized to delete this comment');
     });
 
     it('should return 404 if comment not found', async () => {
@@ -501,7 +501,7 @@ describe('Comment Integration Tests', () => {
         .set('Authorization', `Bearer ${token1}`);
 
       expect(res.status).toBe(404);
-      expect(res.body.message).toBe('Comment not found');
+      expect(res.body.error.message).toBe('Comment not found');
     });
   });
 
@@ -549,7 +549,7 @@ describe('Comment Integration Tests', () => {
         .set('Authorization', `Bearer ${token2}`);
 
       expect(res.status).toBe(400);
-      expect(res.body.message).toBe('Comment already liked');
+      expect(res.body.error.message).toBe('Comment already liked');
     });
 
     it('should return 404 if comment not found', async () => {
@@ -559,7 +559,7 @@ describe('Comment Integration Tests', () => {
         .set('Authorization', `Bearer ${token1}`);
 
       expect(res.status).toBe(404);
-      expect(res.body.message).toBe('Comment not found');
+      expect(res.body.error.message).toBe('Comment not found');
     });
 
     it('should return 401 if not authenticated', async () => {
@@ -621,7 +621,7 @@ describe('Comment Integration Tests', () => {
         .set('Authorization', `Bearer ${token2}`);
 
       expect(res.status).toBe(400);
-      expect(res.body.message).toBe('Comment not liked');
+      expect(res.body.error.message).toBe('Comment not liked');
     });
 
     it('should return 404 if comment not found', async () => {
@@ -631,7 +631,7 @@ describe('Comment Integration Tests', () => {
         .set('Authorization', `Bearer ${token1}`);
 
       expect(res.status).toBe(404);
-      expect(res.body.message).toBe('Comment not found');
+      expect(res.body.error.message).toBe('Comment not found');
     });
 
     it('should return 401 if not authenticated', async () => {

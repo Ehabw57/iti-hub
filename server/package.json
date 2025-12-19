@@ -22,7 +22,7 @@
   "scripts": {
     "start": "node app.js",
     "test": "NODE_ENV=test jasmine",
-    "dev": "nodemon --watch docs --ext js,json,yaml,yml"
+    "dev": "NODE_ENV=dev nodemon --watch"
   },
   "devDependencies": {
     "jasmine": "^5.12.0",

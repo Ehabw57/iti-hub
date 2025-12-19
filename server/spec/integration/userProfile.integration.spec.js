@@ -214,7 +214,7 @@ describe('User Profile and Connections Integration Tests', () => {
         .expect(400);
 
       expect(res.body.success).toBe(false);
-      expect(res.body.message).toBe('Cannot follow yourself');
+      expect(res.body.error.message).toBe('Cannot follow yourself');
     });
 
     it('should require authentication to follow', async () => {
@@ -404,7 +404,7 @@ describe('User Profile and Connections Integration Tests', () => {
         .expect(400);
 
       expect(res.body.success).toBe(false);
-      expect(res.body.message).toBe('Cannot follow this user due to a block');
+      expect(res.body.error.message).toBe('Cannot follow this user due to a block');
     });
 
     it('should prevent blocked user from following blocker', async () => {
@@ -421,7 +421,7 @@ describe('User Profile and Connections Integration Tests', () => {
         .expect(400);
 
       expect(res.body.success).toBe(false);
-      expect(res.body.message).toBe('Cannot follow this user due to a block');
+      expect(res.body.error.message).toBe('Cannot follow this user due to a block');
     });
 
     it('should unblock user and allow following again', async () => {
@@ -463,7 +463,7 @@ describe('User Profile and Connections Integration Tests', () => {
         .expect(400);
 
       expect(res.body.success).toBe(false);
-      expect(res.body.message).toBe('Cannot block yourself');
+      expect(res.body.error.message).toBe('Cannot block yourself');
     });
   });
 
@@ -580,7 +580,7 @@ describe('User Profile and Connections Integration Tests', () => {
       const res = await request(app)
         .post('/users/invalidid/follow')
         .set('Authorization', `Bearer ${user1Token}`)
-        .expect(500); // validateConnectionAction throws error for invalid ObjectId
+        .expect(400); // validateConnectionAction throws error for invalid ObjectId
 
       expect(res.body.success).toBe(false);
     });
@@ -612,7 +612,7 @@ describe('User Profile and Connections Integration Tests', () => {
         .expect(400);
 
       expect(res.body.success).toBe(false);
-      expect(res.body.message).toBe('Already following this user');
+      expect(res.body.error.message).toBe('Already following this user');
     });
 
     it('should prevent unfollowing when not following', async () => {
@@ -622,7 +622,7 @@ describe('User Profile and Connections Integration Tests', () => {
         .expect(400);
 
       expect(res.body.success).toBe(false);
-      expect(res.body.message).toBe('Not following this user');
+      expect(res.body.error.message).toBe('Not following this user');
     });
 
     it('should prevent duplicate block', async () => {
@@ -639,7 +639,7 @@ describe('User Profile and Connections Integration Tests', () => {
         .expect(400);
 
       expect(res.body.success).toBe(false);
-      expect(res.body.message).toBe('Already blocking this user');
+      expect(res.body.error.message).toBe('Already blocking this user');
     });
 
     it('should handle pagination with invalid parameters', async () => {

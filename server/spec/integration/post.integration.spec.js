@@ -608,6 +608,7 @@ describe("Post Integration Tests", () => {
       expect(res.body.data.pagination).toBeDefined();
     });
 
+
     it("should support pagination", async () => {
       const res = await request(app).get(
         `/users/${testUser._id}/posts?page=1&limit=2`

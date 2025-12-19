@@ -2,6 +2,9 @@ const User = require('../../models/User');
 const Connection = require('../../models/Connection');
 const { validateSearchQuery, parseSearchPagination } = require('../../utils/searchHelpers');
 const { SENSITIVE_USER_FIELDS } = require('../../utils/constants');
+const { asyncHandler } = require('../../middlewares/errorHandler');
+const { ValidationError } = require('../../utils/errors');
+const { sendSuccess } = require('../../utils/responseHelpers');
 
 /**
  * Search Users
@@ -14,21 +17,17 @@ const { SENSITIVE_USER_FIELDS } = require('../../utils/constants');
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
-async function searchUsers(req, res) {
-  try {
-    const { q, specialization, page, limit } = req.query;
-    const currentUserId = req.user?._id;
+const searchUsers = asyncHandler(async (req, res) => {
+  const { q, specialization, page, limit } = req.query;
+  const currentUserId = req.user?._id;
 
-    // Validate search query
-    let searchQuery;
-    try {
-      searchQuery = validateSearchQuery(q);
-    } catch (error) {
-      return res.status(400).json({
-        success: false,
-        message: error.message
-      });
-    }
+  // Validate search query
+  let searchQuery;
+  try {
+    searchQuery = validateSearchQuery(q);
+  } catch (error) {
+    throw new ValidationError(error.message);
+  }
 
     // Parse pagination
     const { page: currentPage, limit: pageLimit, skip } = parseSearchPagination(page, limit);
@@ -109,26 +108,21 @@ async function searchUsers(req, res) {
       );
     }
 
-    // Calculate pagination metadata
-    const pages = Math.ceil(total / pageLimit);
 
-    return res.status(200).json({
-      success: true,
-      users: resultsWithMetadata,
-      pagination: {
-        page: currentPage,
-        limit: pageLimit,
-        total,
-        pages
-      }
-    });
-  } catch (error) {
-    console.error('Error in searchUsers:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Internal server error'
-    });
-  }
-}
+  // Calculate pagination metadata
+  const pages = Math.ceil(total / pageLimit);
+
+  sendSuccess(res, {
+    users: resultsWithMetadata,
+    pagination: {
+      page: currentPage,
+      limit: pageLimit,
+      total,
+      pages,
+      hasNextPage: currentPage < pages,
+      hasPrevPage: currentPage > 1
+    }
+  }, 'Users retrieved successfully');
+});
 
 module.exports = searchUsers;

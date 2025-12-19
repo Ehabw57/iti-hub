@@ -230,7 +230,7 @@ describe('Community Routes Integration Tests', () => {
         .expect(404);
 
       expect(res.body.success).toBe(false);
-      expect(res.body.message).toContain('not found');
+      expect(res.body.error.message).toContain('not found');
     });
 
     it('should return 400 for invalid community ID', async () => {
@@ -239,7 +239,7 @@ describe('Community Routes Integration Tests', () => {
         .expect(400);
 
       expect(res.body.success).toBe(false);
-      expect(res.body.message).toContain('Invalid community ID');
+      expect(res.body.error.message).toContain('Invalid community ID');
     });
   });
 
@@ -438,7 +438,7 @@ describe('Community Routes Integration Tests', () => {
         .expect(200);
 
       expect(res.body.success).toBe(true);
-      expect(res.body.posts.length).toBe(2);
+      expect(res.body.data.posts.length).toBe(2);
     });
 
     it('should sort feed posts chronologically (newest first)', async () => {
@@ -446,7 +446,7 @@ describe('Community Routes Integration Tests', () => {
         .get(`/communities/${testCommunity._id}/feed`)
         .expect(200);
 
-      const posts = res.body.posts;
+      const posts = res.body.data.posts;
       expect(posts[0].content).toBe('Second community post');
       expect(posts[1].content).toBe('First community post');
     });
