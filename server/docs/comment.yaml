@@ -8,6 +8,10 @@ servers:
   - url: http://localhost:3030
     description: Development server
 
+tags:
+  - name: Comments
+    description: Comment management operations
+
 paths:
   /posts/{postId}/comments:
     post:
@@ -71,22 +75,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                content_too_short:
-                  summary: Content too short
-                  value:
-                    success: false
-                    message: "Content must be at least 1 characters"
-                content_too_long:
-                  summary: Content too long
-                  value:
-                    success: false
-                    message: "Content cannot exceed 2000 characters"
-                nested_reply:
-                  summary: Cannot reply to a reply
-                  value:
-                    success: false
-                    message: "Cannot reply to a reply. Replies are only allowed on top-level comments"
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
@@ -95,17 +83,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                post_not_found:
-                  summary: Post not found
-                  value:
-                    success: false
-                    message: "Post not found"
-                parent_not_found:
-                  summary: Parent comment not found
-                  value:
-                    success: false
-                    message: "Parent comment not found"
         '500':
           $ref: '#/components/responses/ServerError'
 
@@ -113,7 +90,7 @@ paths:
       tags:
         - Comments
       summary: Get comments for a post
-      description: Retrieves comments for a specific post with pagination. Can filter by parentCommentId to get replies. For authenticated users, includes isLiked flag.
+      description: Retrieves comments for a specific post with pagination. Can filter by parentCommentId to get replies.
       parameters:
         - in: path
           name: postId
@@ -128,8 +105,7 @@ paths:
           schema:
             type: string
             format: objectId
-          description: Filter by parent comment ID to get replies (omit or set to null for top-level comments)
-          example: "507f1f77bcf86cd799439012"
+          description: Filter by parent comment ID to get replies
         - in: query
           name: page
           schema:
@@ -137,7 +113,6 @@ paths:
             minimum: 1
             default: 1
           description: Page number for pagination
-          example: 1
         - in: query
           name: limit
           schema:
@@ -146,7 +121,6 @@ paths:
             maximum: 100
             default: 20
           description: Number of comments per page
-          example: 20
       responses:
         '200':
           description: Comments retrieved successfully
@@ -173,12 +147,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                not_found:
-                  summary: Post not found
-                  value:
-                    success: false
-                    message: "Post not found"
         '500':
           $ref: '#/components/responses/ServerError'
 
@@ -187,7 +155,7 @@ paths:
       tags:
         - Comments
       summary: Update a comment
-      description: Updates the content of a comment. Only the comment author or an admin can update it. Sets the editedAt timestamp.
+      description: Updates the content of a comment. Only the comment author or an admin can update it.
       security:
         - BearerAuth: []
       parameters:
@@ -198,7 +166,7 @@ paths:
             type: string
             format: objectId
           description: ID of the comment to update
-          example: "507f1f77bcf86cd799439013"
+          example: "507f1f77bcf86cd799439011"
       requestBody:
         required: true
         content:
@@ -213,7 +181,7 @@ paths:
                   minLength: 1
                   maxLength: 2000
                   description: Updated content of the comment
-                  example: "Updated comment text"
+                  example: "Updated comment content"
       responses:
         '200':
           description: Comment updated successfully
@@ -234,22 +202,11 @@ paths:
                       comment:
                         $ref: '#/components/schemas/Comment'
         '400':
-          description: Validation error or invalid fields
+          description: Validation error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                invalid_fields:
-                  summary: Cannot update protected fields
-                  value:
-                    success: false
-                    message: "Cannot update fields: likesCount, repliesCount"
-                content_invalid:
-                  summary: Content validation failed
-                  value:
-                    success: false
-                    message: "Content must be at least 1 characters"
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -258,24 +215,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                not_authorized:
-                  summary: Permission denied
-                  value:
-                    success: false
-                    message: "Not authorized to update this comment"
         '404':
           description: Comment not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                not_found:
-                  summary: Comment not found
-                  value:
-                    success: false
-                    message: "Comment not found"
         '500':
           $ref: '#/components/responses/ServerError'
 
@@ -283,7 +228,7 @@ paths:
       tags:
         - Comments
       summary: Delete a comment
-      description: Deletes a comment. Only the comment author or an admin can delete it. Deleting a top-level comment also deletes all its replies. All likes on the comment are also removed.
+      description: Deletes a comment. Only the comment author or an admin can delete it.
       security:
         - BearerAuth: []
       parameters:
@@ -294,7 +239,7 @@ paths:
             type: string
             format: objectId
           description: ID of the comment to delete
-          example: "507f1f77bcf86cd799439013"
+          example: "507f1f77bcf86cd799439011"
       responses:
         '200':
           description: Comment deleted successfully
@@ -317,24 +262,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                not_authorized:
-                  summary: Permission denied
-                  value:
-                    success: false
-                    message: "Not authorized to delete this comment"
         '404':
           description: Comment not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                not_found:
-                  summary: Comment not found
-                  value:
-                    success: false
-                    message: "Comment not found"
         '500':
           $ref: '#/components/responses/ServerError'
 
@@ -343,7 +276,7 @@ paths:
       tags:
         - Comments
       summary: Like a comment
-      description: Adds a like to a comment from the authenticated user. User cannot like the same comment twice.
+      description: Adds a like to a comment by the authenticated user
       security:
         - BearerAuth: []
       parameters:
@@ -354,7 +287,7 @@ paths:
             type: string
             format: objectId
           description: ID of the comment to like
-          example: "507f1f77bcf86cd799439013"
+          example: "507f1f77bcf86cd799439011"
       responses:
         '200':
           description: Comment liked successfully
@@ -372,24 +305,15 @@ paths:
                   data:
                     type: object
                     properties:
-                      isLiked:
-                        type: boolean
-                        example: true
                       likesCount:
                         type: integer
-                        example: 5
+                        example: 15
         '400':
-          description: Comment already liked
+          description: Already liked this comment
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                already_liked:
-                  summary: Already liked
-                  value:
-                    success: false
-                    message: "Comment already liked"
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
@@ -398,12 +322,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                not_found:
-                  summary: Comment not found
-                  value:
-                    success: false
-                    message: "Comment not found"
         '500':
           $ref: '#/components/responses/ServerError'
 
@@ -411,7 +329,7 @@ paths:
       tags:
         - Comments
       summary: Unlike a comment
-      description: Removes a like from a comment for the authenticated user.
+      description: Removes a like from a comment by the authenticated user
       security:
         - BearerAuth: []
       parameters:
@@ -422,7 +340,7 @@ paths:
             type: string
             format: objectId
           description: ID of the comment to unlike
-          example: "507f1f77bcf86cd799439013"
+          example: "507f1f77bcf86cd799439011"
       responses:
         '200':
           description: Comment unliked successfully
@@ -440,24 +358,15 @@ paths:
                   data:
                     type: object
                     properties:
-                      isLiked:
-                        type: boolean
-                        example: false
                       likesCount:
                         type: integer
-                        example: 4
+                        example: 14
         '400':
-          description: Comment not liked
+          description: Not liked this comment
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                not_liked:
-                  summary: Comment not liked
-                  value:
-                    success: false
-                    message: "Comment not liked"
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
@@ -466,12 +375,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                not_found:
-                  summary: Comment not found
-                  value:
-                    success: false
-                    message: "Comment not found"
         '500':
           $ref: '#/components/responses/ServerError'
 
@@ -482,60 +385,48 @@ components:
       properties:
         _id:
           type: string
-          format: objectId
-          example: "507f1f77bcf86cd799439013"
+          example: "507f1f77bcf86cd799439011"
+        content:
+          type: string
+          example: "Great post!"
         author:
           type: object
           properties:
             _id:
               type: string
-              format: objectId
-              example: "507f1f77bcf86cd799439014"
             username:
               type: string
-              example: "johndoe"
             fullName:
               type: string
-              example: "John Doe"
             profilePicture:
               type: string
-              nullable: true
-              example: "https://example.com/profile.jpg"
         post:
           type: string
-          format: objectId
-          example: "507f1f77bcf86cd799439011"
-        content:
-          type: string
-          example: "Great post! Thanks for sharing."
+          example: "507f1f77bcf86cd799439012"
         parentComment:
           type: string
-          format: objectId
           nullable: true
-          description: ID of parent comment if this is a reply
-          example: "507f1f77bcf86cd799439012"
+          example: null
         likesCount:
           type: integer
-          minimum: 0
           example: 5
         repliesCount:
           type: integer
-          minimum: 0
           example: 2
         isLiked:
           type: boolean
-          description: Whether the authenticated user has liked this comment (only present for authenticated requests)
-          example: true
-        createdAt:
-          type: string
-          format: date-time
-          example: "2025-12-13T10:30:00.000Z"
+          description: Whether the authenticated user has liked this comment
+          example: false
         editedAt:
           type: string
           format: date-time
           nullable: true
-          description: Timestamp of last edit (null if never edited)
-          example: "2025-12-13T11:45:00.000Z"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
 
     Pagination:
       type: object
@@ -548,10 +439,10 @@ components:
           example: 20
         total:
           type: integer
-          example: 45
+          example: 100
         pages:
           type: integer
-          example: 3
+          example: 5
 
     ErrorResponse:
       type: object
@@ -565,22 +456,14 @@ components:
 
   responses:
     Unauthorized:
-      description: Unauthorized - Invalid or missing authentication token
+      description: Authentication required
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-          examples:
-            missing_token:
-              summary: No token provided
-              value:
-                success: false
-                message: "Authentication required"
-            invalid_token:
-              summary: Invalid token
-              value:
-                success: false
-                message: "Invalid token"
+          example:
+            success: false
+            message: "Authentication required"
 
     ServerError:
       description: Internal server error
@@ -588,20 +471,12 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-          examples:
-            server_error:
-              summary: Server error
-              value:
-                success: false
-                message: "Internal server error"
+          example:
+            success: false
+            message: "Internal server error"
 
   securitySchemes:
     BearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      description: JWT token obtained from login or registration
-
-tags:
-  - name: Comments
-    description: Operations for creating, reading, updating, and deleting comments on posts

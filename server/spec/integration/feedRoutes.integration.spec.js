@@ -191,14 +191,14 @@ describe('Feed Integration Tests', () => {
 
       expect(res.body.success).toBe(true);
       expect(res.body.feedType).toBe('home');
-      expect(res.body.posts.length).toBe(5);
+      expect(res.body.data.posts.length).toBe(5);
       
       // Should be sorted newest first
-      expect(res.body.posts[0].content).toBe('Post in Art Community');
-      expect(res.body.posts[1].content).toBe('Another post in Tech Community');
-      expect(res.body.posts[2].content).toBe('Post in Tech Community');
-      expect(res.body.posts[3].content).toBe('User3 regular post');
-      expect(res.body.posts[4].content).toBe('User2 regular post');
+      expect(res.body.data.posts[0].content).toBe('Post in Art Community');
+      expect(res.body.data.posts[1].content).toBe('Another post in Tech Community');
+      expect(res.body.data.posts[2].content).toBe('Post in Tech Community');
+      expect(res.body.data.posts[3].content).toBe('User3 regular post');
+      expect(res.body.data.posts[4].content).toBe('User2 regular post');
     });
 
     it('should include author details for each post', async () => {
@@ -206,7 +206,7 @@ describe('Feed Integration Tests', () => {
         .get('/feed/home')
         .expect(200);
 
-      const firstPost = res.body.posts[0];
+      const firstPost = res.body.data.posts[0];
       expect(firstPost.author).toBeDefined();
       expect(firstPost.author.username).toBe('diana');
       expect(firstPost.author.fullName).toBe('Diana Prince');
@@ -220,15 +220,15 @@ describe('Feed Integration Tests', () => {
 
       // Due to caching or feed algorithm, pagination may not be exact
       // Just verify pagination parameters are set correctly in the response
-      expect(res1.body.pagination.page).toBe(1);
+      expect(res1.body.data.pagination.page).toBe(1);
       // Note: limit in response may be capped by feed algorithm or cache TTL
-      expect(res1.body.pagination.limit).toBeGreaterThan(0);
+      expect(res1.body.data.pagination.limit).toBeGreaterThan(0);
       // Total should be at least 5 (our test posts)
-      expect(res1.body.pagination.total).toBeGreaterThanOrEqual(5);
+      expect(res1.body.data.pagination.total).toBeGreaterThanOrEqual(5);
 
       // Verify posts array exists and is not empty
-      expect(res1.body.posts).toBeDefined();
-      expect(Array.isArray(res1.body.posts)).toBe(true);
+      expect(res1.body.data.posts).toBeDefined();
+      expect(Array.isArray(res1.body.data.posts)).toBe(true);
     });
 
     it('should include community information for community posts', async () => {
@@ -236,7 +236,7 @@ describe('Feed Integration Tests', () => {
         .get('/feed/home')
         .expect(200);
 
-      const communityPost = res.body.posts.find(p => p.content === 'Post in Tech Community');
+      const communityPost = res.body.data.posts.find(p => p.content === 'Post in Tech Community');
       expect(communityPost).toBeDefined();
       expect(communityPost.community).toBeDefined();
       // Community is populated, so it's an object with _id and name
@@ -250,7 +250,7 @@ describe('Feed Integration Tests', () => {
         .expect(200);
 
       expect(res.body.success).toBe(true);
-      expect(res.body.posts.length).toBeGreaterThan(0);
+      expect(res.body.data.posts.length).toBeGreaterThan(0);
     });
   });
 
@@ -291,7 +291,7 @@ describe('Feed Integration Tests', () => {
 
       expect(res.body.success).toBe(true);
       expect(res.body.feedType).toBe('trending');
-      expect(res.body.posts.length).toBe(5);
+      expect(res.body.data.posts.length).toBe(5);
 
       // Should be sorted by engagement score (likes + comments)
       // post3: 15 likes + 8 comments = 23
@@ -299,10 +299,10 @@ describe('Feed Integration Tests', () => {
       // post5: 7 likes + 3 comments = 10
       // post1: 5 likes + 2 comments = 7
       // post4: 3 likes + 1 comment = 4
-      expect(res.body.posts[0].content).toBe('Post in Tech Community');
-      expect(res.body.posts[0].likesCount).toBe(15);
+      expect(res.body.data.posts[0].content).toBe('Post in Tech Community');
+      expect(res.body.data.posts[0].likesCount).toBe(15);
       // Second post should have fewer likes than first
-      expect(res.body.posts[1].likesCount).toBeLessThanOrEqual(15);
+      expect(res.body.data.posts[1].likesCount).toBeLessThanOrEqual(15);
     });
 
     it('should support pagination for trending feed', async () => {
@@ -311,10 +311,10 @@ describe('Feed Integration Tests', () => {
         .expect(200);
 
       // Should not exceed the requested limit (though may be less due to feed algorithm)
-      expect(res.body.posts.length).toBeLessThanOrEqual(50); // MAX_LIMIT for trending
-      expect(res.body.pagination.page).toBe(1);
+      expect(res.body.data.posts.length).toBeLessThanOrEqual(50); // MAX_LIMIT for trending
+      expect(res.body.data.pagination.page).toBe(1);
       // Total should be at least our test posts
-      expect(res.body.pagination.total).toBeGreaterThanOrEqual(5);
+      expect(res.body.data.pagination.total).toBeGreaterThanOrEqual(5);
     });
 
     it('should work without authentication', async () => {
@@ -335,11 +335,11 @@ describe('Feed Integration Tests', () => {
       expect(res.body.success).toBe(true);
       expect(res.body.feedType).toBe('community');
       expect(res.body.communityId).toBe(community1._id.toString());
-      expect(res.body.posts.length).toBe(2);
+      expect(res.body.data.posts.length).toBe(2);
 
       // All posts should belong to community1
       // Note: community field is populated, so it's an object with _id and name
-      res.body.posts.forEach(post => {
+      res.body.data.posts.forEach(post => {
         expect(post.community._id).toBe(community1._id.toString());
       });
     });
@@ -349,8 +349,8 @@ describe('Feed Integration Tests', () => {
         .get(`/communities/${community1._id}/feed`)
         .expect(200);
 
-      expect(res.body.posts[0].content).toBe('Another post in Tech Community');
-      expect(res.body.posts[1].content).toBe('Post in Tech Community');
+      expect(res.body.data.posts[0].content).toBe('Another post in Tech Community');
+      expect(res.body.data.posts[1].content).toBe('Post in Tech Community');
     });
 
     it('should return empty feed for non-existent community', async () => {
@@ -360,8 +360,8 @@ describe('Feed Integration Tests', () => {
         .expect(200);
 
       expect(res.body.success).toBe(true);
-      expect(res.body.posts.length).toBe(0);
-      expect(res.body.pagination.total).toBe(0);
+      expect(res.body.data.posts.length).toBe(0);
+      expect(res.body.data.pagination.total).toBe(0);
     });
 
     it('should handle invalid community ID gracefully', async () => {
@@ -378,10 +378,10 @@ describe('Feed Integration Tests', () => {
         .get(`/communities/${community1._id}/feed?page=1&limit=1`)
         .expect(200);
 
-      expect(res.body.posts.length).toBe(1);
-      expect(res.body.pagination.page).toBe(1);
-      expect(res.body.pagination.limit).toBe(1);
-      expect(res.body.pagination.total).toBe(2);
+      expect(res.body.data.posts.length).toBe(1);
+      expect(res.body.data.pagination.page).toBe(1);
+      expect(res.body.data.pagination.limit).toBe(1);
+      expect(res.body.data.pagination.total).toBe(2);
     });
 
     it('should work for different communities independently', async () => {
@@ -393,9 +393,9 @@ describe('Feed Integration Tests', () => {
         .get(`/communities/${community2._id}/feed`)
         .expect(200);
 
-      expect(res1.body.posts.length).toBe(2);
-      expect(res2.body.posts.length).toBe(1);
-      expect(res2.body.posts[0].content).toBe('Post in Art Community');
+      expect(res1.body.data.posts.length).toBe(2);
+      expect(res2.body.data.posts.length).toBe(1);
+      expect(res2.body.data.posts[0].content).toBe('Post in Art Community');
     });
   });
 
@@ -408,11 +408,11 @@ describe('Feed Integration Tests', () => {
 
       // Total unique posts should be 5
       const totalPosts = 5;
-      expect(homeRes.body.posts.length).toBe(totalPosts);
-      expect(trendingRes.body.posts.length).toBe(totalPosts);
+      expect(homeRes.body.data.posts.length).toBe(totalPosts);
+      expect(trendingRes.body.data.posts.length).toBe(totalPosts);
       
       // Community feeds should sum correctly
-      const communityPostCount = community1Res.body.posts.length + community2Res.body.posts.length;
+      const communityPostCount = community1Res.body.data.posts.length + community2Res.body.data.posts.length;
       expect(communityPostCount).toBe(3); // 2 in community1, 1 in community2
     });
 
@@ -429,8 +429,8 @@ describe('Feed Integration Tests', () => {
       const trendingRes = await request(app).get('/feed/trending').expect(200);
 
       // Deleted post should not appear in any feed
-      const deletedPostInHome = homeRes.body.posts.find(p => p._id === post1._id.toString());
-      const deletedPostInTrending = trendingRes.body.posts.find(p => p._id === post1._id.toString());
+      const deletedPostInHome = homeRes.body.data.posts.find(p => p._id === post1._id.toString());
+      const deletedPostInTrending = trendingRes.body.data.posts.find(p => p._id === post1._id.toString());
       
       expect(deletedPostInHome).toBeUndefined();
       expect(deletedPostInTrending).toBeUndefined();
@@ -445,7 +445,7 @@ describe('Feed Integration Tests', () => {
       const res = await request(app).get('/feed/trending').expect(200);
 
       // post4 should now be higher in trending (23 likes total)
-      const post4Position = res.body.posts.findIndex(p => p._id === post4._id.toString());
+      const post4Position = res.body.data.posts.findIndex(p => p._id === post4._id.toString());
       expect(post4Position).toBeLessThan(3); // Should be near top
     });
   });
@@ -466,13 +466,13 @@ describe('Feed Integration Tests', () => {
 
       // Both should have same structure
       expect(res1.body.success).toBeDefined();
-      expect(res1.body.posts).toBeDefined();
-      expect(res1.body.pagination).toBeDefined();
+      expect(res1.body.data.posts).toBeDefined();
+      expect(res1.body.data.pagination).toBeDefined();
       expect(res1.body.feedType).toBeDefined();
       
       expect(res2.body.success).toBeDefined();
-      expect(res2.body.posts).toBeDefined();
-      expect(res2.body.pagination).toBeDefined();
+      expect(res2.body.data.posts).toBeDefined();
+      expect(res2.body.data.pagination).toBeDefined();
       expect(res2.body.feedType).toBeDefined();
     });
   });
@@ -494,8 +494,8 @@ describe('Feed Integration Tests', () => {
 
       expect(res.body.success).toBe(true);
       // Due to caching, may still show posts, but structure should be correct
-      expect(Array.isArray(res.body.posts)).toBe(true);
-      expect(res.body.pagination).toBeDefined();
+      expect(Array.isArray(res.body.data.posts)).toBe(true);
+      expect(res.body.data.pagination).toBeDefined();
     });
 
     it('should handle feed with single post', async () => {
@@ -514,8 +514,8 @@ describe('Feed Integration Tests', () => {
 
       expect(res.body.success).toBe(true);
       // Due to caching, actual count may differ from DB
-      expect(Array.isArray(res.body.posts)).toBe(true);
-      expect(res.body.pagination).toBeDefined();
+      expect(Array.isArray(res.body.data.posts)).toBe(true);
+      expect(res.body.data.pagination).toBeDefined();
     });
 
     it('should handle invalid pagination parameters gracefully', async () => {
@@ -524,8 +524,8 @@ describe('Feed Integration Tests', () => {
         .expect(200);
 
       expect(res.body.success).toBe(true);
-      expect(res.body.pagination.page).toBe(1); // Default
-      expect(res.body.pagination.limit).toBe(20); // Default
+      expect(res.body.data.pagination.page).toBe(1); // Default
+      expect(res.body.data.pagination.limit).toBe(20); // Default
     });
 
     it('should handle page beyond available content', async () => {
@@ -534,8 +534,8 @@ describe('Feed Integration Tests', () => {
         .expect(200);
 
       expect(res.body.success).toBe(true);
-      expect(res.body.posts).toEqual([]);
-      expect(res.body.pagination.page).toBe(100);
+      expect(res.body.data.posts).toEqual([]);
+      expect(res.body.data.pagination.page).toBe(100);
     });
   });
 
@@ -566,11 +566,11 @@ describe('Feed Integration Tests', () => {
         .expect(200);
 
       // Due to caching and feed algorithm, actual limit may differ
-      expect(res.body.posts.length).toBeGreaterThan(0);
-      expect(res.body.posts.length).toBeLessThanOrEqual(100); // MAX_LIMIT
+      expect(res.body.data.posts.length).toBeGreaterThan(0);
+      expect(res.body.data.posts.length).toBeLessThanOrEqual(100); // MAX_LIMIT
       // Verify the response structure is correct
-      expect(res.body.pagination).toBeDefined();
-      expect(res.body.pagination.limit).toBeGreaterThan(0);
+      expect(res.body.data.pagination).toBeDefined();
+      expect(res.body.data.pagination.limit).toBeGreaterThan(0);
     });
 
     it('should enforce maximum limit per page', async () => {
@@ -579,7 +579,7 @@ describe('Feed Integration Tests', () => {
         .expect(200);
 
       // Should cap at reasonable limit (50 for home/trending)
-      expect(res.body.posts.length).toBeLessThanOrEqual(50);
+      expect(res.body.data.posts.length).toBeLessThanOrEqual(50);
     });
 
     it('should maintain sort order with large datasets', async () => {
@@ -588,9 +588,9 @@ describe('Feed Integration Tests', () => {
         .expect(200);
 
       // Verify chronological order
-      for (let i = 0; i < res.body.posts.length - 1; i++) {
-        const current = new Date(res.body.posts[i].createdAt);
-        const next = new Date(res.body.posts[i + 1].createdAt);
+      for (let i = 0; i < res.body.data.posts.length - 1; i++) {
+        const current = new Date(res.body.data.posts[i].createdAt);
+        const next = new Date(res.body.data.posts[i + 1].createdAt);
         expect(current.getTime()).toBeGreaterThanOrEqual(next.getTime());
       }
     });

@@ -27,7 +27,10 @@ const UPDATABLE_PROFILE_FIELDS = [
   'profilePicture',
   'coverImage',
   'specialization',
-  'location'
+  'location',
+  'branchId',
+  'roundId',
+  'trackId'
 ];
 
 // Pagination defaults

@@ -8,6 +8,10 @@ servers:
   - url: http://localhost:3030
     description: Development server
 
+tags:
+  - name: Communities
+    description: Community management operations
+
 paths:
   /communities:
     get:
@@ -65,6 +69,8 @@ paths:
                           $ref: '#/components/schemas/CommunityListItem'
                       pagination:
                         $ref: '#/components/schemas/Pagination'
+        '500':
+          $ref: '#/components/responses/ServerError'
 
     post:
       tags:
@@ -97,7 +103,6 @@ paths:
                   type: array
                   items:
                     type: string
-                    enum: [Technology, Education, Science, Arts, Sports, Gaming, Music, Movies, Books, Food, Travel, Health, Fitness, Business, Career, Fashion, Photography, Nature, Politics, Hobbies]
                   minItems: 1
                   maxItems: 3
                   description: Community tags (1-3 from predefined list)
@@ -135,11 +140,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
 
   /communities/{id}:
     get:
@@ -182,6 +185,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
 
     patch:
       tags:
@@ -236,11 +241,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+          $ref: '#/components/responses/Unauthorized'
         '403':
           description: Only owners can update community details
           content:
@@ -253,6 +254,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
 
   /communities/{id}/profile-picture:
     post:
@@ -299,20 +302,17 @@ paths:
                   data:
                     type: object
                     properties:
-                      community:
-                        $ref: '#/components/schemas/Community'
+                      profilePicture:
+                        type: string
+                        format: uri
         '400':
-          description: No file provided or invalid community ID
+          description: No file uploaded or invalid file
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+          $ref: '#/components/responses/Unauthorized'
         '403':
           description: Only owners can update profile picture
           content:
@@ -325,6 +325,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
 
   /communities/{id}/cover-image:
     post:
@@ -371,20 +373,17 @@ paths:
                   data:
                     type: object
                     properties:
-                      community:
-                        $ref: '#/components/schemas/Community'
+                      coverImage:
+                        type: string
+                        format: uri
         '400':
-          description: No file provided or invalid community ID
+          description: No file uploaded or invalid file
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+          $ref: '#/components/responses/Unauthorized'
         '403':
           description: Only owners can update cover image
           content:
@@ -397,13 +396,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
 
   /communities/{id}/join:
     post:
       tags:
         - Communities
       summary: Join a community
-      description: Join a community as a member. Idempotent - returns success if already a member.
+      description: Join a community as a member
       security:
         - BearerAuth: []
       parameters:
@@ -415,19 +416,6 @@ paths:
           description: Community ID
       responses:
         '200':
-          description: Already a member
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: "You are already a member of this community"
-        '201':
           description: Successfully joined community
           content:
             application/json:
@@ -439,32 +427,30 @@ paths:
                     example: true
                   message:
                     type: string
-                    example: "Successfully joined the community"
+                    example: "Successfully joined community"
         '400':
-          description: Invalid community ID
+          description: Already a member
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+          $ref: '#/components/responses/Unauthorized'
         '404':
           description: Community not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
 
   /communities/{id}/leave:
     post:
       tags:
         - Communities
       summary: Leave a community
-      description: Leave a community. Owners cannot leave if they are the only owner. Idempotent - returns success if not a member.
+      description: Leave a community. Owners cannot leave their community.
       security:
         - BearerAuth: []
       parameters:
@@ -476,7 +462,7 @@ paths:
           description: Community ID
       responses:
         '200':
-          description: Successfully left community or not a member
+          description: Successfully left community
           content:
             application/json:
               schema:
@@ -487,41 +473,30 @@ paths:
                     example: true
                   message:
                     type: string
-                    oneOf:
-                      - example: "Successfully left the community"
-                      - example: "You are not a member of this community"
+                    example: "Successfully left community"
         '400':
-          description: Invalid community ID or cannot leave (only owner)
+          description: Not a member or owner cannot leave
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                only_owner:
-                  summary: Only owner cannot leave
-                  value:
-                    success: false
-                    message: "Cannot leave community as you are the only owner. Please transfer ownership first."
         '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+          $ref: '#/components/responses/Unauthorized'
         '404':
           description: Community not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
 
   /communities/{id}/moderators:
     post:
       tags:
         - Communities
-        - Moderation
       summary: Add a moderator
-      description: Add a member as a moderator. Requires owner or moderator permission. Target user must be a community member. Idempotent - returns success if already a moderator.
+      description: Add a moderator to the community. Only owners/moderators can perform this action.
       security:
         - BearerAuth: []
       parameters:
@@ -542,10 +517,10 @@ paths:
               properties:
                 userId:
                   type: string
-                  description: ID of the user to make a moderator
+                  description: User ID to add as moderator
       responses:
         '200':
-          description: Moderator added successfully or already a moderator
+          description: Moderator added successfully
           content:
             application/json:
               schema:
@@ -556,53 +531,36 @@ paths:
                     example: true
                   message:
                     type: string
-                    oneOf:
-                      - example: "Moderator added successfully"
-                      - example: "User is already a moderator"
+                    example: "Moderator added successfully"
         '400':
-          description: Validation error or user not a member
+          description: User is already a moderator or not a member
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                not_member:
-                  summary: User not a member
-                  value:
-                    success: false
-                    message: "User must be a member of the community to become a moderator"
         '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+          $ref: '#/components/responses/Unauthorized'
         '403':
-          description: Insufficient permissions
+          description: Not authorized to add moderators
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                no_permission:
-                  summary: Not a moderator or owner
-                  value:
-                    success: false
-                    message: "You must be a moderator or owner to add moderators"
         '404':
-          description: Community not found
+          description: Community or user not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
 
   /communities/{id}/moderators/{userId}:
     delete:
       tags:
         - Communities
-        - Moderation
       summary: Remove a moderator
-      description: Remove a user from moderators, reverting them to regular member. Requires owner or moderator permission. Cannot remove owners. Idempotent - returns success if user is not a moderator.
+      description: Remove a moderator from the community. Only owners/moderators can perform this action.
       security:
         - BearerAuth: []
       parameters:
@@ -617,10 +575,10 @@ paths:
           required: true
           schema:
             type: string
-          description: ID of the moderator to remove
+          description: User ID of the moderator to remove
       responses:
         '200':
-          description: Moderator removed successfully or not a moderator
+          description: Moderator removed successfully
           content:
             application/json:
               schema:
@@ -631,47 +589,36 @@ paths:
                     example: true
                   message:
                     type: string
-                    oneOf:
-                      - example: "Moderator removed successfully"
-                      - example: "User is not a moderator"
+                    example: "Moderator removed successfully"
         '400':
-          description: Validation error or trying to remove an owner
+          description: User is not a moderator
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                cannot_remove_owner:
-                  summary: Cannot remove owner
-                  value:
-                    success: false
-                    message: "Cannot remove community owners from moderators"
         '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+          $ref: '#/components/responses/Unauthorized'
         '403':
-          description: Insufficient permissions
+          description: Not authorized to remove moderators
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '404':
-          description: Community not found
+          description: Community or user not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
 
   /communities/{communityId}/feed:
     get:
       tags:
         - Communities
-        - Feed
       summary: Get community feed
-      description: Get chronological posts from a specific community. Returns posts sorted by newest first with pagination.
+      description: Get community feed (chronological posts from a specific community)
       parameters:
         - in: path
           name: communityId
@@ -692,11 +639,11 @@ paths:
             type: integer
             minimum: 1
             maximum: 50
-            default: 20
+            default: 10
           description: Number of posts per page
       responses:
         '200':
-          description: Feed retrieved successfully
+          description: Community feed retrieved successfully
           content:
             application/json:
               schema:
@@ -705,40 +652,25 @@ paths:
                   success:
                     type: boolean
                     example: true
-                  cached:
-                    type: boolean
-                    description: Whether the response was served from cache
-                  feedType:
-                    type: string
-                    example: "community"
-                  communityId:
-                    type: string
                   posts:
                     type: array
                     items:
-                      $ref: '#/components/schemas/Post'
+                      $ref: '#/components/schemas/PostResponse'
                   pagination:
                     $ref: '#/components/schemas/Pagination'
-        '400':
-          description: Invalid community ID
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                  cached:
+                    type: boolean
+                    example: false
         '404':
           description: Community not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
 
 components:
-  securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-
   schemas:
     Community:
       type: object
@@ -749,16 +681,18 @@ components:
           type: string
         description:
           type: string
-        profilePicture:
-          type: string
-          nullable: true
-        coverImage:
-          type: string
-          nullable: true
         tags:
           type: array
           items:
             type: string
+        profilePicture:
+          type: string
+          format: uri
+        coverImage:
+          type: string
+          format: uri
+        owner:
+          type: string
         memberCount:
           type: integer
         postCount:
@@ -771,13 +705,26 @@ components:
           format: date-time
 
     CommunityListItem:
-      allOf:
-        - $ref: '#/components/schemas/Community'
-        - type: object
-          properties:
-            isJoined:
-              type: boolean
-              description: Whether the authenticated user has joined this community (false for unauthenticated requests)
+      type: object
+      properties:
+        _id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        profilePicture:
+          type: string
+          format: uri
+        memberCount:
+          type: integer
+        isJoined:
+          type: boolean
+          description: Whether the authenticated user is a member
 
     CommunityDetail:
       allOf:
@@ -786,17 +733,16 @@ components:
           properties:
             isJoined:
               type: boolean
-              description: Whether the authenticated user has joined this community
             role:
               type: string
-              nullable: true
-              enum: [owner, moderator, member]
-              description: User's role in the community (null if not a member or not authenticated)
+              enum: [owner, moderator, member, null]
 
-    Post:
+    PostResponse:
       type: object
       properties:
         _id:
+          type: string
+        content:
           type: string
         author:
           type: object
@@ -809,20 +755,15 @@ components:
               type: string
             profilePicture:
               type: string
-              nullable: true
-        content:
-          type: string
         images:
           type: array
           items:
             type: string
-        community:
-          type: string
-          nullable: true
-          description: Community ID if this is a community post
         likesCount:
           type: integer
         commentsCount:
+          type: integer
+        repostsCount:
           type: integer
         isLiked:
           type: boolean
@@ -852,3 +793,24 @@ components:
           example: false
         message:
           type: string
+
+  responses:
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    ServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

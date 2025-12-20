@@ -93,7 +93,10 @@ describe('Get Following Feed Controller', () => {
       expect(res.status).toHaveBeenCalledWith(401);
       expect(res.status.calls.mostRecent().returnValue.json).toHaveBeenCalledWith({
         success: false,
-        message: 'Authentication required'
+        error: {
+          code: 'UNAUTHORIZED',
+          message: 'Authentication required'
+        }
       });
     });
 
@@ -174,8 +177,8 @@ describe('Get Following Feed Controller', () => {
 
       expect(res.status).toHaveBeenCalledWith(200);
       const response = res.status.calls.mostRecent().returnValue.json.calls.mostRecent().args[0];
-      expect(response.posts).toEqual([]);
-      expect(response.pagination.total).toBe(0);
+      expect(response.data.posts).toEqual([]);
+      expect(response.data.pagination.total).toBe(0);
     });
   });
 
@@ -218,7 +221,7 @@ describe('Get Following Feed Controller', () => {
 
       // Posts should be returned in same order as from DB (chronological)
       const response = res.status.calls.mostRecent().returnValue.json.calls.mostRecent().args[0];
-      expect(response.posts.length).toBe(mockPosts.length);
+      expect(response.data.posts.length).toBe(mockPosts.length);
     });
   });
 
@@ -290,7 +293,7 @@ describe('Get Following Feed Controller', () => {
       await getFollowingFeed(req, res);
 
       const response = res.status.calls.mostRecent().returnValue.json.calls.mostRecent().args[0];
-      expect(response.pagination).toEqual({
+      expect(response.data.pagination).toEqual({
         page: 2,
         limit: 10,
         total: 100,
@@ -337,8 +340,7 @@ describe('Get Following Feed Controller', () => {
       expect(response).toEqual(jasmine.objectContaining({
         success: true,
         cached: true,
-        posts: cachedData.posts,
-        pagination: cachedData.pagination
+        data: cachedData
       }));
     });
 
@@ -430,7 +432,10 @@ describe('Get Following Feed Controller', () => {
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.status.calls.mostRecent().returnValue.json).toHaveBeenCalledWith({
         success: false,
-        message: 'Failed to fetch following feed'
+        error: {
+          code: 'FEED_ERROR',
+          message: 'Failed to fetch following feed'
+        }
       });
     });
 
@@ -473,12 +478,14 @@ describe('Get Following Feed Controller', () => {
         success: true,
         cached: false,
         feedType: 'following',
-        posts: jasmine.any(Array),
-        pagination: jasmine.objectContaining({
-          page: jasmine.any(Number),
-          limit: jasmine.any(Number),
-          total: jasmine.any(Number),
-          pages: jasmine.any(Number)
+        data: jasmine.objectContaining({
+          posts: jasmine.any(Array),
+          pagination: jasmine.objectContaining({
+            page: jasmine.any(Number),
+            limit: jasmine.any(Number),
+            total: jasmine.any(Number),
+            pages: jasmine.any(Number)
+          })
         })
       }));
     });

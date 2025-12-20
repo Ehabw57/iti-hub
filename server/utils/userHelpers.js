@@ -1,4 +1,7 @@
 const Connection = require('../models/Connection');
+const Branch = require('../models/Branch');
+const Round = require('../models/Round');
+const Track = require('../models/Track');
 const {
   SENSITIVE_USER_FIELDS,
   UPDATABLE_PROFILE_FIELDS,
@@ -134,11 +137,85 @@ function validateProfileUpdate(updateData) {
       }
     }
   });
+
+  // branchId/roundId/trackId validation is done asynchronously in validateBranchRoundTrack
   
   return {
     isValid: errors.length === 0,
     errors,
     validatedData
+  };
+}
+
+/**
+ * Validate branch/round/track selection for profile update
+ * @param {Object} validatedData - Object containing branchId, roundId, trackId
+ * @returns {Promise<Object>} Object with isValid, errors, and requiresVerificationReset
+ */
+async function validateBranchRoundTrack(validatedData) {
+  const errors = [];
+  let requiresVerificationReset = false;
+
+  const { branchId, roundId, trackId } = validatedData;
+
+  // If any selection field is provided, validate the chain
+  if (branchId !== undefined || roundId !== undefined || trackId !== undefined) {
+    // All three must be provided together or none
+    if (branchId && (!roundId || !trackId)) {
+      errors.push('roundId and trackId are required when branchId is provided');
+    }
+    if (roundId && (!branchId || !trackId)) {
+      errors.push('branchId and trackId are required when roundId is provided');
+    }
+    if (trackId && (!branchId || !roundId)) {
+      errors.push('branchId and roundId are required when trackId is provided');
+    }
+
+    if (branchId && roundId && trackId) {
+      // Validate branch exists and not disabled
+      const branch = await Branch.findById(branchId);
+      if (!branch) {
+        errors.push('Branch not found');
+      } else if (branch.isDisabled) {
+        errors.push('Selected branch is disabled');
+      }
+
+      // Validate round exists, belongs to branch, and not disabled
+      const round = await Round.findById(roundId);
+      if (!round) {
+        errors.push('Round not found');
+      } else {
+        if (round.branchId.toString() !== branchId) {
+          errors.push('Round does not belong to the selected branch');
+        }
+        if (round.status === 'disabled') {
+          errors.push('Selected round is disabled');
+        }
+      }
+
+      // Validate track exists, belongs to round, and not disabled
+      const track = await Track.findById(trackId);
+      if (!track) {
+        errors.push('Track not found');
+      } else {
+        if (track.roundId.toString() !== roundId) {
+          errors.push('Track does not belong to the selected round');
+        }
+        if (track.isDisabled) {
+          errors.push('Selected track is disabled');
+        }
+      }
+
+      if (errors.length === 0) {
+        requiresVerificationReset = true;
+      }
+    }
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+    requiresVerificationReset
   };
 }
 
@@ -179,5 +256,6 @@ module.exports = {
   sanitizeUserProfile,
   checkUserBlocked,
   validateProfileUpdate,
+  validateBranchRoundTrack,
   buildProfileResponse
 };

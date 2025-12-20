@@ -272,7 +272,7 @@ describe('User Profile and Connections Integration Tests', () => {
 
       expect(res.body.success).toBe(true);
       expect(res.body.data.followers.length).toBe(2);
-      expect(res.body.data.pagination.totalCount).toBe(2);
+      expect(res.body.data.pagination.total).toBe(2);
       
       // Should not have isFollowing when not authenticated
       expect(res.body.data.followers[0].isFollowing).toBeUndefined();
@@ -304,7 +304,7 @@ describe('User Profile and Connections Integration Tests', () => {
       expect(res.body.success).toBe(true);
       expect(res.body.data.following.length).toBe(1);
       expect(res.body.data.following[0]._id).toBe(user2Id);
-      expect(res.body.data.pagination.totalCount).toBe(1);
+      expect(res.body.data.pagination.total).toBe(1);
     });
 
     it('should support pagination in followers list', async () => {
@@ -314,9 +314,9 @@ describe('User Profile and Connections Integration Tests', () => {
         .expect(200);
 
       expect(res1.body.data.followers.length).toBe(1);
-      expect(res1.body.data.pagination.currentPage).toBe(1);
-      expect(res1.body.data.pagination.pageSize).toBe(1);
-      expect(res1.body.data.pagination.totalCount).toBe(2);
+      expect(res1.body.data.pagination.page).toBe(1);
+      expect(res1.body.data.pagination.limit).toBe(1);
+      expect(res1.body.data.pagination.total).toBe(2);
       expect(res1.body.data.pagination.totalPages).toBe(2);
 
       // Get second page
@@ -325,7 +325,7 @@ describe('User Profile and Connections Integration Tests', () => {
         .expect(200);
 
       expect(res2.body.data.followers.length).toBe(1);
-      expect(res2.body.data.pagination.currentPage).toBe(2);
+      expect(res2.body.data.pagination.page).toBe(2);
       
       // Ensure different users on each page
       expect(res1.body.data.followers[0]._id).not.toBe(res2.body.data.followers[0]._id);
@@ -347,7 +347,7 @@ describe('User Profile and Connections Integration Tests', () => {
         .expect(200);
 
       expect(res.body.data.followers.length).toBe(0);
-      expect(res.body.data.pagination.totalCount).toBe(0);
+      expect(res.body.data.pagination.total).toBe(0);
     });
   });
 
@@ -648,14 +648,14 @@ describe('User Profile and Connections Integration Tests', () => {
         .get(`/users/${user1Id}/followers?page=-1`)
         .expect(200);
 
-      expect(res1.body.data.pagination.currentPage).toBe(1); // Should default to 1
+      expect(res1.body.data.pagination.page).toBe(1); // Should default to 1
 
       // Limit exceeding max
       const res2 = await request(app)
         .get(`/users/${user1Id}/followers?limit=200`)
         .expect(200);
 
-      expect(res2.body.data.pagination.pageSize).toBe(100); // Should cap at MAX_LIMIT
+      expect(res2.body.data.pagination.limit).toBe(100); // Should cap at MAX_LIMIT
     });
   });
 });

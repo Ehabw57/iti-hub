@@ -19,32 +19,112 @@ Use this checklist to track your progress through all tasks. Mark each task as y
 
 ---
 
+## Epic 10: Admin Management (P0)
+
+**Status**: ⬜ Not Started  
+**Effort**: 8-12 days  
+**File**: [epic-10-admin-management.md](./epic-10-admin-management.md)  
+**Depends on**: Epic 1 complete
+
+### Phase 1: Data & Permissions
+- [ ] ⚡⚠️ **T201** - Update User Model for Verification (0.5 days)
+  - File: `/server/models/User.js`
+  - Add fields: `branchId` (optional), `trackId` (optional), `verificationStatus` (boolean|null)
+  - `verificationStatus`: true=verified, false=not verified, null=pending
+
+- [ ] ⚡⚠️ **T202** - Create Branch Model (0.5 days)
+  - File: `/server/models/Branch.js`
+  - Fields: `name` (unique, required), `description` (optional), `isDisabled` (boolean)
+
+- [ ] ⚡⚠️ **T203** - Create Track Model (0.5 days)
+  - File: `/server/models/Track.js`
+  - Fields: `name` (required), `branchId` (required, immutable), `description` (optional), `isDisabled` (boolean)
+
+- [ ] ⚡⚠️ **T204** - Create Tag Model (0.5 days)
+  - File: `/server/models/Tag.js`
+  - Fields: `name` (unique, required), `description` (optional), `isDisabled` (boolean)
+
+### Phase 2: Admin Endpoints (Branches/Tracks/Tags)
+- [ ] 🔗 **T205** - Admin Branches Controllers (1 day)
+  - Files: `/server/controllers/admin/branches/createBranchController.js`, `updateBranchController.js`, `disableBranchController.js`
+  - Endpoints: `POST /admin/branches`, `PATCH /admin/branches/:branchId`, `POST /admin/branches/:branchId/disable`
+
+- [ ] 🔗 **T206** - Admin Tracks Controllers (1 day)
+  - Files: `/server/controllers/admin/tracks/createTrackController.js`, `updateTrackController.js`, `disableTrackController.js`
+  - Endpoints: `POST /admin/tracks`, `PATCH /admin/tracks/:trackId`, `POST /admin/tracks/:trackId/disable`
+  - Enforce: `branchId` immutable after creation; track must belong to a valid branch
+- [ ] 🔗 **T207** - Admin Tags Controllers (1 day)
+  - Files: `/server/controllers/admin/tags/createTagController.js`, `updateTagController.js`, `disableTagController.js`
+  - Endpoints: `POST /admin/tags`, `PATCH /admin/tags/:tagId`, `POST /admin/tags/:tagId/disable`
+
+### Phase 3: Admin Endpoints (Editors & Users)
+- [ ] 🔗 **T208** - Assign/Remove Editor Controllers (0.5 day)
+   [ ] ⚡⚠️ **T202** - Create Branch Model (0.5 days)
+  - Files: `/server/controllers/admin/editors/assignEditorController.js`, `removeEditorController.js`
+  - Endpoints: `POST /admin/editors`, `DELETE /admin/editors/:userId`
+
+   [ ] ⚡⚠️ **T203** - Create Round Model (0.5 days)
+    - File: `/server/models/Round.js`
+    - Fields: `branchId` (required), `number` (int, unique per branch), `name` (optional), `startDate`, `endDate`, `status` (enum: draft|upcoming|active|ended|disabled), `isDisabled` (derived from status)
+    - Constraints: single `active` per branch; at most one `upcoming` per branch
+- [ ] 🔗 **T209** - Update Admin Users List for Verification Filter (0.5 day)
+   [ ] ⚡⚠️ **T204** - Create Per-Round Track Model (0.5 days)
+    - File: `/server/models/Track.js`
+    - Fields: `roundId` (required), `branchId` (denormalized, required), `name` (required, unique within round), `description` (optional), `isDisabled` (boolean)
+  - File: `/server/controllers/admin/getUsersController.js`
+
+### Phase 4: User Profile Flow (Branch/Track)
+- [ ] 🔗 **T210** - Update Update-Profile Controller (0.75 day)
+  - File: `/server/controllers/user/updateProfileController.js`
+
+- [ ] 🔗 **T211** - Add Get Tracks by Branch (0.5 day)
+  - File: `/server/controllers/track/getTracksByBranchController.js`
+  - Return only non-disabled tracks for given branch
+
+### Phase 5: Routes, Middleware, Tests, Docs
+- [ ] 🔗 **T212** - Create/Update Admin Routes (0.5 day)
+   [ ] 🔗 **T206** - Admin Rounds Controllers (1 day)
+    - Files: `/server/controllers/admin/rounds/createRoundController.js`, `updateRoundController.js`, `startRoundController.js`, `endRoundController.js`, `disableRoundController.js`, `listBranchRoundsController.js`
+    - Endpoints: `POST /admin/branches/:branchId/rounds`, `PATCH /admin/rounds/:roundId`, `POST /admin/rounds/:roundId/start`, `POST /admin/rounds/:roundId/end`, `POST /admin/rounds/:roundId/disable`, `GET /admin/branches/:branchId/rounds`
+    - Enforce: single active per branch; at most one upcoming per branch
+  - File: `/server/routes/adminRoutes.js`
+
+- [ ] 🔗 **T213** - Validation & Policies (0.75 day)
+  - Files: `/server/middlewares/checkAuth.js`, `/server/middlewares/validation/*.js`
+  - Ensure only Admin can manage branches/tracks/tags/editors
+
+  - Files: `/server/spec/controllers/admin/*.spec.js`, `/server/spec/controllers/user/updateProfileController.spec.js`
+  - Cases: disable behavior respected; track-branch validation; verificationStatus transitions
+
+  - File: `/docs/specs/API-Specification.md`
+  - Confirm admin endpoints and verification semantics
+
+**Epic 10 Completion Criteria:**
+- [ ] Tracks: create/update/disable working; branchId immutable
+    - Accept `branchId`, `roundId`, `trackId`; set `verificationStatus` to null; validate `roundId` belongs to `branchId` and `trackId` belongs to `roundId`
+- [ ] Editors: assign/remove working
+   [ ] 🔗 **T214** - Add Get Rounds by Branch (0.5 day)
+    - File: `/server/controllers/round/getRoundsByBranchController.js`
+    - Return public rounds for given branch (`active`, `ended`; exclude `disabled`)
+- [ ] Admin Users list supports filtering by verificationStatus
+   [ ] 🔗 **T215** - Add Get Tracks by Round (0.5 day)
+    - File: `/server/controllers/track/getTracksByRoundController.js`
+    - Return only non-disabled tracks for given round
+- [ ] Routes protected by admin-only checks
+- [ ] API documentation updated
 ## Legend
 
 - ⬜ Not Started
-- 🔄 In Progress
 - ✅ Complete
 - ⚠️ Blocking (must complete before others can start)
 - 🔗 Has Dependencies
-- ⚡ Can Run in Parallel
 
 ---
 
-## Epic 1: Authentication & Authorization (P0)
 
 **Status**: ✅ Complete  
 **Effort**: 7-10 days  
 **File**: [epic-01-authentication.md](./epic-01-authentication.md)  
-**Completion Date**: December 12, 2025
-
-### Phase 1: Setup
-- [x] ⚡ **T001** - Setup Authentication Dependencies (0.5 days) ✅
-  - Install bcrypt, jsonwebtoken, validator, express-rate-limit
-
-### Phase 2: Foundation (BLOCKING)
-- [x] ⚡⚠️ **T002** - Create/Update User Model with Authentication Fields (1 day) ✅
-  - File: `/server/models/User.js`
-  - Functions: `comparePassword()`, `generateAuthToken()`, `generatePasswordResetToken()`
   - Tests: 10 unit tests passing in `/server/spec/models/userModel.spec.js`
 
 - [x] ⚡⚠️ **T003** - Create Authentication Middleware (1 day) ✅

@@ -8,6 +8,10 @@ servers:
   - url: http://localhost:3030
     description: Development server
 
+tags:
+  - name: Posts
+    description: Post management and interaction operations
+
 paths:
   /posts:
     post:
@@ -59,7 +63,6 @@ paths:
                   type: string
                   maxLength: 500
                   description: The content of the post
-                  example: "Just finished implementing the comment system! 🚀"
                 images:
                   type: array
                   maxItems: 4
@@ -67,19 +70,16 @@ paths:
                   items:
                     type: string
                     format: uri
-                  example: ["https://example.com/image1.jpg", "https://example.com/image2.jpg"]
                 tags:
                   type: array
                   maxItems: 5
                   items:
                     type: string
                   description: Tags for the post
-                  example: ["coding", "javascript"]
                 community:
                   type: string
                   format: objectId
                   description: ID of the community to post in (optional)
-                  example: "507f1f77bcf86cd799439011"
       responses:
         '201':
           description: Post created successfully
@@ -121,26 +121,67 @@ paths:
                   value:
                     success: false
                     message: "Maximum 4 images allowed"
-                too_many_files:
-                  summary: File count limit exceeded
-                  value:
-                    success: false
-                    message: "Too many files uploaded."
-                file_too_large:
-                  summary: File size limit exceeded
-                  value:
-                    success: false
-                    message: "File size exceeds the allowed limit."
-                invalid_file_type:
-                  summary: Invalid file type
-                  value:
-                    success: false
-                    message: "Invalid file type: example.gif"
-                corrupted_image:
-                  summary: Corrupted image
-                  value:
-                    success: false
-                    message: "Corrupted image: example.jpg"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Not a member of the community
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Community not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /posts/saved:
+    get:
+      tags:
+        - Posts
+      summary: Get saved posts
+      description: Retrieves all posts saved by the authenticated user with pagination
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number for pagination
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 10
+          description: Number of posts per page
+      responses:
+        '200':
+          description: Saved posts retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      posts:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Post'
+                      pagination:
+                        $ref: '#/components/schemas/Pagination'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '500':
@@ -183,12 +224,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                not_found:
-                  summary: Post not found
-                  value:
-                    success: false
-                    message: "Post not found"
         '500':
           $ref: '#/components/responses/ServerError'
 
@@ -196,7 +231,7 @@ paths:
       tags:
         - Posts
       summary: Update a post
-      description: Updates the content or media of a post. Only the post author or an admin can update it. Sets the editedAt timestamp.
+      description: Updates the content of a post. Only the post author or an admin can update it. Sets the editedAt timestamp.
       security:
         - BearerAuth: []
       parameters:
@@ -221,14 +256,6 @@ paths:
                   maxLength: 500
                   description: Updated content of the post
                   example: "Updated post content"
-                media:
-                  type: array
-                  maxItems: 4
-                  description: Updated array of media URLs
-                  items:
-                    type: string
-                    format: uri
-                  example: ["https://example.com/new-image.jpg"]
       responses:
         '200':
           description: Post updated successfully
@@ -249,22 +276,11 @@ paths:
                       post:
                         $ref: '#/components/schemas/Post'
         '400':
-          description: Validation error or invalid fields
+          description: Validation error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                invalid_fields:
-                  summary: Cannot update protected fields
-                  value:
-                    success: false
-                    message: "Cannot update fields: likesCount, commentsCount"
-                content_invalid:
-                  summary: Content validation failed
-                  value:
-                    success: false
-                    message: "Content must be at least 1 characters"
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -273,24 +289,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                not_authorized:
-                  summary: Permission denied
-                  value:
-                    success: false
-                    message: "Not authorized to update this post"
         '404':
           description: Post not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                not_found:
-                  summary: Post not found
-                  value:
-                    success: false
-                    message: "Post not found"
         '500':
           $ref: '#/components/responses/ServerError'
 
@@ -298,7 +302,7 @@ paths:
       tags:
         - Posts
       summary: Delete a post
-      description: Deletes a post. Only the post author or an admin can delete it. Deletes all associated comments, likes, and saves.
+      description: Deletes a post. Only the post author or an admin can delete it.
       security:
         - BearerAuth: []
       parameters:
@@ -332,24 +336,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                not_authorized:
-                  summary: Permission denied
-                  value:
-                    success: false
-                    message: "Not authorized to delete this post"
         '404':
           description: Post not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                not_found:
-                  summary: Post not found
-                  value:
-                    success: false
-                    message: "Post not found"
         '500':
           $ref: '#/components/responses/ServerError'
 
@@ -358,7 +350,7 @@ paths:
       tags:
         - Posts
       summary: Like a post
-      description: Adds a like to a post from the authenticated user. User cannot like the same post twice.
+      description: Adds a like to a post by the authenticated user
       security:
         - BearerAuth: []
       parameters:
@@ -387,24 +379,15 @@ paths:
                   data:
                     type: object
                     properties:
-                      isLiked:
-                        type: boolean
-                        example: true
                       likesCount:
                         type: integer
-                        example: 42
+                        example: 43
         '400':
-          description: Post already liked
+          description: Already liked this post
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                already_liked:
-                  summary: Already liked
-                  value:
-                    success: false
-                    message: "Post already liked"
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
@@ -413,12 +396,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                not_found:
-                  summary: Post not found
-                  value:
-                    success: false
-                    message: "Post not found"
         '500':
           $ref: '#/components/responses/ServerError'
 
@@ -426,7 +403,7 @@ paths:
       tags:
         - Posts
       summary: Unlike a post
-      description: Removes a like from a post for the authenticated user.
+      description: Removes a like from a post by the authenticated user
       security:
         - BearerAuth: []
       parameters:
@@ -455,24 +432,15 @@ paths:
                   data:
                     type: object
                     properties:
-                      isLiked:
-                        type: boolean
-                        example: false
                       likesCount:
                         type: integer
-                        example: 41
+                        example: 42
         '400':
-          description: Post not liked
+          description: Not liked this post
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                not_liked:
-                  summary: Post not liked
-                  value:
-                    success: false
-                    message: "Post not liked"
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
@@ -481,12 +449,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                not_found:
-                  summary: Post not found
-                  value:
-                    success: false
-                    message: "Post not found"
         '500':
           $ref: '#/components/responses/ServerError'
 
@@ -495,7 +457,7 @@ paths:
       tags:
         - Posts
       summary: Save a post
-      description: Saves a post to the authenticated user's saved posts collection. User cannot save the same post twice.
+      description: Saves a post to the authenticated user's collection
       security:
         - BearerAuth: []
       parameters:
@@ -521,24 +483,12 @@ paths:
                   message:
                     type: string
                     example: "Post saved successfully"
-                  data:
-                    type: object
-                    properties:
-                      isSaved:
-                        type: boolean
-                        example: true
         '400':
-          description: Post already saved
+          description: Already saved this post
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                already_saved:
-                  summary: Already saved
-                  value:
-                    success: false
-                    message: "Post already saved"
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
@@ -547,12 +497,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                not_found:
-                  summary: Post not found
-                  value:
-                    success: false
-                    message: "Post not found"
         '500':
           $ref: '#/components/responses/ServerError'
 
@@ -560,7 +504,7 @@ paths:
       tags:
         - Posts
       summary: Unsave a post
-      description: Removes a post from the authenticated user's saved posts collection.
+      description: Removes a post from the authenticated user's saved collection
       security:
         - BearerAuth: []
       parameters:
@@ -586,24 +530,12 @@ paths:
                   message:
                     type: string
                     example: "Post unsaved successfully"
-                  data:
-                    type: object
-                    properties:
-                      isSaved:
-                        type: boolean
-                        example: false
         '400':
           description: Post not saved
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                not_saved:
-                  summary: Post not saved
-                  value:
-                    success: false
-                    message: "Post not saved"
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
@@ -612,12 +544,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                not_found:
-                  summary: Post not found
-                  value:
-                    success: false
-                    message: "Post not found"
         '500':
           $ref: '#/components/responses/ServerError'
 
@@ -625,8 +551,8 @@ paths:
     post:
       tags:
         - Posts
-      summary: Repost (share) a post
-      description: Creates a repost/share of an existing post. The repost can include additional commentary. User cannot repost the same post twice.
+      summary: Repost a post
+      description: Creates a repost of an existing post
       security:
         - BearerAuth: []
       parameters:
@@ -648,11 +574,10 @@ paths:
                 content:
                   type: string
                   maxLength: 500
-                  description: Optional commentary on the repost
-                  example: "Great insights! Everyone should read this."
+                  description: Optional comment to add with the repost
       responses:
         '201':
-          description: Post reposted successfully
+          description: Repost created successfully
           content:
             application/json:
               schema:
@@ -663,29 +588,18 @@ paths:
                     example: true
                   message:
                     type: string
-                    example: "Post reposted successfully"
+                    example: "Repost created successfully"
                   data:
                     type: object
                     properties:
                       post:
                         $ref: '#/components/schemas/Post'
         '400':
-          description: Validation error or already reposted
+          description: Already reposted or cannot repost own post
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                already_reposted:
-                  summary: Already reposted
-                  value:
-                    success: false
-                    message: "You have already reposted this post"
-                content_too_long:
-                  summary: Content too long
-                  value:
-                    success: false
-                    message: "Content cannot exceed 500 characters"
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
@@ -694,81 +608,100 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                not_found:
-                  summary: Post not found
-                  value:
-                    success: false
-                    message: "Post not found"
         '500':
           $ref: '#/components/responses/ServerError'
 
-  /posts/saved:
-    get:
+  /posts/{postId}/comments:
+    post:
       tags:
         - Posts
-      summary: Get saved posts
-      description: Retrieves all posts saved by the authenticated user with pagination.
+      summary: Create a comment on a post
+      description: Creates a new comment on a post or a reply to an existing comment
       security:
         - BearerAuth: []
       parameters:
-        - in: query
-          name: page
-          schema:
-            type: integer
-            minimum: 1
-            default: 1
-          description: Page number for pagination
-          example: 1
-        - in: query
-          name: limit
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 100
-            default: 20
-          description: Number of posts per page
-          example: 20
-      responses:
-        '200':
-          description: Saved posts retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  data:
-                    type: object
-                    properties:
-                      posts:
-                        type: array
-                        items:
-                          $ref: '#/components/schemas/Post'
-                      pagination:
-                        $ref: '#/components/schemas/Pagination'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '500':
-          $ref: '#/components/responses/ServerError'
-
-  /users/{userId}/posts:
-    get:
-      tags:
-        - Posts
-      summary: Get posts by user
-      description: Retrieves all posts created by a specific user with pagination. For authenticated users, includes isLiked and isSaved flags.
-      parameters:
         - in: path
-          name: userId
+          name: postId
           required: true
           schema:
             type: string
             format: objectId
-          description: ID of the user whose posts to retrieve
-          example: "507f1f77bcf86cd799439012"
+          description: ID of the post to comment on
+          example: "507f1f77bcf86cd799439011"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - content
+              properties:
+                content:
+                  type: string
+                  minLength: 1
+                  maxLength: 2000
+                  description: The content of the comment
+                parentCommentId:
+                  type: string
+                  format: objectId
+                  description: ID of the parent comment if this is a reply
+      responses:
+        '201':
+          description: Comment created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Comment created successfully"
+                  data:
+                    type: object
+                    properties:
+                      comment:
+                        $ref: '#/components/schemas/Comment'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Post or parent comment not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    get:
+      tags:
+        - Posts
+      summary: Get comments for a post
+      description: Retrieves comments for a specific post with pagination
+      parameters:
+        - in: path
+          name: postId
+          required: true
+          schema:
+            type: string
+            format: objectId
+          description: ID of the post
+          example: "507f1f77bcf86cd799439011"
+        - in: query
+          name: parentCommentId
+          schema:
+            type: string
+            format: objectId
+          description: Filter by parent comment ID to get replies
         - in: query
           name: page
           schema:
@@ -776,7 +709,6 @@ paths:
             minimum: 1
             default: 1
           description: Page number for pagination
-          example: 1
         - in: query
           name: limit
           schema:
@@ -784,11 +716,10 @@ paths:
             minimum: 1
             maximum: 100
             default: 20
-          description: Number of posts per page
-          example: 20
+          description: Number of comments per page
       responses:
         '200':
-          description: User posts retrieved successfully
+          description: Comments retrieved successfully
           content:
             application/json:
               schema:
@@ -800,24 +731,18 @@ paths:
                   data:
                     type: object
                     properties:
-                      posts:
+                      comments:
                         type: array
                         items:
-                          $ref: '#/components/schemas/Post'
+                          $ref: '#/components/schemas/Comment'
                       pagination:
                         $ref: '#/components/schemas/Pagination'
         '404':
-          description: User not found
+          description: Post not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                not_found:
-                  summary: User not found
-                  value:
-                    success: false
-                    message: "User not found"
         '500':
           $ref: '#/components/responses/ServerError'
 
@@ -828,81 +753,116 @@ components:
       properties:
         _id:
           type: string
-          format: objectId
           example: "507f1f77bcf86cd799439011"
+        content:
+          type: string
+          example: "Just shipped a new feature! 🚀"
         author:
           type: object
           properties:
             _id:
               type: string
-              format: objectId
-              example: "507f1f77bcf86cd799439012"
             username:
               type: string
-              example: "johndoe"
             fullName:
               type: string
-              example: "John Doe"
             profilePicture:
               type: string
-              nullable: true
-              example: "https://example.com/profile.jpg"
-        content:
-          type: string
-          example: "Just finished implementing the comment system! 🚀"
-        media:
+              format: uri
+        images:
           type: array
           items:
             type: string
             format: uri
-          example: ["https://example.com/image1.jpg"]
-        originalPost:
+        tags:
+          type: array
+          items:
+            type: string
+        community:
           type: object
           nullable: true
-          description: The original post if this is a repost
           properties:
             _id:
               type: string
-              format: objectId
-            author:
-              type: object
-              properties:
-                username:
-                  type: string
-                fullName:
-                  type: string
-            content:
+            name:
+              type: string
+            profilePicture:
               type: string
         likesCount:
           type: integer
-          minimum: 0
           example: 42
         commentsCount:
           type: integer
-          minimum: 0
-          example: 15
+          example: 7
         repostsCount:
           type: integer
-          minimum: 0
-          example: 8
+          example: 3
         isLiked:
           type: boolean
-          description: Whether the authenticated user has liked this post (only present for authenticated requests)
-          example: true
+          description: Whether the authenticated user has liked this post
+          example: false
         isSaved:
           type: boolean
-          description: Whether the authenticated user has saved this post (only present for authenticated requests)
+          description: Whether the authenticated user has saved this post
           example: false
-        createdAt:
-          type: string
-          format: date-time
-          example: "2025-12-13T10:30:00.000Z"
+        isReposted:
+          type: boolean
+          description: Whether the authenticated user has reposted this post
+          example: false
+        originalPost:
+          type: object
+          nullable: true
+          description: Original post data if this is a repost
         editedAt:
           type: string
           format: date-time
           nullable: true
-          description: Timestamp of last edit (null if never edited)
-          example: "2025-12-13T11:45:00.000Z"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Comment:
+      type: object
+      properties:
+        _id:
+          type: string
+        content:
+          type: string
+        author:
+          type: object
+          properties:
+            _id:
+              type: string
+            username:
+              type: string
+            fullName:
+              type: string
+            profilePicture:
+              type: string
+        post:
+          type: string
+        parentComment:
+          type: string
+          nullable: true
+        likesCount:
+          type: integer
+        repliesCount:
+          type: integer
+        isLiked:
+          type: boolean
+        editedAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
 
     Pagination:
       type: object
@@ -912,13 +872,13 @@ components:
           example: 1
         limit:
           type: integer
-          example: 20
+          example: 10
         total:
           type: integer
-          example: 150
+          example: 100
         pages:
           type: integer
-          example: 8
+          example: 10
 
     ErrorResponse:
       type: object
@@ -932,22 +892,14 @@ components:
 
   responses:
     Unauthorized:
-      description: Unauthorized - Invalid or missing authentication token
+      description: Authentication required
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-          examples:
-            missing_token:
-              summary: No token provided
-              value:
-                success: false
-                message: "Authentication required"
-            invalid_token:
-              summary: Invalid token
-              value:
-                success: false
-                message: "Invalid token"
+          example:
+            success: false
+            message: "Authentication required"
 
     ServerError:
       description: Internal server error
@@ -955,75 +907,12 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-          examples:
-            server_error:
-              summary: Server error
-              value:
-                success: false
-                message: "Internal server error"
+          example:
+            success: false
+            message: "Internal server error"
 
   securitySchemes:
     BearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      description: JWT token obtained from login or registration
-
-tags:
-  - name: Posts
-    description: |
-      Operations for creating, reading, updating, and deleting posts, as well as interactions like likes, saves, and reposts.
-      
-      ## Image Upload Support
-      
-      ### Creating Posts with Images
-      - **Endpoint**: POST /posts
-      - **Content-Type**: multipart/form-data (for file uploads) or application/json (for URLs)
-      - **Field name**: `images` (array of files)
-      - **Max images**: 4 per post
-      - **Max size per image**: 10 MB
-      - **Allowed types**: JPEG, PNG, WebP
-      - **Processing**: Resized to max 2000x2000px (maintains aspect ratio), compressed, converted to WebP (quality 85)
-      - **Storage**: Cloudinary folder `post-images`
-      
-      ### Image Processing
-      All uploaded post images are:
-      - Validated for file type using magic number detection
-      - Validated for file integrity
-      - Processed in parallel for performance
-      - Resized to fit within 2000x2000px (maintains aspect ratio, no cropping)
-      - Compressed and converted to WebP format
-      - Stripped of metadata
-      - Uploaded to Cloudinary for CDN delivery
-      
-      ### Usage Examples
-      
-      **With file uploads (recommended):**
-      ```
-      POST /posts
-      Content-Type: multipart/form-data
-      
-      content: "Check out these amazing photos!"
-      images: [file1.jpg, file2.png]
-      tags: ["photography", "nature"]
-      ```
-      
-      **With URLs (legacy):**
-      ```json
-      POST /posts
-      Content-Type: application/json
-      
-      {
-        "content": "Check out these photos!",
-        "images": ["https://example.com/photo1.jpg"],
-        "tags": ["photography"]
-      }
-      ```
-      
-      ### Validation Rules
-      - Post must have content OR at least one image (both optional, but not both empty)
-      - Content max length: 500 characters
-      - Max 4 images per post
-      - Max 5 tags per post
-      - File size and type validated before processing
-

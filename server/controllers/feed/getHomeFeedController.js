@@ -43,7 +43,7 @@ async function getHomeFeed(req, res) {
           success: true,
           cached: true,
           feedType: 'home',
-          ...cached
+          data: cached
         });
       }
     } catch (cacheError) {
@@ -83,12 +83,14 @@ async function getHomeFeed(req, res) {
           success: true,
           cached: false,
           feedType: 'home',
-          posts: [],
-          pagination: {
-            page,
-            limit,
-            total: 0,
-            pages: 0
+          data: {
+            posts: [],
+            pagination: {
+              page,
+              limit,
+              total: 0,
+              pages: 0
+            }
           }
         });
       }
@@ -181,14 +183,17 @@ async function getHomeFeed(req, res) {
       success: true,
       cached: false,
       feedType: 'home',
-      ...responseData
+      data: responseData
     });
 
   } catch (error) {
     console.error('Get home feed error:', error);
     return res.status(500).json({
       success: false,
-      message: 'Failed to fetch home feed'
+      error: {
+        code: 'FEED_ERROR',
+        message: 'Failed to fetch home feed'
+      }
     });
   }
 }

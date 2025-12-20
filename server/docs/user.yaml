@@ -8,6 +8,10 @@ servers:
   - url: http://localhost:3030
     description: Development server
 
+tags:
+  - name: Users
+    description: User management operations
+
 paths:
   /users/{username}:
     get:
@@ -44,24 +48,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                blocked:
-                  summary: User blocked
-                  value:
-                    success: false
-                    message: "Access to this profile is restricted"
+              example:
+                success: false
+                message: "You cannot view this profile"
         '404':
           description: User not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                not_found:
-                  summary: User does not exist
-                  value:
-                    success: false
-                    message: "User not found"
+              example:
+                success: false
+                message: "User not found"
         '500':
           $ref: '#/components/responses/ServerError'
 
@@ -97,27 +95,6 @@ paths:
                   type: string
                   maxLength: 100
                   example: "San Francisco, CA"
-                profilePicture:
-                  type: string
-                  format: uri
-                  example: "https://example.com/profile.jpg"
-                coverImage:
-                  type: string
-                  format: uri
-                  example: "https://example.com/cover.jpg"
-            examples:
-              update_bio:
-                summary: Update bio and specialization
-                value:
-                  bio: "Senior software engineer with 5 years of experience"
-                  specialization: "Backend Architecture"
-              update_full_profile:
-                summary: Update multiple fields
-                value:
-                  fullName: "John Smith"
-                  bio: "Tech enthusiast and coffee lover"
-                  specialization: "DevOps Engineer"
-                  location: "New York, NY"
       responses:
         '200':
           description: Profile updated successfully
@@ -140,16 +117,19 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                validation_error:
-                  summary: Invalid field values
-                  value:
-                    success: false
-                    message: "Validation failed"
-                    errors:
-                      fullName: "Full name must be between 2 and 50 characters"
+              example:
+                success: false
+                message: "Validation failed"
+                errors:
+                  fullName: "Full name must be between 2 and 50 characters"
         '401':
-          $ref: '#/components/responses/UnauthorizedError'
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '500':
           $ref: '#/components/responses/ServerError'
 
@@ -204,25 +184,18 @@ paths:
                   summary: Invalid file type
                   value:
                     error: "Invalid file type. Only JPEG, PNG, and WebP are allowed."
-                file_too_large:
-                  summary: File size exceeds limit
-                  value:
-                    success: false
-                    message: "File size exceeds the allowed limit."
                 corrupted:
                   summary: Corrupted image
                   value:
                     error: "Corrupted or invalid image file"
         '401':
-          $ref: '#/components/responses/UnauthorizedError'
+          $ref: '#/components/responses/Unauthorized'
         '404':
           description: User not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              example:
-                error: "User not found"
         '500':
           description: Server error (processing or upload failed)
           content:
@@ -281,51 +254,185 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                no_file:
-                  summary: No file uploaded
-                  value:
-                    error: "No file uploaded"
-                invalid_type:
-                  summary: Invalid file type
-                  value:
-                    error: "Invalid file type. Only JPEG, PNG, and WebP are allowed."
-                file_too_large:
-                  summary: File size exceeds limit
-                  value:
-                    success: false
-                    message: "File size exceeds the allowed limit."
         '401':
-          $ref: '#/components/responses/UnauthorizedError'
+          $ref: '#/components/responses/Unauthorized'
         '404':
           description: User not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              example:
-                error: "User not found"
         '500':
-          description: Server error (processing or upload failed)
+          description: Server error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                processing_error:
-                  summary: Image processing failed
-                  value:
-                    error: "Failed to process image"
-                upload_error:
-                  summary: Cloud upload failed
-                  value:
-                    error: "Failed to upload image"
+
+  /users/{userId}/block:
+    post:
+      tags:
+        - Users
+      summary: Block a user
+      description: Block a user. Blocked users cannot view your profile, follow you, or message you.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9a-fA-F]{24}$'
+          description: MongoDB ObjectId of the user to block
+          example: "507f1f77bcf86cd799439012"
+      responses:
+        '200':
+          description: User blocked successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "User blocked successfully"
+        '400':
+          description: Cannot block yourself or already blocked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    delete:
+      tags:
+        - Users
+      summary: Unblock a user
+      description: Unblock a previously blocked user
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9a-fA-F]{24}$'
+          description: MongoDB ObjectId of the user to unblock
+          example: "507f1f77bcf86cd799439012"
+      responses:
+        '200':
+          description: User unblocked successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "User unblocked successfully"
+        '400':
+          description: User not blocked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /users/{userId}/posts:
+    get:
+      tags:
+        - Users
+      summary: Get user's posts
+      description: Retrieves posts created by a specific user with pagination
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9a-fA-F]{24}$'
+          description: MongoDB ObjectId of the user
+          example: "507f1f77bcf86cd799439011"
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number for pagination
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 10
+          description: Number of posts per page
+      responses:
+        '200':
+          description: User's posts retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      posts:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Post'
+                      pagination:
+                        $ref: '#/components/schemas/Pagination'
+        '400':
+          description: Invalid user ID format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
 
 components:
   schemas:
     UserProfileResponse:
       type: object
-      description: User profile response for Epic 2 endpoints
       properties:
         _id:
           type: string
@@ -336,55 +443,101 @@ components:
         fullName:
           type: string
           example: "John Doe"
-        email:
-          type: string
-          format: email
-          example: "john.doe@example.com"
         bio:
           type: string
-          nullable: true
-          example: "Software engineer passionate about clean code"
+          example: "Full-stack developer"
         specialization:
           type: string
-          nullable: true
-          example: "Frontend Development"
+          example: "React & Node.js"
         location:
           type: string
-          nullable: true
           example: "San Francisco, CA"
         profilePicture:
           type: string
-          nullable: true
-          example: "https://example.com/profile.jpg"
+          format: uri
         coverImage:
           type: string
-          nullable: true
-          example: "https://example.com/cover.jpg"
+          format: uri
         followersCount:
           type: integer
           example: 150
         followingCount:
           type: integer
-          example: 200
+          example: 75
         postsCount:
           type: integer
           example: 42
+        isFollowing:
+          type: boolean
+          description: Whether the authenticated user is following this user
+          example: false
+        followsYou:
+          type: boolean
+          description: Whether this user follows the authenticated user
+          example: false
+        isBlocked:
+          type: boolean
+          description: Whether the authenticated user has blocked this user
+          example: false
         createdAt:
           type: string
           format: date-time
-          example: "2025-01-15T10:00:00.000Z"
-        updatedAt:
+
+    Post:
+      type: object
+      properties:
+        _id:
+          type: string
+        content:
+          type: string
+        author:
+          type: object
+          properties:
+            _id:
+              type: string
+            username:
+              type: string
+            fullName:
+              type: string
+            profilePicture:
+              type: string
+        images:
+          type: array
+          items:
+            type: string
+        tags:
+          type: array
+          items:
+            type: string
+        likesCount:
+          type: integer
+        commentsCount:
+          type: integer
+        repostsCount:
+          type: integer
+        isLiked:
+          type: boolean
+        isSaved:
+          type: boolean
+        createdAt:
           type: string
           format: date-time
-          example: "2025-12-13T10:00:00.000Z"
-        isFollowing:
-          type: boolean
-          description: Present only when request is authenticated. Indicates if the current user follows this profile.
-          example: true
-        followsYou:
-          type: boolean
-          description: Present only when request is authenticated. Indicates if this profile follows the current user.
-          example: false
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 10
+        total:
+          type: integer
+          example: 100
+        pages:
+          type: integer
+          example: 10
 
     ErrorResponse:
       type: object
@@ -397,84 +550,28 @@ components:
           example: "Error message"
 
   responses:
-    UnauthorizedError:
+    Unauthorized:
       description: Authentication required
       content:
         application/json:
           schema:
-            type: object
-            properties:
-              success:
-                type: boolean
-                example: false
-              error:
-                type: object
-                properties:
-                  code:
-                    type: string
-                    example: "NO_TOKEN"
-                  message:
-                    type: string
-                    example: "Authentication required"
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            message: "Authentication required"
 
     ServerError:
       description: Internal server error
       content:
         application/json:
           schema:
-            type: object
-            properties:
-              success:
-                type: boolean
-                example: false
-              message:
-                type: string
-                example: "Internal server error"
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            message: "Internal server error"
 
   securitySchemes:
     BearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      description: JWT token obtained from /auth/register or /auth/login
-
-tags:
-  - name: Users
-    description: |
-      User management operations including profile management and image uploads.
-      
-      ## File Upload Requirements
-      
-      ### Profile Picture Upload
-      - **Endpoint**: POST /users/profile/picture
-      - **Field name**: `image`
-      - **Max size**: 5 MB
-      - **Allowed types**: JPEG, PNG, WebP
-      - **Processing**: Resized to 500x500px, compressed, converted to WebP (quality 85)
-      - **Storage**: Cloudinary folder `profile-pictures`
-      - **Behavior**: Replaces existing profile picture (old image is automatically deleted)
-      
-      ### Cover Image Upload
-      - **Endpoint**: POST /users/profile/cover
-      - **Field name**: `image`
-      - **Max size**: 10 MB
-      - **Allowed types**: JPEG, PNG, WebP
-      - **Processing**: Resized to 1500x500px, compressed, converted to WebP (quality 85)
-      - **Storage**: Cloudinary folder `cover-images`
-      - **Behavior**: Replaces existing cover image (old image is automatically deleted)
-      
-      ### Processing Details
-      All uploaded images are:
-      - Validated for file type using magic number detection (not just extension)
-      - Validated for file integrity using Sharp
-      - Processed locally with Sharp (resize, compress, WebP conversion)
-      - Stripped of metadata for privacy
-      - Uploaded to Cloudinary for CDN delivery
-      
-      ### Error Handling
-      - File size limits enforced by Multer middleware (returns 400)
-      - Invalid file types rejected (returns 400)
-      - Corrupted images rejected (returns 400)
-      - Processing failures return 500
-      - Upload failures return 500
-

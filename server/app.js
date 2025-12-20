@@ -15,7 +15,12 @@ const feedRoutes = require("./routes/feedRoutes");
 const communityRoutes = require("./routes/communityRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const searchRoutes = require("./routes/searchRoutes");
+const adminRoutes = require("./routes/adminRoutes");
+const branchRoutes = require("./routes/branchRoutes");
+const roundRoutes = require("./routes/roundRoutes");
+const trackRoutes = require("./routes/trackRoutes");
 const { multerErrorHandler } = require("./middlewares/upload");
+const errorHandler = require("./middlewares/errorHandler");
 
 dotenv.config();
 if (!process.env.JWT_SECRET && process.env.NODE_ENV !== 'test') {
@@ -39,12 +44,31 @@ app.use('/feed', feedRoutes);
 app.use('/communities', communityRoutes);
 app.use('/notifications', notificationRoutes);
 app.use('/search', searchRoutes);
+app.use('/admin', adminRoutes);
+app.use('/branches', branchRoutes);
+app.use('/rounds', roundRoutes);
+app.use('/tracks', trackRoutes);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.get("/", (req, res) => {
   res.send("Hi if you are see this message!, that means that the server is running :)");
 });
 
+// Multer error handler (for file upload errors)
 app.use(multerErrorHandler);
+
+// Global error handler (MUST be last before 404)
+app.use(errorHandler);
+
+// 404 handler for unmatched routes
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    error: {
+      code: 'ROUTE_NOT_FOUND',
+      message: `Route ${req.method} ${req.path} not found`
+    }
+  });
+});
 
 // Export app for testing
 module.exports = app;

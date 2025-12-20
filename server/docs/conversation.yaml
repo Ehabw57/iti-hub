@@ -7,7 +7,6 @@ info:
     - Individual and group conversations
     - Real-time message delivery via WebSockets
     - Message status tracking (sent/delivered/seen)
-    - Typing indicators
     - Group management (add/remove members, admin controls)
     - Image messages with automatic processing
 
@@ -20,8 +19,6 @@ tags:
     description: Manage individual and group conversations
   - name: Messages
     description: Send and retrieve messages
-  - name: WebSocket Events
-    description: Real-time events via Socket.io
 
 paths:
   /conversations:
@@ -116,7 +113,13 @@ paths:
                       conversation:
                         $ref: '#/components/schemas/Conversation'
         '400':
-          $ref: '#/components/responses/BadRequest'
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '403':
           description: Cannot create conversation (blocked)
           content:
@@ -125,6 +128,10 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: Recipient not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '500':
           $ref: '#/components/responses/ServerError'
 
@@ -184,7 +191,13 @@ paths:
                       conversation:
                         $ref: '#/components/schemas/Conversation'
         '400':
-          $ref: '#/components/responses/BadRequest'
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '500':
           $ref: '#/components/responses/ServerError'
 
@@ -222,10 +235,20 @@ paths:
                     properties:
                       conversation:
                         $ref: '#/components/schemas/Conversation'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '403':
           description: Not a participant in this conversation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: Conversation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '500':
           $ref: '#/components/responses/ServerError'
 
@@ -268,10 +291,6 @@ paths:
                   minLength: 3
                   maxLength: 100
                   description: New group name
-                image:
-                  type: string
-                  format: uri
-                  description: New group image URL
       responses:
         '200':
           description: Group updated successfully
@@ -292,11 +311,25 @@ paths:
                       conversation:
                         $ref: '#/components/schemas/Conversation'
         '400':
-          $ref: '#/components/responses/BadRequest'
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '403':
           description: Not admin or not a group conversation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: Conversation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '500':
           $ref: '#/components/responses/ServerError'
 
@@ -304,8 +337,8 @@ paths:
     post:
       tags:
         - Conversations
-      summary: Add group members
-      description: Add new members to a group conversation (admin only)
+      summary: Add group member
+      description: Add a new member to a group conversation (admin only)
       security:
         - BearerAuth: []
       parameters:
@@ -322,18 +355,14 @@ paths:
             schema:
               type: object
               required:
-                - userIds
+                - userId
               properties:
-                userIds:
-                  type: array
-                  minItems: 1
-                  items:
-                    type: string
-                  description: Array of user IDs to add
-                  example: ["507f1f77bcf86cd799439013"]
+                userId:
+                  type: string
+                  description: User ID to add to the group
       responses:
         '200':
-          description: Members added successfully
+          description: Member added successfully
           content:
             application/json:
               schema:
@@ -344,18 +373,32 @@ paths:
                     example: true
                   message:
                     type: string
-                    example: "Members added successfully"
+                    example: "Member added successfully"
                   data:
                     type: object
                     properties:
                       conversation:
                         $ref: '#/components/schemas/Conversation'
         '400':
-          description: Invalid input or group full (max 100 members)
+          description: User already a member or invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '403':
           description: Not admin or not a group conversation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '404':
-          description: Conversation or users not found
+          description: Conversation or user not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '500':
           $ref: '#/components/responses/ServerError'
 
@@ -379,7 +422,7 @@ paths:
           required: true
           schema:
             type: string
-          description: User ID to remove
+          description: User ID to remove from the group
       responses:
         '200':
           description: Member removed successfully
@@ -394,17 +437,26 @@ paths:
                   message:
                     type: string
                     example: "Member removed successfully"
-                  data:
-                    type: object
-                    properties:
-                      conversation:
-                        $ref: '#/components/schemas/Conversation'
         '400':
-          description: Cannot remove (would leave less than 3 members)
+          description: User not a member or cannot remove admin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '403':
-          description: Not admin, not a group, or trying to remove admin
+          description: Not admin or not a group conversation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: Conversation or user not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '500':
           $ref: '#/components/responses/ServerError'
 
@@ -413,7 +465,7 @@ paths:
       tags:
         - Conversations
       summary: Leave group
-      description: Leave a group conversation (non-admin only, admins must transfer admin first)
+      description: Leave a group conversation
       security:
         - BearerAuth: []
       parameters:
@@ -425,7 +477,7 @@ paths:
           description: Group conversation ID
       responses:
         '200':
-          description: Left group successfully
+          description: Successfully left group
           content:
             application/json:
               schema:
@@ -436,13 +488,27 @@ paths:
                     example: true
                   message:
                     type: string
-                    example: "Left group successfully"
+                    example: "Successfully left group"
         '400':
-          description: Group would have less than 3 members
+          description: Not a group conversation or last admin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '403':
-          description: Admin cannot leave (must transfer admin first) or not a group
+          description: Not a participant
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: Conversation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '500':
           $ref: '#/components/responses/ServerError'
 
@@ -451,7 +517,7 @@ paths:
       tags:
         - Messages
       summary: Get messages
-      description: Retrieve messages from a conversation with cursor-based pagination
+      description: Get messages for a conversation with pagination
       security:
         - BearerAuth: []
       parameters:
@@ -461,11 +527,13 @@ paths:
           schema:
             type: string
           description: Conversation ID
-        - name: cursor
+        - name: page
           in: query
           schema:
-            type: string
-          description: Cursor for pagination (messageId to start from)
+            type: integer
+            default: 1
+            minimum: 1
+          description: Page number
         - name: limit
           in: query
           schema:
@@ -473,7 +541,7 @@ paths:
             default: 50
             minimum: 1
             maximum: 100
-          description: Number of messages to retrieve
+          description: Number of messages per page
       responses:
         '200':
           description: Messages retrieved successfully
@@ -496,19 +564,21 @@ paths:
                         items:
                           $ref: '#/components/schemas/Message'
                       pagination:
-                        type: object
-                        properties:
-                          nextCursor:
-                            type: string
-                            nullable: true
-                            description: Cursor for next page (null if no more messages)
-                          hasMore:
-                            type: boolean
-                            description: Whether there are more messages
+                        $ref: '#/components/schemas/Pagination'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '403':
-          description: Not a participant in this conversation
+          description: Not a participant
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: Conversation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '500':
           $ref: '#/components/responses/ServerError'
 
@@ -516,7 +586,7 @@ paths:
       tags:
         - Messages
       summary: Send message
-      description: Send a new message in a conversation (text and/or image)
+      description: Send a message to a conversation (text and/or image)
       security:
         - BearerAuth: []
       parameters:
@@ -537,7 +607,6 @@ paths:
                   type: string
                   maxLength: 2000
                   description: Message text content
-                  example: "Hello, how are you?"
                 image:
                   type: string
                   format: binary
@@ -550,13 +619,9 @@ paths:
                   type: string
                   maxLength: 2000
                   description: Message text content
-                image:
-                  type: string
-                  format: uri
-                  description: Image URL
       responses:
         '201':
-          description: Message sent successfully (also emitted via WebSocket)
+          description: Message sent successfully
           content:
             application/json:
               schema:
@@ -574,11 +639,25 @@ paths:
                       message:
                         $ref: '#/components/schemas/Message'
         '400':
-          description: Invalid input (missing content/image or content too long)
+          description: Message content or image required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '403':
           description: Not a participant or blocked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: Conversation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '500':
           $ref: '#/components/responses/ServerError'
 
@@ -587,7 +666,7 @@ paths:
       tags:
         - Messages
       summary: Mark conversation as seen
-      description: Mark all messages in a conversation as seen by the current user
+      description: Mark all messages in a conversation as seen by the authenticated user
       security:
         - BearerAuth: []
       parameters:
@@ -599,7 +678,7 @@ paths:
           description: Conversation ID
       responses:
         '200':
-          description: Conversation marked as seen (also emitted via WebSocket)
+          description: Conversation marked as seen
           content:
             application/json:
               schema:
@@ -611,61 +690,62 @@ paths:
                   message:
                     type: string
                     example: "Conversation marked as seen"
-                  data:
-                    type: object
-                    properties:
-                      unreadCount:
-                        type: integer
-                        example: 0
-                      markedCount:
-                        type: integer
-                        description: Number of messages marked as seen
-                        example: 5
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '403':
-          description: Not a participant in this conversation
+          description: Not a participant
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: Conversation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '500':
           $ref: '#/components/responses/ServerError'
 
 components:
-  securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-
   schemas:
     Conversation:
       type: object
       properties:
         _id:
           type: string
-          description: Conversation ID
         type:
           type: string
           enum: [individual, group]
-          description: Conversation type
-        participants:
-          type: array
-          items:
-            $ref: '#/components/schemas/UserBasic'
         name:
           type: string
-          description: Group name (null for individual conversations)
+          description: Group name (null for individual)
         image:
           type: string
           format: uri
-          description: Group image URL (null for individual conversations)
-        admin:
-          type: string
-          description: Admin user ID (only for group conversations)
+          description: Group image (null for individual)
+        participants:
+          type: array
+          items:
+            type: object
+            properties:
+              _id:
+                type: string
+              username:
+                type: string
+              fullName:
+                type: string
+              profilePicture:
+                type: string
+        admins:
+          type: array
+          items:
+            type: string
+          description: Array of admin user IDs (for groups)
         lastMessage:
           $ref: '#/components/schemas/Message'
         unreadCount:
           type: integer
-          description: Number of unread messages for current user
-          example: 3
         createdAt:
           type: string
           format: date-time
@@ -681,6 +761,11 @@ components:
         type:
           type: string
           enum: [individual, group]
+        name:
+          type: string
+        image:
+          type: string
+          format: uri
         participants:
           type: array
           items:
@@ -694,20 +779,8 @@ components:
                 type: string
               profilePicture:
                 type: string
-              isOnline:
-                type: boolean
-        name:
-          type: string
-        image:
-          type: string
         lastMessage:
-          type: object
-          properties:
-            content:
-              type: string
-            createdAt:
-              type: string
-              format: date-time
+          $ref: '#/components/schemas/Message'
         unreadCount:
           type: integer
         updatedAt:
@@ -719,80 +792,46 @@ components:
       properties:
         _id:
           type: string
-          description: Message ID
         conversation:
           type: string
-          description: Conversation ID
         sender:
-          $ref: '#/components/schemas/UserBasic'
+          type: object
+          properties:
+            _id:
+              type: string
+            username:
+              type: string
+            fullName:
+              type: string
+            profilePicture:
+              type: string
         content:
           type: string
-          description: Message text content
-          maxLength: 2000
         image:
           type: string
           format: uri
-          description: Image URL
         status:
           type: string
           enum: [sent, delivered, seen]
-          description: Message status
         seenBy:
           type: array
           items:
-            type: object
-            properties:
-              userId:
-                type: string
-              seenAt:
-                type: string
-                format: date-time
+            type: string
         createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
-
-    UserBasic:
-      type: object
-      properties:
-        _id:
-          type: string
-        username:
-          type: string
-        fullName:
-          type: string
-        profilePicture:
-          type: string
-          format: uri
-        isOnline:
-          type: boolean
-        lastSeen:
           type: string
           format: date-time
 
     Pagination:
       type: object
       properties:
-        currentPage:
+        page:
           type: integer
-          example: 1
-        totalPages:
+        limit:
           type: integer
-          example: 5
-        totalItems:
+        total:
           type: integer
-          example: 42
-        itemsPerPage:
+        pages:
           type: integer
-          example: 20
-        hasNextPage:
-          type: boolean
-          example: true
-        hasPrevPage:
-          type: boolean
-          example: false
 
     ErrorResponse:
       type: object
@@ -802,31 +841,14 @@ components:
           example: false
         message:
           type: string
-          example: "Error message"
-        error:
-          type: string
-          description: Detailed error information (development mode only)
 
   responses:
     Unauthorized:
-      description: Authentication required or invalid token
+      description: Authentication required
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-          example:
-            success: false
-            message: "Authentication required"
-
-    BadRequest:
-      description: Invalid input or validation error
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            success: false
-            message: "Validation error"
 
     ServerError:
       description: Internal server error
@@ -834,6 +856,9 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-          example:
-            success: false
-            message: "Server error"
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

@@ -59,8 +59,27 @@ const UserSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["user", "admin"],
+      enum: ["user", "editor", "admin"],
       default: "user",
+    },
+    branchId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Branch",
+      default: null,
+    },
+    roundId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Round",
+      default: null,
+    },
+    trackId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Track",
+      default: null,
+    },
+    verificationStatus: {
+      type: Boolean,
+      default: null, // null=pending, true=verified, false=rejected
     },
     isBlocked: {
       type: Boolean,

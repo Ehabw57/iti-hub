@@ -1,14 +1,30 @@
 const mongoose = require("mongoose");
-const branchSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-    unique: true, 
-    trim: true,   
+
+const BranchSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: [true, "Branch name is required"],
+      unique: true,
+      trim: true,
+      maxlength: 100,
+    },
+    description: {
+      type: String,
+      trim: true,
+      maxlength: 500,
+      default: null,
+    },
+    isDisabled: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
   },
-}, { timestamps: true });
+  { timestamps: true, versionKey: false }
+);
 
+// Index for enabled branches lookup
+BranchSchema.index({ isDisabled: 1, name: 1 });
 
-const Branch = mongoose.model("Branch", branchSchema);
-
-module.exports = Branch;
+module.exports = mongoose.model("Branch", BranchSchema);

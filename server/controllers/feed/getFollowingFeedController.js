@@ -24,7 +24,10 @@ async function getFollowingFeed(req, res) {
     if (!req.user) {
       return res.status(401).json({
         success: false,
-        message: 'Authentication required'
+        error: {
+          code: 'UNAUTHORIZED',
+          message: 'Authentication required'
+        }
       });
     }
 
@@ -46,7 +49,7 @@ async function getFollowingFeed(req, res) {
           success: true,
           cached: true,
           feedType: 'following',
-          ...cached
+          data: cached
         });
       }
     } catch (cacheError) {
@@ -69,12 +72,14 @@ async function getFollowingFeed(req, res) {
         success: true,
         cached: false,
         feedType: 'following',
-        posts: [],
-        pagination: {
-          page,
-          limit,
-          total: 0,
-          pages: 0
+        data: {
+          posts: [],
+          pagination: {
+            page,
+            limit,
+            total: 0,
+            pages: 0
+          }
         }
       });
     }
@@ -137,14 +142,17 @@ async function getFollowingFeed(req, res) {
       success: true,
       cached: false,
       feedType: 'following',
-      ...responseData
+      data: responseData
     });
 
   } catch (error) {
     console.error('Get following feed error:', error);
     return res.status(500).json({
       success: false,
-      message: 'Failed to fetch following feed'
+      error: {
+        code: 'FEED_ERROR',
+        message: 'Failed to fetch following feed'
+      }
     });
   }
 }

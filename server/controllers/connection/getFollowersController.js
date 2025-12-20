@@ -29,7 +29,10 @@ async function getFollowers(req, res) {
     if (!targetUser) {
       return res.status(404).json({
         success: false,
-        message: 'User not found'
+        error: {
+          code: 'USER_NOT_FOUND',
+          message: 'User not found'
+        }
       });
     }
     
@@ -72,9 +75,9 @@ async function getFollowers(req, res) {
       data: {
         followers,
         pagination: {
-          currentPage: page,
-          pageSize: limit,
-          totalCount,
+          page,
+          limit,
+          total: totalCount,
           totalPages,
         }
       }
@@ -83,8 +86,10 @@ async function getFollowers(req, res) {
     console.error('Error in getFollowers:', error);
     return res.status(500).json({
       success: false,
-      message: 'Internal server error',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      error: {
+        code: 'INTERNAL_ERROR',
+        message: 'Internal server error'
+      }
     });
   }
 }

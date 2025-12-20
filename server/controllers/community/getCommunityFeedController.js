@@ -48,7 +48,7 @@ async function getCommunityFeed(req, res) {
           cached: true,
           feedType: 'community',
           communityId,
-          ...cached
+          data: cached
         });
       }
     } catch (cacheError) {
@@ -102,14 +102,17 @@ async function getCommunityFeed(req, res) {
       cached: false,
       feedType: 'community',
       communityId,
-      ...responseData
+      data: responseData
     });
 
   } catch (error) {
     console.error('Get community feed error:', error);
     return res.status(500).json({
       success: false,
-      message: 'Failed to fetch community feed'
+      error: {
+        code: 'FEED_ERROR',
+        message: 'Failed to fetch community feed'
+      }
     });
   }
 }

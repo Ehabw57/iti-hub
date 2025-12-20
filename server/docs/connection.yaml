@@ -2,7 +2,15 @@ openapi: 3.0.0
 info:
   title: Connection API
   version: 1.0.0
-  description: API for managing user connections, follows, and blocks
+  description: API for managing user connections (follow/unfollow)
+
+servers:
+  - url: http://localhost:3030
+    description: Development server
+
+tags:
+  - name: Connections
+    description: User connection operations (follow, unfollow)
 
 paths:
   /users/{userId}/follow:
@@ -45,7 +53,6 @@ paths:
                       followedAt:
                         type: string
                         format: date-time
-                        example: "2025-12-13T10:00:00.000Z"
         '400':
           description: Bad request (self-follow, already following, or blocked)
           content:
@@ -69,10 +76,16 @@ paths:
                     success: false
                     message: "Cannot follow this user due to a block"
         '401':
-          $ref: '#/components/responses/UnauthorizedError'
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '500':
           $ref: '#/components/responses/ServerError'
-    
+
     delete:
       tags:
         - Connections
@@ -110,19 +123,19 @@ paths:
                         type: string
                         example: "507f1f77bcf86cd799439012"
         '400':
-          description: Bad request (not following)
+          description: Not following this user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                not_following:
-                  summary: Not following this user
-                  value:
-                    success: false
-                    message: "Not following this user"
         '401':
-          $ref: '#/components/responses/UnauthorizedError'
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '500':
           $ref: '#/components/responses/ServerError'
 
@@ -175,9 +188,15 @@ paths:
                         items:
                           $ref: '#/components/schemas/UserProfile'
                       pagination:
-                        $ref: '#/components/schemas/PaginationInfo'
+                        $ref: '#/components/schemas/Pagination'
         '400':
           description: Invalid user ID format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: User not found
           content:
             application/json:
               schema:
@@ -234,129 +253,19 @@ paths:
                         items:
                           $ref: '#/components/schemas/UserProfile'
                       pagination:
-                        $ref: '#/components/schemas/PaginationInfo'
+                        $ref: '#/components/schemas/Pagination'
         '400':
           description: Invalid user ID format
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          $ref: '#/components/responses/ServerError'
-
-  /users/{userId}/block:
-    post:
-      tags:
-        - Connections
-      summary: Block a user
-      description: Blocks another user. Automatically removes all follow relationships in both directions and prevents future follows.
-      security:
-        - BearerAuth: []
-      parameters:
-        - in: path
-          name: userId
-          required: true
-          schema:
-            type: string
-            pattern: '^[0-9a-fA-F]{24}$'
-          description: MongoDB ObjectId of the user to block
-          example: "507f1f77bcf86cd799439012"
-      responses:
-        '200':
-          description: Successfully blocked user
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: "Successfully blocked user"
-                  data:
-                    type: object
-                    properties:
-                      blockedUserId:
-                        type: string
-                        example: "507f1f77bcf86cd799439012"
-                      blockedAt:
-                        type: string
-                        format: date-time
-                        example: "2025-12-13T10:00:00.000Z"
-        '400':
-          description: Bad request (self-block or already blocking)
+        '404':
+          description: User not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                self_block:
-                  summary: Cannot block yourself
-                  value:
-                    success: false
-                    message: "Cannot block yourself"
-                already_blocking:
-                  summary: Already blocking
-                  value:
-                    success: false
-                    message: "Already blocking this user"
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '500':
-          $ref: '#/components/responses/ServerError'
-    
-    delete:
-      tags:
-        - Connections
-      summary: Unblock a user
-      description: Removes the block on another user. Allows both users to follow each other again.
-      security:
-        - BearerAuth: []
-      parameters:
-        - in: path
-          name: userId
-          required: true
-          schema:
-            type: string
-            pattern: '^[0-9a-fA-F]{24}$'
-          description: MongoDB ObjectId of the user to unblock
-          example: "507f1f77bcf86cd799439012"
-      responses:
-        '200':
-          description: Successfully unblocked user
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: "Successfully unblocked user"
-                  data:
-                    type: object
-                    properties:
-                      unblockedUserId:
-                        type: string
-                        example: "507f1f77bcf86cd799439012"
-        '400':
-          description: Not blocking this user
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                not_blocking:
-                  summary: Not blocking
-                  value:
-                    success: false
-                    message: "Not blocking this user"
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
         '500':
           $ref: '#/components/responses/ServerError'
 
@@ -367,55 +276,37 @@ components:
       properties:
         _id:
           type: string
-          example: "507f1f77bcf86cd799439013"
+          example: "507f1f77bcf86cd799439011"
         username:
           type: string
-          example: "janedoe"
+          example: "johndoe"
         fullName:
           type: string
-          example: "Jane Doe"
+          example: "John Doe"
         profilePicture:
           type: string
-          nullable: true
-          example: "https://example.com/jane.jpg"
+          format: uri
         bio:
           type: string
-          nullable: true
-          example: "Backend developer"
-        specialization:
-          type: string
-          nullable: true
-          example: "Node.js Expert"
-        followersCount:
-          type: integer
-          example: 85
-        followingCount:
-          type: integer
-          example: 120
-        createdAt:
-          type: string
-          format: date-time
-          example: "2025-02-10T10:00:00.000Z"
         isFollowing:
           type: boolean
-          description: Only present when request is authenticated
-          example: true
+          description: Whether the authenticated user is following this user
 
-    PaginationInfo:
+    Pagination:
       type: object
       properties:
-        currentPage:
+        page:
           type: integer
           example: 1
-        pageSize:
+        limit:
           type: integer
           example: 20
-        totalCount:
+        total:
           type: integer
-          example: 150
-        totalPages:
+          example: 100
+        pages:
           type: integer
-          example: 8
+          example: 5
 
     ErrorResponse:
       type: object
@@ -428,47 +319,28 @@ components:
           example: "Error message"
 
   responses:
-    UnauthorizedError:
+    Unauthorized:
       description: Authentication required
       content:
         application/json:
           schema:
-            type: object
-            properties:
-              success:
-                type: boolean
-                example: false
-              error:
-                type: object
-                properties:
-                  code:
-                    type: string
-                    example: "NO_TOKEN"
-                  message:
-                    type: string
-                    example: "Authentication required"
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            message: "Authentication required"
 
     ServerError:
       description: Internal server error
       content:
         application/json:
           schema:
-            type: object
-            properties:
-              success:
-                type: boolean
-                example: false
-              message:
-                type: string
-                example: "Internal server error"
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            message: "Internal server error"
 
   securitySchemes:
     BearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      description: JWT token obtained from /auth/register or /auth/login
-
-tags:
-  - name: Connections
-    description: User connection operations (follow, unfollow, block, unblock)

@@ -12,7 +12,13 @@ const uploadProfilePictureController = async (req, res) => {
   try {
     // Check if file exists
     if (!req.file) {
-      return res.status(400).json({ error: 'No file uploaded' });
+      return res.status(400).json({ 
+        success: false,
+        error: {
+          code: 'NO_FILE',
+          message: 'No file uploaded'
+        }
+      });
     }
 
     // Process image with Sharp (resize, compress, convert to WebP)
@@ -20,13 +26,25 @@ const uploadProfilePictureController = async (req, res) => {
     try {
       processedBuffer = await processImage(req.file.buffer, IMAGE_CONFIGS.PROFILE);
     } catch (error) {
-      return res.status(500).json({ error: 'Failed to process image' });
+      return res.status(500).json({ 
+        success: false,
+        error: {
+          code: 'IMAGE_PROCESSING_ERROR',
+          message: 'Failed to process image'
+        }
+      });
     }
 
     // Find user
     const user = await User.findById(req.user._id);
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ 
+        success: false,
+        error: {
+          code: 'USER_NOT_FOUND',
+          message: 'User not found'
+        }
+      });
     }
 
     // Delete old profile picture from Cloudinary if exists
@@ -45,7 +63,13 @@ const uploadProfilePictureController = async (req, res) => {
       const publicId = `${CLOUDINARY_FOLDER_PROFILE}/user_${req.user._id}_${Date.now()}`;
       uploadResult = await uploadToCloudinary(processedBuffer, CLOUDINARY_FOLDER_PROFILE, publicId);
     } catch (error) {
-      return res.status(500).json({ error: 'Failed to upload image' });
+      return res.status(500).json({ 
+        success: false,
+        error: {
+          code: 'UPLOAD_ERROR',
+          message: 'Failed to upload image'
+        }
+      });
     }
 
     // Update user profile picture URL
@@ -54,17 +78,32 @@ const uploadProfilePictureController = async (req, res) => {
     try {
       await user.save();
     } catch (error) {
-      return res.status(500).json({ error: 'Failed to update profile picture' });
+      return res.status(500).json({ 
+        success: false,
+        error: {
+          code: 'DATABASE_ERROR',
+          message: 'Failed to update profile picture'
+        }
+      });
     }
 
     return res.status(200).json({
+      success: true,
       message: 'Profile picture updated successfully',
-      profilePicture: user.profilePicture
+      data: {
+        profilePicture: user.profilePicture
+      }
     });
 
   } catch (error) {
     console.error('Profile picture upload error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ 
+      success: false,
+      error: {
+        code: 'INTERNAL_ERROR',
+        message: 'Internal server error'
+      }
+    });
   }
 };
 

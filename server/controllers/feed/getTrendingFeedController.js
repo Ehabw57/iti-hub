@@ -39,7 +39,7 @@ async function getTrendingFeed(req, res) {
           success: true,
           cached: true,
           feedType: 'trending',
-          ...cached
+          data: cached
         });
       }
     } catch (cacheError) {
@@ -123,14 +123,17 @@ async function getTrendingFeed(req, res) {
       success: true,
       cached: false,
       feedType: 'trending',
-      ...responseData
+      data: responseData
     });
 
   } catch (error) {
     console.error('Get trending feed error:', error);
     return res.status(500).json({
       success: false,
-      message: 'Failed to fetch trending feed'
+      error: {
+        code: 'FEED_ERROR',
+        message: 'Failed to fetch trending feed'
+      }
     });
   }
 }

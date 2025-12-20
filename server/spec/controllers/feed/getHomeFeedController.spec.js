@@ -220,7 +220,7 @@ describe('Get Home Feed Controller', () => {
       const jsonCall = res.status.calls.mostRecent().returnValue.json;
       const response = jsonCall.calls.mostRecent().args[0];
 
-      expect(response.pagination).toEqual({
+      expect(response.data.pagination).toEqual({
         page: 2,
         limit: 10,
         total: 100,
@@ -423,8 +423,8 @@ describe('Get Home Feed Controller', () => {
       const response = res.status.calls.mostRecent().returnValue.json.calls.mostRecent().args[0];
       
       // Should be sorted by score (90, 50)
-      expect(response.posts[0]._id).toBe('post2'); // Higher score
-      expect(response.posts[1]._id).toBe('post1'); // Lower score
+      expect(response.data.posts[0]._id).toBe('post2'); // Higher score
+      expect(response.data.posts[1]._id).toBe('post1'); // Lower score
     });
 
     it('should handle users with no connections or communities', async () => {
@@ -444,7 +444,7 @@ describe('Get Home Feed Controller', () => {
 
       expect(res.status).toHaveBeenCalledWith(200);
       const response = res.status.calls.mostRecent().returnValue.json.calls.mostRecent().args[0];
-      expect(response.posts).toEqual([]);
+      expect(response.data.posts).toEqual([]);
     });
   });
 
@@ -465,8 +465,7 @@ describe('Get Home Feed Controller', () => {
       expect(response).toEqual(jasmine.objectContaining({
         success: true,
         cached: true,
-        posts: cachedData.posts,
-        pagination: cachedData.pagination
+        data: cachedData
       }));
     });
 
@@ -617,7 +616,10 @@ describe('Get Home Feed Controller', () => {
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.status.calls.mostRecent().returnValue.json).toHaveBeenCalledWith({
         success: false,
-        message: 'Failed to fetch home feed'
+        error: {
+          code: 'FEED_ERROR',
+          message: 'Failed to fetch home feed'
+        }
       });
     });
 
@@ -693,12 +695,14 @@ describe('Get Home Feed Controller', () => {
       expect(response).toEqual(jasmine.objectContaining({
         success: true,
         cached: false,
-        posts: jasmine.any(Array),
-        pagination: jasmine.objectContaining({
-          page: jasmine.any(Number),
-          limit: jasmine.any(Number),
-          total: jasmine.any(Number),
-          pages: jasmine.any(Number)
+        data: jasmine.objectContaining({
+          posts: jasmine.any(Array),
+          pagination: jasmine.objectContaining({
+            page: jasmine.any(Number),
+            limit: jasmine.any(Number),
+            total: jasmine.any(Number),
+            pages: jasmine.any(Number)
+          })
         })
       }));
     });

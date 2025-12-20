@@ -177,8 +177,8 @@ describe('Get Trending Feed Controller', () => {
       const response = res.status.calls.mostRecent().returnValue.json.calls.mostRecent().args[0];
       
       // Should be sorted by score (90, 50)
-      expect(response.posts[0]._id).toBe('post2'); // Higher score
-      expect(response.posts[1]._id).toBe('post1'); // Lower score
+      expect(response.data.posts[0]._id).toBe('post2'); // Higher score
+      expect(response.data.posts[1]._id).toBe('post1'); // Lower score
     });
 
     it('should fetch more posts than needed for scoring', async () => {
@@ -228,8 +228,8 @@ describe('Get Trending Feed Controller', () => {
       await getTrendingFeed(req, res);
 
       const response = res.status.calls.mostRecent().returnValue.json.calls.mostRecent().args[0];
-      expect(response.pagination.page).toBe(1);
-      expect(response.pagination.limit).toBe(20);
+      expect(response.data.pagination.page).toBe(1);
+      expect(response.data.pagination.limit).toBe(20);
     });
 
     it('should respect custom page and limit', async () => {
@@ -241,8 +241,8 @@ describe('Get Trending Feed Controller', () => {
       await getTrendingFeed(req, res);
 
       const response = res.status.calls.mostRecent().returnValue.json.calls.mostRecent().args[0];
-      expect(response.pagination.page).toBe(3);
-      expect(response.pagination.limit).toBe(10);
+      expect(response.data.pagination.page).toBe(3);
+      expect(response.data.pagination.limit).toBe(10);
     });
 
     it('should enforce max limit', async () => {
@@ -253,7 +253,7 @@ describe('Get Trending Feed Controller', () => {
       await getTrendingFeed(req, res);
 
       const response = res.status.calls.mostRecent().returnValue.json.calls.mostRecent().args[0];
-      expect(response.pagination.limit).toBe(100); // MAX_LIMIT
+      expect(response.data.pagination.limit).toBe(100); // MAX_LIMIT
     });
 
     it('should return correct pagination metadata', async () => {
@@ -265,7 +265,7 @@ describe('Get Trending Feed Controller', () => {
       await getTrendingFeed(req, res);
 
       const response = res.status.calls.mostRecent().returnValue.json.calls.mostRecent().args[0];
-      expect(response.pagination).toEqual({
+      expect(response.data.pagination).toEqual({
         page: 2,
         limit: 10,
         total: 100,
@@ -294,8 +294,8 @@ describe('Get Trending Feed Controller', () => {
       await getTrendingFeed(req, res);
 
       const response = res.status.calls.mostRecent().returnValue.json.calls.mostRecent().args[0];
-      expect(response.posts.length).toBe(1);
-      expect(response.posts[0]._id).toBe('post1'); // Second highest score
+      expect(response.data.posts.length).toBe(1);
+      expect(response.data.posts[0]._id).toBe('post1'); // Second highest score
     });
   });
 
@@ -315,8 +315,7 @@ describe('Get Trending Feed Controller', () => {
       expect(response).toEqual(jasmine.objectContaining({
         success: true,
         cached: true,
-        posts: cachedData.posts,
-        pagination: cachedData.pagination
+        data: cachedData
       }));
     });
 
@@ -403,7 +402,10 @@ describe('Get Trending Feed Controller', () => {
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.status.calls.mostRecent().returnValue.json).toHaveBeenCalledWith({
         success: false,
-        message: 'Failed to fetch trending feed'
+        error: {
+          code: 'FEED_ERROR',
+          message: 'Failed to fetch trending feed'
+        }
       });
     });
   });
@@ -426,12 +428,14 @@ describe('Get Trending Feed Controller', () => {
         success: true,
         cached: false,
         feedType: 'trending',
-        posts: jasmine.any(Array),
-        pagination: jasmine.objectContaining({
-          page: jasmine.any(Number),
-          limit: jasmine.any(Number),
-          total: jasmine.any(Number),
-          pages: jasmine.any(Number)
+        data: jasmine.objectContaining({
+          posts: jasmine.any(Array),
+          pagination: jasmine.objectContaining({
+            page: jasmine.any(Number),
+            limit: jasmine.any(Number),
+            total: jasmine.any(Number),
+            pages: jasmine.any(Number)
+          })
         })
       }));
     });
