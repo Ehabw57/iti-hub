@@ -3,6 +3,8 @@
  * Validation and response building functions for posts
  */
 
+const PostLike = require('../models/PostLike');
+const PostSave = require('../models/PostSave');
 const {
   MAX_POST_CONTENT_LENGTH,
   MAX_POST_TAGS,
@@ -100,11 +102,11 @@ function validatePostUpdate(updates) {
 /**
  * Build post response object
  * @param {Object} post - Post document
- * @param {Object} user - Current user (optional)
+ * @param {Object} user_id - Current user id (optional)
  * @param {Object} options - Additional options like isLiked, isSaved
  * @returns {Object} - Formatted post response
  */
-function buildPostResponse(post, user = null, options = {}) {
+async function buildPostResponse(post, user_id = null, options = {}) {
   const postObj = post.toObject ? post.toObject() : post;
   
   const response = {
@@ -126,12 +128,10 @@ function buildPostResponse(post, user = null, options = {}) {
   };
 
   // Add user-specific fields if user is provided
-  if (user && options.isLiked !== undefined) {
-    response.isLiked = options.isLiked;
-  }
-
-  if (user && options.isSaved !== undefined) {
-    response.isSaved = options.isSaved;
+  if (user_id) {
+    // fetch postst likes and saves 
+    response.isLiked = !!(await PostLike.exists({ post: postObj._id, user: user_id }));
+    response.isSaved = !!(await PostSave.exists({ post: postObj._id, user: user_id }));
   }
 
   return response;
@@ -146,8 +146,9 @@ function buildPostResponse(post, user = null, options = {}) {
 function canModifyPost(post, user) {
   if (!user) return false;
   
+  console.log("Checking permissions for user:", user._id, "on post:", post.author._id);
   // Owner can modify
-  if (post.author.toString() === user._id.toString()) {
+  if (post.author._id.toString() === user._id.toString()) {
     return true;
   }
 

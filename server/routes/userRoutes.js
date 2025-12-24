@@ -5,7 +5,7 @@ const {
   blockUser, 
   unblockUser,
   uploadProfilePicture,
-  uploadCoverImage
+  uploadCoverImage,
 } = require("../controllers/user");
 const { getUserPosts } = require("../controllers/post");
 const { checkAuth, optionalAuth } = require("../middlewares/checkAuth");
@@ -14,6 +14,7 @@ const upload = require("../middlewares/upload");
 const userRouter = express.Router();
 
 
+userRouter.get("/users/me", checkAuth, (req, res) => res.json(req.user)); // Get current authenticated user
 userRouter.get("/users/:username", optionalAuth, getUserProfile); // Public, optional auth
 userRouter.put("/users/profile", checkAuth, updateProfile); // Requires auth
 

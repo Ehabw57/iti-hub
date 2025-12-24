@@ -3,7 +3,6 @@ import { useAuthStore } from '@store/auth';
 
 const TOKEN_EXPIRED_CODES = ['TOKEN_EXPIRED', 'INVALID_TOKEN', 'UNAUTHORIZED'];
 
-// Create axios instance
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3030',
   timeout: 10000,
@@ -12,7 +11,7 @@ const api = axios.create({
   },
 });
 
-// Request interceptor - Add auth token
+// Request interceptor
 api.interceptors.request.use(
   (config) => {
     const token = useAuthStore.getState().token;
@@ -27,41 +26,27 @@ api.interceptors.request.use(
 
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Response interceptor - Handle errors
+// Response interceptor (⚠️ NO logout here)
 api.interceptors.response.use(
-  (response) => {
-    // Return response as-is
-    return response;
-  },
+  (response) => response,
   (error) => {
-    // Check if error response exists
-    if (error.response) {
-      const errorCode = error.response?.data?.error?.code;
+    const errorCode = error.response?.data?.error?.code;
 
-      // Handle token expiration
-      if (errorCode && TOKEN_EXPIRED_CODES.includes(errorCode)) {
-        console.log('[API] Token expired, logging out and redirecting');
-        useAuthStore.getState().logout();
-        
-        // Hard redirect to login page
-        if (typeof window !== 'undefined') {
-          window.location.href = '/login';
-        }
-      }
+    if (TOKEN_EXPIRED_CODES.includes(errorCode)) {
+      // Signal auth failure ONLY
+      useAuthStore.getState().setAuthError();
+    }
 
-      if (import.meta.env.DEV) {
-        console.error('[API] Error:', {
-          url: error.config?.url,
-          status: error.response?.status,
-          code: errorCode,
-          message: error.response?.data?.error?.message,
-        });
-      }
+    if (import.meta.env.DEV) {
+      console.error('[API] Error:', {
+        url: error.config?.url,
+        status: error.response?.status,
+        code: errorCode,
+        message: error.response?.data?.error?.message,
+      });
     }
 
     return Promise.reject(error);

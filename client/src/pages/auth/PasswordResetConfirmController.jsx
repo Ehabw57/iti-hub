@@ -139,7 +139,7 @@ export default function PasswordResetConfirmController() {
         </div>
 
         {resetConfirmMutation.isError && (
-          <ErrorDisplay error={resetConfirmMutation.error} code={resetConfirmMutation.error.code} />
+          <ErrorDisplay error={resetConfirmMutation.error}  />
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">

@@ -13,6 +13,7 @@ const mongoose = require('mongoose');
 const { asyncHandler } = require('../../middlewares/errorHandler');
 const { ValidationError, NotFoundError, ForbiddenError, InternalError } = require('../../utils/errors');
 const { sendCreated } = require('../../utils/responseHelpers');
+const {InvalidateUserFeed} = require('../../utils/feedCache');
 
 /**
  * Create a new post
@@ -92,8 +93,11 @@ const createPost = asyncHandler(async (req, res) => {
     await updatePostCount(community, 1);
   }
 
+
   // Populate author details
   await post.populate('author', 'username fullName profilePicture');
+  //invalidate user feed cache
+  await InvalidateUserFeed(req.user._id);
 
   sendCreated(res, { post: buildPostResponse(post, req.user) }, 'Post created successfully');
 });

@@ -5,6 +5,7 @@ const { canModifyComment } = require('../../utils/commentHelpers');
 const { asyncHandler } = require('../../middlewares/errorHandler');
 const { NotFoundError, ForbiddenError } = require('../../utils/errors');
 const { sendSuccess } = require('../../utils/responseHelpers');
+const {invalidateUserFeeds} = require("../../utils/feedCache")
 
 /**
  * Delete a comment
@@ -45,6 +46,12 @@ const deleteComment = asyncHandler(async (req, res) => {
 
   // Delete the comment
   await Comment.deleteOne({ _id: id });
+  replies = await Comment.find({ parentComment: id }); 
+  if (replies.length > 0) {
+    const replyIds = replies.map(reply => reply._id);
+    const replyDeleteResult = await Comment.deleteMany({ _id: { $in: replyIds } });
+    deletedCount += replyDeleteResult.deletedCount;
+  }
 
   // Delete all likes for this comment (and its replies if any)
   await CommentLike.deleteMany({ comment: id });
@@ -56,13 +63,14 @@ const deleteComment = asyncHandler(async (req, res) => {
     await post.save();
   }
 
+  // Invalidate user feeds cache
+  await invalidateUserFeeds(user._id);
+
   return sendSuccess(
     res,
     {},
-    'Comment deleted successfully'
+    `${deletedCount} Comment${deletedCount > 1 ? 's' : ''} deleted successfully`
   );
 });
-
-module.exports = deleteComment;
 
 module.exports = deleteComment;

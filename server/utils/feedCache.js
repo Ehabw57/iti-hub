@@ -87,7 +87,7 @@ async function deletePattern(pattern) {
  * @returns {Promise<number>} Number of deleted keys
  */
 async function invalidateFeed(userId, feedType) {
-  return deletePattern(`feed:${feedType}:${userId}:*`);
+  return await deletePattern(`feed:${feedType}:${userId}:*`);
 }
 
 /**
@@ -132,6 +132,16 @@ async function invalidateTrendingFeed() {
 }
 
 /**
+ * Invalidate all feeds for a specific user
+ * Used when user updates privacy settings or is banned
+ * @param {string} userId - User ID
+ * @returns {Promise<number>} Number of deleted keys
+ */
+async function invalidateUserFeeds(userId) {
+  return deletePattern(`*:${userId}:*`);
+}
+
+/**
  * Clear all cache entries
  */
 function clearAll() {
@@ -153,6 +163,7 @@ module.exports = {
   del,
   deletePattern,
   invalidateFeed,
+  invalidateUserFeeds,
   invalidateFollowerFeeds,
   invalidateCommunityFeed,
   invalidateTrendingFeed,

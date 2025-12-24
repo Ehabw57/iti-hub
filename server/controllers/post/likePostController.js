@@ -5,6 +5,7 @@ const { NOTIFICATION_TYPES } = require('../../utils/constants');
 const { asyncHandler } = require('../../middlewares/errorHandler');
 const { ValidationError, NotFoundError } = require('../../utils/errors');
 const { sendSuccess } = require('../../utils/responseHelpers');
+const { invalidateUserFeeds } = require('../../utils/feedCache');
 
 /**
  * Like a post
@@ -28,11 +29,14 @@ const likePost = asyncHandler(async (req, res) => {
   }
 
   // Create like
-  await PostLike.create({ user: userId, post: id });
+  await PostLike.create({ user: userId, post: post._id });
 
   // Increment likes count
   post.likesCount += 1;
   await post.save();
+
+  // Invalidate user's feeds to reflect new like
+  await invalidateUserFeeds(userId.toString());
 
   // Create or update notification (don't block on failure)
   try {
@@ -77,6 +81,9 @@ const unlikePost = asyncHandler(async (req, res) => {
   // Decrement likes count
   post.likesCount = Math.max(0, post.likesCount - 1);
   await post.save();
+
+  // Invalidate user's feeds to reflect unlike
+  await invalidateUserFeeds(userId.toString());
 
   sendSuccess(res, { isLiked: false, likesCount: post.likesCount }, 'Post unliked successfully');
 });

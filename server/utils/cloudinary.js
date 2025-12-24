@@ -16,9 +16,9 @@ cloudinary.config({
  * @returns {Promise<Object>} Cloudinary upload result
  */
 function uploadToCloudinary(buffer, folder, publicId) {
-  return process.env.NODE_ENV === 'test' ? new Promise((resolve, reject) => {
+  return process.env.NODE_ENV === 'dev' ? new Promise((resolve, reject) => {
     resolve({
-      secure_url: 'https://res.cloudinary.com/demo/image/upload/v1234/folder/image.webp',
+      secure_url: 'https://res-console.cloudinary.com/djdhnueis/thumbnails/v1/image/upload/v1761820115/Y2xkLXNhbXBsZQ==/drilldown',
       public_id: 'folder/image'
     });
   }) : new Promise((resolve, reject) => {

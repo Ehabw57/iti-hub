@@ -7,6 +7,8 @@ export const useAuthStore = create(
       token: null,
       user: null,
       isAuthenticated: false,
+      hasHydrated: false,
+      authError: false,
 
       setToken: (token) => {
         set({
@@ -19,15 +21,22 @@ export const useAuthStore = create(
         set({ user });
       },
 
+      setAuthError: () => {
+        set({ authError: true });
+      },
+
+      clearAuthError: () => {
+        set({ authError: false });
+      },
+
       logout: () => {
-        // Clear store state
         set({
           token: null,
           user: null,
           isAuthenticated: false,
+          authError: false,
         });
 
-        // Clear React Query cache if available
         if (typeof window !== 'undefined' && window.__queryClient) {
           window.__queryClient.clear();
         }
@@ -39,6 +48,9 @@ export const useAuthStore = create(
         token: state.token,
       }),
       onRehydrateStorage: () => (state) => {
+        state.hasHydrated = true;
+        state.isAuthenticated = !!state.token;
+
         if (state?.token) {
           console.log('[AuthStore] Rehydrated with token');
         }
@@ -48,4 +60,3 @@ export const useAuthStore = create(
 );
 
 export default useAuthStore;
-
