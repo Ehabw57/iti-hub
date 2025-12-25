@@ -3,6 +3,7 @@ const PostSave = require('../../models/PostSave');
 const { asyncHandler } = require('../../middlewares/errorHandler');
 const { ValidationError, NotFoundError } = require('../../utils/errors');
 const { sendSuccess } = require('../../utils/responseHelpers');
+const { invalidateUserFeeds } = require('../../utils/feedCache');
 
 /**
  * Save a post
@@ -31,6 +32,9 @@ const savePost = asyncHandler(async (req, res) => {
   // Increment saves count
   post.savesCount += 1;
   await post.save();
+
+  // Invalidate user's feeds to reflect new save
+  await invalidateUserFeeds(userId.toString());
 
   sendSuccess(res, { isSaved: true }, 'Post saved successfully');
 });
@@ -62,6 +66,9 @@ const unsavePost = asyncHandler(async (req, res) => {
   // Decrement saves count
   post.savesCount = Math.max(0, post.savesCount - 1);
   await post.save();
+
+  // Invalidate user's feeds to reflect unsave
+  await invalidateUserFeeds(userId.toString());
 
   sendSuccess(res, { isSaved: false }, 'Post unsaved successfully');
 });

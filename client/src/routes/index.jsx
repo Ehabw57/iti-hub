@@ -1,14 +1,19 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Layout from '@/layout/layout';
+import FeedLayout from '@/layout/FeedLayout';
 import ProtectedRoute from '@components/routes/ProtectedRoute';
 import PublicRoute from '@components/routes/PublicRoute';
 import AuthLoginController from '@pages/auth/AuthLoginController';
 import RegisterController from '@pages/auth/RegisterController';
 import PasswordResetRequestController from '@pages/auth/PasswordResetRequestController';
 import PasswordResetConfirmController from '@pages/auth/PasswordResetConfirmController';
+import FeedHomeController from '@pages/feed/FeedHomeController';
+import FeedFollowingController from '@pages/feed/FeedFollowingController';
+import FeedTrendingController from '@pages/feed/FeedTrendingController';
+import SavedPostsController from '@pages/feed/SavedPostsController';
+import PostDetailController from '@pages/post/PostDetailController';
 
 // Placeholder components for routes not yet implemented
-const HomePage = () => <div>Home Page (Protected)</div>;
 const NotFoundPage = () => <div>404 - Page Not Found</div>;
 
 const router = createBrowserRouter([
@@ -38,13 +43,35 @@ const router = createBrowserRouter([
           },
         ],
       },
-      // Protected routes - redirect to login if not authenticated
+      // Feed routes with FeedLayout
       {
-        element: <ProtectedRoute />,
+        element: <FeedLayout />,
         children: [
           {
             path: '/',
-            element: <HomePage />,
+            element: <FeedHomeController />,
+          },
+          {
+            path: '/feed/trending',
+            element: <FeedTrendingController />,
+          },
+          {
+            path: '/posts/:postId',
+            element: <PostDetailController />,
+          },
+          // Protected feed routes
+          {
+            element: <ProtectedRoute />,
+            children: [
+              {
+                path: '/feed/following',
+                element: <FeedFollowingController />,
+              },
+              {
+                path: '/saved',
+                element: <SavedPostsController />,
+              },
+            ],
           },
         ],
       },

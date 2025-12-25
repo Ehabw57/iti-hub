@@ -6,6 +6,7 @@ const { validateCommentContent, buildCommentResponse, canHaveReplies } = require
 const { asyncHandler } = require('../../middlewares/errorHandler');
 const { ValidationError, NotFoundError } = require('../../utils/errors');
 const { sendCreated } = require('../../utils/responseHelpers');
+const {invalidateUserFeeds} = require("../../utils/feedCache")
 
 /**
  * Create a new comment or reply
@@ -64,6 +65,7 @@ const createComment = asyncHandler(async (req, res) => {
 
   // Increment comments count on post
   post.commentsCount += 1;
+  console.log('Incrementing comments count to:', post.commentsCount);
   await post.save();
 
   // Create notifications (don't block on failure)
@@ -92,6 +94,8 @@ const createComment = asyncHandler(async (req, res) => {
 
   // Populate author details
   await comment.populate('author', 'username fullName profilePicture');
+  // Invalidate user feeds cache
+  await invalidateUserFeeds(req.user._id);
 
   return sendCreated(
     res,

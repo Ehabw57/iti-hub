@@ -3,6 +3,7 @@ const { validatePostUpdate, canModifyPost, buildPostResponse } = require('../../
 const { asyncHandler } = require('../../middlewares/errorHandler');
 const { ValidationError, NotFoundError, ForbiddenError } = require('../../utils/errors');
 const { sendSuccess } = require('../../utils/responseHelpers');
+const {invalidateUserFeeds} = require('../../utils/feedCache');
 
 /**
  * Update post
@@ -48,7 +49,10 @@ const updatePost = asyncHandler(async (req, res) => {
   // Populate author details
   await post.populate('author', 'username fullName profilePicture');
 
-  sendSuccess(res, { post: buildPostResponse(post, req.user) }, 'Post updated successfully');
+  // Invalidate user feed cache
+  await invalidateUserFeeds(req.user._id);
+
+  sendSuccess(res, { post: buildPostResponse(post, req.user._id) }, 'Post updated successfully');
 });
 
 module.exports = updatePost;

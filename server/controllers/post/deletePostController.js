@@ -7,6 +7,7 @@ const { updatePostCount } = require('../../utils/communityHelpers');
 const { asyncHandler } = require('../../middlewares/errorHandler');
 const { NotFoundError, ForbiddenError } = require('../../utils/errors');
 const { sendNoContent } = require('../../utils/responseHelpers');
+const {invalidateUserFeeds} = require('../../utils/feedCache');
 
 /**
  * Delete post
@@ -40,6 +41,8 @@ const deletePost = asyncHandler(async (req, res) => {
 
   // Delete post
   await Post.findByIdAndDelete(id);
+  // Invalidate user feeds cache
+  await invalidateUserFeeds(req.user._id);
 
   sendNoContent(res);
 });

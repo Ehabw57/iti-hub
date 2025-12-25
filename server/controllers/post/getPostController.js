@@ -18,6 +18,7 @@ const getPost = asyncHandler(async (req, res) => {
   // Find post
   const post = await Post.findById(id)
     .populate('author', 'username fullName profilePicture')
+    .populate('community', 'name profilePicture')
     .populate('originalPost');
 
   if (!post) {
@@ -35,8 +36,9 @@ const getPost = asyncHandler(async (req, res) => {
     const save = await PostSave.findOne({ user: userId, post: id });
     isSaved = !!save;
   }
+  postWithUserData = await buildPostResponse(post, userId);
 
-  sendSuccess(res, { post: buildPostResponse(post, req.user, { isLiked, isSaved }) });
+  sendSuccess(res, { post: postWithUserData });
 });
 
 module.exports = getPost;

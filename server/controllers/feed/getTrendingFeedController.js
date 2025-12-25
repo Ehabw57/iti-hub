@@ -61,9 +61,6 @@ const getTrendingFeed = asyncHandler(async (req, res) => {
   const posts = await Post.find(query)
     .sort({ createdAt: -1 })
     .limit(fetchLimit)
-    .populate('author', 'username fullName profilePicture')
-    .populate('originalPost')
-    .populate('community', 'name');
 
   // Get total count
   const total = await Post.countDocuments(query);
