@@ -38,7 +38,7 @@ export default function RegisterStepTwo({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="text-center mb-6">
-        <h2 className="text-heading-4 text-neutral-900">{t.step2Title}</h2>
+        <h2 className="text-heading-4 text-neutral-900 dark:text-neutral-100">{t.step2Title}</h2>
       </div>
 
       <div>

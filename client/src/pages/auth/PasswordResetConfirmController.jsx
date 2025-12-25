@@ -74,9 +74,10 @@ export default function PasswordResetConfirmController() {
   // Check if token is missing
   if (!token) {
     return (
-      <Card className="w-full max-w-md mx-auto">
-        <div className="space-y-6">
-          <h1 className="text-heading-3 text-center text-neutral-900">
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <Card variant="auth" padding="xl" className="w-full max-w-[520px]">
+          <div className="space-y-6">
+          <h1 className="text-heading-3 text-center text-neutral-900 dark:text-neutral-100">
             {t.confirmTitle}
           </h1>
           <ErrorDisplay
@@ -94,15 +95,17 @@ export default function PasswordResetConfirmController() {
           </div>
         </div>
       </Card>
+      </div>
     );
   }
 
   // Success message
   if (success) {
     return (
-      <Card className="w-full max-w-md mx-auto">
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <Card variant="auth" padding="xl" className="w-full max-w-[520px]">
         <div className="space-y-6">
-          <h1 className="text-heading-3 text-center text-neutral-900">
+          <h1 className="text-heading-3 text-center text-neutral-900 dark:text-neutral-100">
             {t.confirmTitle}
           </h1>
           <div className="bg-success/10 border border-success rounded-lg p-4">
@@ -111,7 +114,7 @@ export default function PasswordResetConfirmController() {
             </p>
           </div>
           <div className="text-center">
-            <p className="text-body-2 text-neutral-600 mb-2">
+            <p className="text-body-2 text-neutral-600 dark:text-neutral-400 mb-2">
               Redirecting to login...
             </p>
             <Link
@@ -123,17 +126,19 @@ export default function PasswordResetConfirmController() {
           </div>
         </div>
       </Card>
+      </div>
     );
   }
 
   const passwordChecks = formData.password ? validatePassword(formData.password) : null;
 
   return (
-    <Card className="w-full max-w-md mx-auto">
+    <div className="min-h-screen flex items-center justify-center p-4">
+      <Card variant="auth" padding="xl" className="w-full max-w-[520px]">
       <div className="space-y-6">
         <div className="text-center">
-          <h1 className="text-heading-3 text-neutral-900">{t.confirmTitle}</h1>
-          <p className="text-body-2 text-neutral-600 mt-2">
+          <h1 className="text-heading-3 text-neutral-900 dark:text-neutral-100">{t.confirmTitle}</h1>
+          <p className="text-body-2 text-neutral-600 dark:text-neutral-400 mt-2">
             {t.confirmDescription}
           </p>
         </div>
@@ -203,6 +208,7 @@ export default function PasswordResetConfirmController() {
         </div>
       </div>
     </Card>
+    </div>
   );
 }
 
