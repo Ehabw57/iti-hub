@@ -98,10 +98,10 @@ const CONVERSATION_TYPES = {
 
 // Community Validation
 const COMMUNITY_TAGS = [
-  'Technology',
+  'technology',
   'Education',
   'Science',
-  'Arts',
+  'arts',
   'Sports',
   'Gaming',
   'Music',

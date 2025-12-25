@@ -31,7 +31,7 @@ export default function LoginRequiredModal({ isOpen, onClose }) {
 
       {/* Full-screen container */}
       <div className="fixed inset-0 flex items-center justify-center p-4">
-        <DialogPanel className="w-full max-w-md bg-white rounded-lg shadow-elevation-3 p-6">
+        <DialogPanel className="w-full max-w-md bg-neutral-100 rounded-lg shadow-elevation-3 p-6">
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
             <DialogTitle className="text-heading-4 font-semibold text-neutral-900">
