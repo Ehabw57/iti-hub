@@ -1,0 +1,137 @@
+/* ---------- Navbar Container ----------
+.navbar {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  background: var(--bg, white);
+  border-bottom: 1px solid #e5e5e5;
+}
+
+/* ---------- Logo ---------- */
+.navbar-logo {
+  font-weight: bold;
+  font-size: 20px;
+  cursor: pointer;
+  color: #c62828;
+}
+
+/* ---------- Search ---------- */
+.navbar-search {
+  position: relative;
+  flex: 1;
+  max-width: 500px;
+  margin: 0 24px;
+}
+
+.navbar-search input {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 20px;
+  border: 1px solid #ddd;
+  background: var(--input-bg, #f5f5f5);
+  color: var(--text-color, #000);
+}
+
+.search-dropdown {
+  position: absolute;
+  top: 48px;
+  width: 100%;
+  background: var(--bg, white);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  z-index: 100;
+}
+
+.dropdown-title {
+  padding: 8px 12px;
+  font-size: 12px;
+  color: gray;
+}
+
+.dropdown-item {
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.dropdown-item:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.dropdown-item img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+
+.dropdown-footer {
+  padding: 10px;
+  text-align: center;
+  font-weight: bold;
+  cursor: pointer;
+  color: #c62828;
+}
+
+.dropdown-empty {
+  padding: 12px;
+  text-align: center;
+  color: gray;
+}
+
+/* ---------- Actions (Theme, Language, Icons) ---------- */
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* ---------- Avatar ---------- */
+.navbar-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* ---------- Buttons ---------- */
+.login-btn {
+  padding: 8px 14px;
+  border-radius: 20px;
+  border: none;
+  background: #c62828;
+  color: #eee;
+  cursor: pointer;
+  font-size: 14px;
+}
+:root {
+  --bg: white;
+  --text-color: black;
+  --input-bg: #f5f5f5;
+}
+
+:root.dark {
+  --bg: #111;
+  --text-color: #fff;
+  --input-bg: #222;
+}
+
+/* Navbar */
+.navbar {
+  background: var(--bg);
+  color: var(--text-color);
+}
+.navbar-search input {
+  background: var(--input-bg);
+  color: var(--text-color);
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1024px) {
+  .navbar-search {
+    display: none;
+  }
+} */
