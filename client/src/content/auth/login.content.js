@@ -3,11 +3,11 @@ export default {
   key: "authLogin",
   content: {
     pageTitle: t({
-      en: "Login to ITI Hub",
-      ar: "تسجيل الدخول إلى ITI Hub",
+      en: "Welcome Back to ITI Hub",
+      ar: "اهلاً بعودتك مرة اخرى إلى ITI Hub",
     }),
     emailLabel: t({
-      en: "Email",
+      en: "Email Address",
       ar: "البريد الإلكتروني",
     }),
     emailPlaceholder: t({

@@ -10,8 +10,8 @@ export default {
     
     // Step 1 - Email
     step1Title: t({
-      en: "Step 1: Email",
-      ar: "الخطوة 1: البريد الإلكتروني",
+      en: "Enter Your Email",
+      ar: " البريد الإلكتروني الخاص بك",
     }),
     emailLabel: t({
       en: "Email Address",
@@ -28,8 +28,8 @@ export default {
     
     // Step 2 - Username
     step2Title: t({
-      en: "Step 2: Choose Username",
-      ar: "الخطوة 2: اختر اسم المستخدم",
+      en: " Choose Username",
+      ar: "اختر اسم المستخدم",
     }),
     usernameLabel: t({
       en: "Username",
@@ -62,15 +62,15 @@ export default {
     
     // Step 3 - Profile
     step3Title: t({
-      en: "Step 3: Complete Your Profile",
-      ar: "الخطوة 3: أكمل ملفك الشخصي",
+      en: " Complete Your Profile",
+      ar: " أكمل ملفك الشخصي",
     }),
     firstNameLabel: t({
       en: "First Name",
       ar: "الاسم الأول",
     }),
     firstNamePlaceholder: t({
-      en: "John",
+      en: "Mohamed",
       ar: "محمد",
     }),
     lastNameLabel: t({
@@ -78,7 +78,7 @@ export default {
       ar: "اسم العائلة",
     }),
     lastNamePlaceholder: t({
-      en: "Doe",
+      en: "Ahmed",
       ar: "أحمد",
     }),
     passwordLabel: t({

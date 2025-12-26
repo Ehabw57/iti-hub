@@ -114,8 +114,8 @@ export default function AuthLoginController() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-neutral-50 px-4 py-12">
-      <div className="w-full max-w-md space-y-4">
+    <div className="min-h-screen flex items-center justify-center px-4 py-12">
+      <div className="w-full max-w-[520px] space-y-4">
         {/* Error Display */}
         {loginMutation.isError && serverError?.code !== 'INVALID_CREDENTIALS' && (
           <ErrorDisplay
