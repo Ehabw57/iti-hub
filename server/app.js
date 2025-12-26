@@ -35,7 +35,7 @@ const delayResponse = (ms) => {
     setTimeout(next, ms);
   }
 };
-app.use(delayResponse(700)); 
+app.use(delayResponse(300)); 
 
 app.use(express.json());
 app.use(cors());

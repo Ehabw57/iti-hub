@@ -13,7 +13,6 @@ const {invalidateUserFeeds} = require('../../utils/feedCache');
 const updatePost = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const updates = req.body;
-  const userId = req.user._id;
 
   // Find post
   const post = await Post.findById(id);
@@ -39,6 +38,9 @@ const updatePost = asyncHandler(async (req, res) => {
   }
   if (updates.tags !== undefined) {
     post.tags = updates.tags;
+  }
+  if (updates.repostComment !== undefined) {
+    post.repostComment = updates.repostComment;
   }
 
   // Set editedAt timestamp

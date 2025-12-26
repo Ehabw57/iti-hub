@@ -15,7 +15,7 @@ async function seed() {
     console.log("🚀 Starting database seeding...");
 
     // 1️⃣ connect to DB
-    await mongoose.connect(process.env.MONGO_URI);
+    await mongoose.connect(process.env.DB_URI || "mongodb://localhost:27017/iti-hub");
     console.log("✅ MongoDB connected");
 
     // 2️⃣ seed users
