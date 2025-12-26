@@ -2,9 +2,11 @@ const authRoute = require("express").Router();
 const rateLimit = require("express-rate-limit");
 const User = require("../models/User");
 const {sendSuccess} = require("../utils/responseHelpers")
+const {checkAuth} = require("../middlewares/checkAuth");
+const {resendVerificationEmail} = require("../controllers/auth/emailVerificationController");
 
 // Import controllers from auth directory
-const {register, login, requestPasswordReset, confirmPasswordReset} = require("../controllers/auth");
+const {register, login, requestPasswordReset, confirmPasswordReset , verifyEmail} = require("../controllers/auth");
 
 // Disable rate limiting in test environment
 const isTestEnv = process.env.NODE_ENV === 'test';
@@ -51,6 +53,8 @@ authRoute.post("/register", register);
 authRoute.post("/login", loginLimiter, login);
 authRoute.post("/password-reset/request", passwordResetLimiter, requestPasswordReset);
 authRoute.post("/password-reset/confirm", passwordResetLimiter, confirmPasswordReset);
+authRoute.get("/verify-email", verifyEmail);
+authRoute.get("/resend-verification", checkAuth, resendVerificationEmail);
 authRoute.post("/check-username", async (req, res) => {
   const { username } = req.body;
   const user = await User.findOne({ username });

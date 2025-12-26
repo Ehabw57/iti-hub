@@ -3,6 +3,8 @@ const validator = require("validator");
 const { asyncHandler } = require('../../middlewares/errorHandler');
 const { ValidationError, AuthenticationError } = require('../../utils/errors');
 const { sendSuccess } = require('../../utils/responseHelpers');
+const sendEmail = require('../../utils/sendEmail');
+
 
 /**
  * @route   POST /auth/password-reset/request
@@ -35,8 +37,20 @@ exports.requestPasswordReset = asyncHandler(async (req, res) => {
   const plainToken = await user.generatePasswordResetToken();
 
   // MVP: Log token to console (in production, send via email)
-  console.log(`Password reset token for ${email}: ${plainToken}`);
-  console.log(`Reset link: http://localhost:5173/password-reset/confirm?token=${plainToken}`);
+const resetLink = `http://localhost:5173/password-reset/confirm?token=${plainToken}`;
+
+await sendEmail({
+  to: user.email,
+  subject: 'Reset your password',
+  text: `You requested a password reset. Use the link below:\n\n${resetLink}`,
+  html: `
+    <p>You requested a password reset.</p>
+    <p>Click the link below to set a new password:</p>
+    <a href="${resetLink}">${resetLink}</a>
+    <p>If you did not request this, please ignore this email.</p>
+  `
+});
+
 
   return sendSuccess(
     res,
