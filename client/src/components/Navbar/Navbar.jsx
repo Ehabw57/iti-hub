@@ -3,6 +3,7 @@ import { HiBars3, HiMagnifyingGlass, HiBell, HiChatBubbleBottomCenter, HiUserGro
 import { useAuthStore } from "@store/auth";
 import { useState, useEffect } from "react";
 import ThemeSwitcher from "../Navbar/ThemeSwitcher";
+import SearchInput from "./SearchInput";
 import LanguageSwitcher from "../common/LanguageSwitcher";
 import { Menu } from "@headlessui/react";
 
@@ -43,69 +44,22 @@ export default function Navbar() {
         </div>
 
         {/* Search (Desktop) */}
-        {isAuthenticated && (
-          <div className="hidden lg:flex flex-1 max-w-md">
+          <div className="flex flex-1 max-w-md">
             <div className="relative w-full">
-              <HiMagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
-              <input
-                type="text"
-                placeholder={locale === "en" ? "Search..." : "ابحث..."}
-                className="w-full pl-10 pr-4 py-2 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
+              <SearchInput />
             </div>
           </div>
-        )}
 
         {/* Right */}
         <div className="hidden lg:flex items-center gap-3">
           <LanguageSwitcher locale={locale} setLocale={setLocale} />
           <ThemeSwitcher theme={theme} toggleTheme={toggleTheme} />
 
-          {/* Icons (only when user is logged in) */}
-          {isAuthenticated && (
-            <div className="flex items-center gap-2">
-              <HiChatBubbleBottomCenter size={22} className="text-neutral-600 dark:text-neutral-200 cursor-pointer" />
-              <HiBell size={22} className="text-neutral-600 dark:text-neutral-200 cursor-pointer" />
-              <HiUserGroup size={22} className="text-neutral-600 dark:text-neutral-200 cursor-pointer" />
-            </div>
-          )}
 
           {/* User Menu / Auth Buttons */}
           {isAuthenticated ? <UserMenu user={user} logout={logout} /> : <AuthButtons />}
         </div>
       </nav>
-
-      {/* Mobile Menu (optional) */}
-      {mobileOpen && (
-        <div className="lg:hidden px-4 pb-4 space-y-3 bg-white dark:bg-neutral-900">
-          {isAuthenticated && (
-            <div className="relative w-full">
-              <HiMagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
-              <input
-                type="text"
-                placeholder={locale === "en" ? "Search..." : "ابحث..."}
-                className="w-full pl-10 pr-4 py-2 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-sm text-black dark:text-white"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
-          )}
-          <div className="flex items-center gap-2">
-            <LanguageSwitcher locale={locale} setLocale={setLocale} />
-            <ThemeSwitcher theme={theme} toggleTheme={toggleTheme} />
-          </div>
-          {isAuthenticated && (
-            <div className="flex items-center gap-2">
-              <HiChatBubbleBottomCenter size={22} className="text-neutral-600 dark:text-neutral-200" />
-              <HiBell size={22} className="text-neutral-600 dark:text-neutral-200" />
-              <HiUserGroup size={22} className="text-neutral-600 dark:text-neutral-200" />
-            </div>
-          )}
-          {isAuthenticated ? <UserMenu user={user} logout={logout} mobile /> : <AuthButtons mobile />}
-        </div>
-      )}
     </header>
   );
 }
