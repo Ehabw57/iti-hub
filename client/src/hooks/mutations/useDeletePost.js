@@ -1,0 +1,24 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import api from '@lib/api';
+
+/**
+ * Hook for deleting a post
+ * @returns {object} React Query mutation object
+ */
+export const useDeletePost = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (postId) => {
+      const response = await api.delete(`/posts/${postId}`);
+      return response.data;
+    },
+    onSuccess: () => {
+      // Invalidate all feed and post queries
+      queryClient.invalidateQueries({ queryKey: ['feed'] });
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
+    },
+  });
+};
+
+export default useDeletePost;

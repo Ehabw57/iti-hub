@@ -1,6 +1,8 @@
 const cloudinary = require('cloudinary').v2;
 const { Readable } = require('stream');
 
+const mockImageUrl = ['https://i.pinimg.com/1200x/db/60/62/db60629456caec781afd00b629f71230.jpg', 'https://i.pinimg.com/736x/15/33/37/153337ee75ad8c36e5bb8797853d32e3.jpg', 'https://i.pinimg.com/1200x/dd/63/55/dd6355c335941d23542e97a8d6a07800.jpg', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSHWDBx_zDhQMO8Dl3Nl1qqsBBzZf3vsj68Tg&s']
+
 // Configure Cloudinary (credentials from environment variables)
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -18,7 +20,7 @@ cloudinary.config({
 function uploadToCloudinary(buffer, folder, publicId) {
   return process.env.NODE_ENV === 'dev' ? new Promise((resolve, reject) => {
     resolve({
-      secure_url: 'https://res-console.cloudinary.com/djdhnueis/thumbnails/v1/image/upload/v1761820115/Y2xkLXNhbXBsZQ==/drilldown',
+      secure_url: mockImageUrl[Math.floor(Math.random() * mockImageUrl.length)],
       public_id: 'folder/image'
     });
   }) : new Promise((resolve, reject) => {

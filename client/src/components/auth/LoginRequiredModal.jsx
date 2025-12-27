@@ -1,31 +1,32 @@
 import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react';
 import { HiXMark } from 'react-icons/hi2';
 import { useIntlayer } from 'react-intlayer';
+import { useLoginModalStore } from '@hooks/useRequireAuth';
 import loginModalContent from '@/content/auth/login-modal.content';
 
 
 /**
  * Login required modal - prompts unauthenticated users to login
- * @param {Object} props
- * @param {boolean} props.isOpen - Modal open state
- * @param {Function} props.onClose - Close handler
+ * Uses Zustand store for state management (no props needed)
+ * This component should be rendered once at the app level
  */
-export default function LoginRequiredModal({ isOpen, onClose }) {
+export default function LoginRequiredModal() {
   //const navigate = useNavigate();
-  const  content  = useIntlayer(loginModalContent.key);
+  const content = useIntlayer(loginModalContent.key);
+  const { isOpen, closeModal } = useLoginModalStore();
 
   const handleLogin = () => {
-    onClose();
+    closeModal();
     //navigate('/login');
   };
 
   const handleRegister = () => {
-    onClose();
+    closeModal();
     //navigate('/register');
   };
 
   return (
-    <Dialog open={isOpen} onClose={onClose} className="relative z-50">
+    <Dialog open={isOpen} onClose={closeModal} className="relative z-50">
       {/* Backdrop */}
       <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
 
@@ -38,7 +39,7 @@ export default function LoginRequiredModal({ isOpen, onClose }) {
               {content.title}
             </DialogTitle>
             <button
-              onClick={onClose}
+              onClick={closeModal}
               className="p-1 rounded-full hover:bg-neutral-100 transition-colors"
               aria-label={content.cancel}
             >
@@ -66,7 +67,7 @@ export default function LoginRequiredModal({ isOpen, onClose }) {
               {content.registerButton}
             </button>
             <button
-              onClick={onClose}
+              onClick={closeModal}
               className="w-full px-6 py-2 text-neutral-600 hover:bg-neutral-100 rounded-lg transition-colors"
             >
               {content.cancel}

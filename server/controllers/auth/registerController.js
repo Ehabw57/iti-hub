@@ -87,7 +87,7 @@ exports.register = asyncHandler(async (req, res) => {
     username: username.toLowerCase(),
     password,
     fullName,
-    profilePicture: 'https://res-console.cloudinary.com/djdhnueis/thumbnails/v1/image/upload/v1761820117/bWFpbi1zYW1wbGU'
+    profilePicture: 'https://i.pinimg.com/736x/b3/3d/80/b33d80ebe729d3af6330ed2ee0f424fa.jpg'
   });
 
   await newUser.save();

@@ -101,8 +101,8 @@ function autoPopulateOriginalPost(next) {
   next();
 }
 
-PostSchema.pre("findOne", autoPopulateOriginalPost);
-PostSchema.pre("find", autoPopulateOriginalPost);
+
+PostSchema.pre(["findOne", "find"], autoPopulateOriginalPost);
 
 // Custom validation: require content or images (unless it's a repost)
 PostSchema.pre("validate", function (next) {
