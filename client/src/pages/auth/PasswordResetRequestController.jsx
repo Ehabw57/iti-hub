@@ -6,7 +6,6 @@ import { usePasswordResetRequest } from "@hooks/mutations/usePasswordResetReques
 import passwordResetContent from "@/content/auth/password-reset.content";
 import dayjs from "dayjs";
 import duration from "dayjs/plugin/duration";
-import Logo from "../../components/auth/logo";
 
 dayjs.extend(duration);
 
@@ -90,11 +89,9 @@ export default function PasswordResetRequestController() {
     const timeString = remainingDuration.format("mm:ss");
 
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <Card variant="auth" padding="xl" className="w-full max-w-[520px]">
-          <Logo />
-          <div className="space-y-6">
-          <h1 className="text-heading-3 text-center text-neutral-900 dark:text-neutral-100">
+      <Card className="w-full max-w-md mx-auto">
+        <div className="space-y-6">
+          <h1 className="text-heading-3 text-center text-neutral-900">
             {t.requestTitle}
           </h1>
           <ErrorDisplay
@@ -112,18 +109,15 @@ export default function PasswordResetRequestController() {
           </div>
         </div>
       </Card>
-      </div>
     );
   }
 
   // Success message
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <Card variant="auth" padding="xl" className="w-full max-w-[520px]">
-        <Logo />
+      <Card className="w-full max-w-md mx-auto">
         <div className="space-y-6">
-          <h1 className="text-heading-3 text-center text-neutral-900 dark:text-neutral-100">
+          <h1 className="text-heading-3 text-center text-neutral-900">
             {t.requestTitle}
           </h1>
           <div className="bg-success/10 border border-success rounded-lg p-4">
@@ -141,18 +135,15 @@ export default function PasswordResetRequestController() {
           </div>
         </div>
       </Card>
-      </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <Card variant="auth" padding="xl" className="w-full max-w-[520px]">
-      <Logo />
+    <Card className="w-full max-w-md mx-auto">
       <div className="space-y-6">
         <div className="text-center">
-          <h1 className="text-heading-3 text-neutral-900 dark:text-neutral-100">{t.requestTitle}</h1>
-          <p className="text-body-2 text-neutral-600 dark:text-neutral-400 mt-2">
+          <h1 className="text-heading-3 text-neutral-900">{t.requestTitle}</h1>
+          <p className="text-body-2 text-neutral-600 mt-2">
             {t.requestDescription}
           </p>
         </div>
@@ -195,6 +186,5 @@ export default function PasswordResetRequestController() {
         </div>
       </div>
     </Card>
-    </div>
   );
 }

@@ -2,7 +2,6 @@ import { useIntlayer } from "react-intlayer";
 import { Link } from "react-router-dom";
 import { Input, Button, Card } from "@components/common";
 import loginContent from "@/content/auth/login.content";
-import Logo from "./logo";
 
 export default function AuthLoginForm({
   email,
@@ -20,10 +19,9 @@ export default function AuthLoginForm({
   };
 
   return (
-    <Card variant="auth" padding="xl" className="w-full mx-auto overflow-visible">
-      <Logo />
+    <Card className="w-full max-w-md mx-auto">
       <div className="space-y-6">
-        <h1 className="text-heading-3 text-center text-neutral-900 dark:text-neutral-100">
+        <h1 className="text-heading-3 text-center text-neutral-900">
           {t.pageTitle}
         </h1>
 
@@ -72,7 +70,7 @@ export default function AuthLoginForm({
           </Button>
         </form>
 
-        <div className="text-center text-sm text-neutral-600 dark:text-neutral-400">
+        <div className="text-center text-sm text-neutral-600">
           {t.noAccount}{" "}
           <Link
             to="/register"

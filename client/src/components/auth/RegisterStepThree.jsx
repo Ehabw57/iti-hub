@@ -31,7 +31,7 @@ export default function RegisterStepThree({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="text-center mb-6">
-        <h2 className="text-heading-4 text-neutral-900 dark:text-neutral-100">{t.step3Title}</h2>
+        <h2 className="text-heading-4 text-neutral-900">{t.step3Title}</h2>
       </div>
 
       <div className="grid grid-cols-2 gap-3">

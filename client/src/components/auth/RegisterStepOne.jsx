@@ -17,7 +17,7 @@ export default function RegisterStepOne({ email, errors, onChange, onNext, check
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="text-center mb-6">
-        <h2 className="text-heading-4 text-neutral-900 dark:text-neutral-100">{t.step1Title}</h2>
+        <h2 className="text-heading-4 text-neutral-900">{t.step1Title}</h2>
       </div>
 
       <Input

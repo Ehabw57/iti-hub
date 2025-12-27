@@ -17,7 +17,6 @@ import RegisterStepThree from "@components/auth/RegisterStepThree";
 import registerContent from "@/content/auth/register.content";
 import dayjs from "dayjs";
 import duration from "dayjs/plugin/duration";
-import Logo from "../../components/auth/logo";
 
 dayjs.extend(duration);
 
@@ -250,9 +249,9 @@ export default function RegisterController() {
     const timeString = remainingDuration.format("mm:ss");
 
     return (
-      <Card variant="auth" padding="xl" className="w-full max-w-[520px]">
+      <Card className="w-full max-w-md mx-auto">
         <div className="space-y-6">
-          <h1 className="text-heading-3 text-center text-neutral-900 dark:text-neutral-100">
+          <h1 className="text-heading-3 text-center text-neutral-900">
             {t.pageTitle}
           </h1>
           <ErrorDisplay
@@ -260,7 +259,7 @@ export default function RegisterController() {
               message: t.cooldownMessage.replace("{time}", timeString),
             }}
           />
-          <div className="text-center text-sm text-neutral-600 dark:text-neutral-400">
+          <div className="text-center text-sm text-neutral-600">
             {t.haveAccount}{" "}
             <Link
               to="/login"
@@ -275,13 +274,12 @@ export default function RegisterController() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <Card variant="auth" padding="xl" className="w-full max-w-[520px]">
-      <Logo />
+    <Card className="w-full max-w-md mx-auto">
       <div className="space-y-6">
-          <h1 className="text-heading-3 text-center text-neutral-900 dark:text-neutral-100">
-            {t.pageTitle}
-          </h1>
+        <h1 className="text-heading-3 text-center text-neutral-900">
+          {t.pageTitle}
+        </h1>
+
         {/* Step Indicator */}
         <div className="flex justify-center gap-2">
           {[1, 2, 3].map((step) => (
@@ -339,7 +337,7 @@ export default function RegisterController() {
         )}
 
         {/* Login Link */}
-        <div className="text-center text-sm text-neutral-600 dark:text-neutral-400">
+        <div className="text-center text-sm text-neutral-600">
           {t.haveAccount}{" "}
           <Link
             to="/login"
@@ -350,6 +348,5 @@ export default function RegisterController() {
         </div>
       </div>
     </Card>
-    </div>
   );
 }
