@@ -13,12 +13,11 @@ const { sendSuccess } = require('../../utils/responseHelpers');
  * @param {Object} res - Express response object
  */
 const getUserProfile = asyncHandler(async (req, res) => {
-  const { userId } = req.params;
+  const { username } = req.params;
   const requesterId = req.user?._id; // Optional authentication
 
   // Find user by userId
-  const user = await User.findOne({ _id: userId });
-
+  const user = await User.findOne({ username : username.trim() });
   if (!user) {
     throw new NotFoundError('User');
   }

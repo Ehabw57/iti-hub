@@ -24,6 +24,7 @@ const followUser = asyncHandler(async (req, res) => {
   if (!validation.isValid) {
     throw new ValidationError(validation.error);
   }
+  console.log("Passed validation");
   
   // Create follow connection
   const connection = await Connection.createFollow(requesterId, targetId);
