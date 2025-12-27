@@ -6,6 +6,7 @@ import ThemeSwitcher from "../Navbar/ThemeSwitcher";
 import SearchInput from "./SearchInput";
 import LanguageSwitcher from "../common/LanguageSwitcher";
 import { Menu } from "@headlessui/react";
+import UserMenu from "./UserMenu";
 
 export default function Navbar() {
   const { isAuthenticated, user, logout } = useAuthStore();
@@ -71,37 +72,5 @@ function AuthButtons({ mobile }) {
       <Link to="/login" className="px-4 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 text-sm text-center">Login</Link>
       <Link to="/register" className="px-4 py-2 rounded-lg bg-red-600 text-white text-sm text-center">Register</Link>
     </div>
-  );
-}
-
-/* ---------- User Dropdown Menu ---------- */
-function UserMenu({ user, logout, mobile }) {
-  return (
-    <Menu as="div" className={`relative ${mobile ? "w-full" : ""}`}>
-      <Menu.Button className="flex items-center gap-2">
-        <img src={user?.avatar || "/avatar.png"} alt="avatar" className="w-9 h-9 rounded-full object-cover border cursor-pointer" />
-      </Menu.Button>
-
-      <Menu.Items className={`absolute right-0 mt-2 w-48 rounded-xl bg-white dark:bg-neutral-800 shadow-lg border border-neutral-200 dark:border-neutral-700 ${mobile ? "static mt-0 w-full" : ""}`}>
-        <div className="px-4 py-3 border-b dark:border-neutral-700">
-          <p className="text-sm font-semibold">{user?.username}</p>
-          <p className="text-xs text-neutral-500">{user?.email}</p>
-        </div>
-        <Menu.Item>
-          {({ active }) => (
-            <Link to="/profile" className={`block px-4 py-2 text-sm ${active && "bg-neutral-100 dark:bg-neutral-700"}`}>
-              Profile
-            </Link>
-          )}
-        </Menu.Item>
-        <Menu.Item>
-          {({ active }) => (
-            <button onClick={logout} className={`w-full text-left px-4 py-2 text-sm text-red-600 ${active && "bg-neutral-100 dark:bg-neutral-700"}`}>
-              Logout
-            </button>
-          )}
-        </Menu.Item>
-      </Menu.Items>
-    </Menu>
   );
 }
