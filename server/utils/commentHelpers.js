@@ -104,6 +104,11 @@ function canModifyComment(comment, user) {
     return true;
   }
 
+  // Post Owner can modify
+  if (comment.post && comment.post.author._id.toString() === user._id.toString()) {
+    return true;
+  }
+
   // Admin can modify
   if (user.role === 'admin') {
     return true;

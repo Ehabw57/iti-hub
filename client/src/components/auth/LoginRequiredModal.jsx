@@ -3,6 +3,7 @@ import { HiXMark } from 'react-icons/hi2';
 import { useIntlayer } from 'react-intlayer';
 import { useLoginModalStore } from '@hooks/useRequireAuth';
 import loginModalContent from '@/content/auth/login-modal.content';
+// import { useNavigate } from 'react-router-dom';
 
 
 /**
@@ -11,18 +12,18 @@ import loginModalContent from '@/content/auth/login-modal.content';
  * This component should be rendered once at the app level
  */
 export default function LoginRequiredModal() {
-  //const navigate = useNavigate();
+  // const navigate = useNavigate();
   const content = useIntlayer(loginModalContent.key);
   const { isOpen, closeModal } = useLoginModalStore();
 
   const handleLogin = () => {
     closeModal();
-    //navigate('/login');
+    // navigate('/login');
   };
 
   const handleRegister = () => {
     closeModal();
-    //navigate('/register');
+    // navigate('/register');
   };
 
   return (
