@@ -32,7 +32,6 @@ const connectionSchema = new Schema(
 );
 
 // Compound indexes for efficient queries
-connectionSchema.index({ follower: 1, following: 1, type: 1 }, { unique: true });
 connectionSchema.index({ following: 1, type: 1 });
 connectionSchema.index({ follower: 1, type: 1 });
 connectionSchema.index({ createdAt: -1 });
@@ -45,22 +44,6 @@ connectionSchema.index({ createdAt: -1 });
  */
 connectionSchema.statics.createFollow = async function(followerId, followingId) {
   const User = mongoose.model('User');
-  
-  // Prevent following yourself
-  if (followerId.toString() === followingId.toString()) {
-    throw new Error('Cannot follow yourself');
-  }
-
-  // Check if already following
-  const existingFollow = await this.findOne({
-    follower: followerId,
-    following: followingId,
-    type: 'follow'
-  });
-
-  if (existingFollow) {
-    throw new Error('Already following this user');
-  }
 
   // Create follow connection
   const connection = await this.create({
