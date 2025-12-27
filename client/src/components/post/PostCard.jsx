@@ -36,7 +36,7 @@ import UnavailablePost from './UnavailablePost';
  * @param {Function} [props.onPostClick] - Handler for post click navigation
  * @param {string} [props.className] - Additional CSS classes
  */
-const PostCard = React.memo(({ post, onPostClick, className = '' }) => {
+const PostCard = React.memo(({ post, onPostClick, isCommentsExpanded = false, className = '' }) => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const { requireAuth } = useRequireAuth();
@@ -66,7 +66,7 @@ const PostCard = React.memo(({ post, onPostClick, className = '' }) => {
   // Modals
   const [showRepostModal, setShowRepostModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [showComments, setShowComments] = useState(false);
+  const [showComments, setShowComments] = useState(isCommentsExpanded);
 
   // Like mutation
   const handleLike = useCallback(() => {
@@ -306,6 +306,7 @@ const PostCard = React.memo(({ post, onPostClick, className = '' }) => {
       {showComments && (
         <CommentsSection 
           postId={post._id} 
+          authorId={post.author._id}
           onClose={() => setShowComments(false)} 
         />
       )}

@@ -28,8 +28,10 @@ const getNotifications = asyncHandler(async (req, res) => {
   const total = await Notification.countDocuments({ recipient: userId });
   
   // Get notifications with population
+  // Sort by updatedAt to show most recently updated notifications first
+  // (important for grouped notifications where multiple users act on same post)
   const notifications = await Notification.find({ recipient: userId })
-    .sort({ createdAt: -1 })
+    .sort({ updatedAt: -1 })
     .skip(skip)
     .limit(limit)
     .populate('actor', 'username fullName profilePicture bio')

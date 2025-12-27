@@ -65,26 +65,30 @@ const createComment = asyncHandler(async (req, res) => {
 
   // Increment comments count on post
   post.commentsCount += 1;
-  console.log('Incrementing comments count to:', post.commentsCount);
   await post.save();
 
   // Create notifications (don't block on failure)
   try {
     if (parentCommentId && parentComment) {
       // This is a reply - notify the parent comment author
+      // target = parentComment (for navigation), groupingKey = postId (for grouping)
+      //another future enchasment is to notify all the user who replied to the same comment
       await Notification.createOrUpdateNotification(
-        parentComment.author,
+        parentComment.author._id,
         userId,
         NOTIFICATION_TYPES.REPLY,
-        parentComment._id
+        parentComment._id, // target: navigate to parent comment
+        postId             // groupingKey: group by post
       );
     } else {
       // This is a top-level comment - notify the post author
+      // target = comment (for navigation), groupingKey = postId (for grouping)
       await Notification.createOrUpdateNotification(
-        post.author,
+        post.author._id,
         userId,
         NOTIFICATION_TYPES.COMMENT,
-        post._id
+        comment._id, // target: navigate to comment
+        postId       // groupingKey: group by post
       );
     }
   } catch (notificationError) {

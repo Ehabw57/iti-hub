@@ -15,7 +15,7 @@ import { useAuthStore } from '@/store/auth';
  * @param {string} props.postId - Post ID
  * @param {Function} props.onClose - Close handler
  */
-export default function CommentsSection({ postId, onClose }) {
+export default function CommentsSection({ postId, onClose, authorId }) {
   const [replyingTo, setReplyingTo] = useState(null);
   const t = useIntlayer(commentContent.key);
   const { isAuthenticated } = useAuthStore();
@@ -80,6 +80,7 @@ export default function CommentsSection({ postId, onClose }) {
             key={comment._id}
             comment={comment}
             postId={postId}
+            authorId={authorId}
             onReply={() => setReplyingTo(comment._id)}
             isReplyFormOpen={replyingTo === comment._id && isAuthenticated}
             onCancelReply={() => setReplyingTo(null)}
