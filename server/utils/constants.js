@@ -226,7 +226,7 @@ const PUBLIC_POST_FIELDS = [
 ];
 
 // Updatable fields for posts
-const UPDATABLE_POST_FIELDS = ['content', 'tags'];
+const UPDATABLE_POST_FIELDS = ['content', 'tags', 'repostComment'];
 
 // Public fields for comments
 const PUBLIC_COMMENT_FIELDS = [
