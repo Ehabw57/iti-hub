@@ -4,12 +4,16 @@ import { useIntlayer } from 'react-intlayer';
 import { useUploadProfilePicture, useUploadCoverImage } from '@hooks/mutations/useUserMutations';
 import { useToggleFollow, useToggleBlock } from '@hooks/mutations/useConnectionMutations';
 import { useAuthStore } from '@store/auth';
+import useRequireAuth from '@hooks/useRequireAuth';
+import EditProfile from './EditProfile';
 
 const ProfileHeader = ({ profile, isOwnProfile }) => {
   const [showCoverUpload, setShowCoverUpload] = useState(false);
   const [showProfileUpload, setShowProfileUpload] = useState(false);
+  const [showEditProfile, setShowEditProfile] = useState(false);
   const coverInputRef = useRef(null);
   const profileInputRef = useRef(null);
+  const { requireAuth } = useRequireAuth();
   
   const { 
     editProfile, follow, following, block, unblock, 
@@ -62,16 +66,19 @@ const ProfileHeader = ({ profile, isOwnProfile }) => {
     }
   };
 
-  const handleFollow = async () => {
-    try {
-      await toggleFollow(profile._id, profile.isFollowing);
-    } catch (error) {
-      console.error('Failed to toggle follow:', error);
-      alert(failedToUpdateFollowStatus);
-    }
+  const handleFollow =  () => {
+    requireAuth(async () => {
+      try {
+        await toggleFollow(profile._id, profile.isFollowing);
+      } catch (error) {
+        console.error('Failed to toggle follow:', error);
+        alert(failedToUpdateFollowStatus);
+      }
+    });
   };
 
-  const handleBlock = async () => {
+  const handleBlock =  () => {
+   requireAuth(async () => {
     const confirmed = window.confirm(
       profile.isBlocked ? confirmUnblock : confirmBlock
     );
@@ -83,7 +90,7 @@ const ProfileHeader = ({ profile, isOwnProfile }) => {
     } catch (error) {
       console.error('Failed to toggle block:', error);
       alert(failedToUpdateBlockStatus);
-    }
+    }});
   };
 
   return (
@@ -170,7 +177,10 @@ const ProfileHeader = ({ profile, isOwnProfile }) => {
           <div className="flex gap-3 mb-4">
             {isOwnProfile ? (
               // Own Profile Actions
-              <button className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium">
+              <button 
+                onClick={() => setShowEditProfile(true)}
+                className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium"
+              >
                 {editProfile}
               </button>
             ) : (
@@ -253,6 +263,14 @@ const ProfileHeader = ({ profile, isOwnProfile }) => {
           )}
         </div>
       </div>
+
+      {/* Edit Profile Modal */}
+      {showEditProfile && (
+        <EditProfile 
+          profile={profile} 
+          onClose={() => setShowEditProfile(false)} 
+        />
+      )}
     </div>
   );
 };

@@ -6,6 +6,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useGetUserFollowers } from '@hooks/queries/useUserQueries';
 import { useToggleFollow } from '@hooks/mutations/useConnectionMutations';
 import { useAuthStore } from '@store/auth';
+import useRequireAuth from '@hooks/useRequireAuth';
 import UserListItem from './UserListItem';
 
 const FollowersList = ({ userId, onClose }) => {
@@ -15,10 +16,12 @@ const FollowersList = ({ userId, onClose }) => {
   const { data: followersData, isLoading } = useGetUserFollowers(userId);
   const { toggleFollow } = useToggleFollow();
   const [followingStates, setFollowingStates] = useState({});
+  const { requireAuth } = useRequireAuth();
 
-  const followers = followersData?.data?.followers || [];
+const followers = followersData?.data?.followers || [];
 
-  const handleFollowClick = async (followerId, isFollowing) => {
+const handleFollowClick = (followerId, isFollowing) => {
+  requireAuth(async () => {
     try {
       setFollowingStates(prev => ({ ...prev, [followerId]: true }));
       await toggleFollow(followerId, isFollowing);
@@ -30,11 +33,12 @@ const FollowersList = ({ userId, onClose }) => {
       console.error('Failed to toggle follow:', error);
       setFollowingStates(prev => ({ ...prev, [followerId]: false }));
     }
-  };
+  });
+};
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-neutral-100 rounded-lg shadow-xl w-full max-w-lg max-h-[80vh] flex flex-col">
+    <div className="fixed inset-0 bg-black/5 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-white dark:bg-neutral-100 rounded-lg shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col z-[60]">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200 dark:border-neutral-200">
           <h2 className="text-xl font-bold text-neutral-900 dark:text-neutral-900">
@@ -72,6 +76,10 @@ const FollowersList = ({ userId, onClose }) => {
               {followers.map((follower) => {
                 const isOwnProfile = currentUser?._id === follower._id;
                 const isLoadingThis = followingStates[follower._id];
+                // Check if the current user is the owner of this followers list
+                const isViewingOwnFollowers = currentUser?._id === userId;
+                // If viewing own followers and not following them back, show "Follow Back"
+                const shouldShowFollowBack = isViewingOwnFollowers && !follower.isFollowing;
 
                 return (
                   <UserListItem
@@ -81,7 +89,7 @@ const FollowersList = ({ userId, onClose }) => {
                     isLoading={isLoadingThis}
                     onFollowClick={handleFollowClick}
                     onNavigate={onClose}
-                    followButtonText={content.followBack}
+                    followButtonText={shouldShowFollowBack ? content.followBack : content.follow}
                     followingButtonText={content.following}
                   />
                 );

@@ -3,6 +3,7 @@ require("dotenv").config();
 
 // seed functions
 const seedUsers = require("./seedUsers");
+const seedConnections = require("./seedConnections");
 const seedPosts = require("./seedPosts");
 const seedPostLikes = require("./seedPostLikes");
 const seedComments = require("./seedComments");
@@ -20,6 +21,9 @@ async function seed() {
 
     // 2️⃣ seed users
     const users = await seedUsers();
+
+    // 3️⃣ seed connections (follows and blocks)
+    await seedConnections(users);
 
     // ⏭️ الخطوات الجاية (هنفعلها واحدة واحدة)
     const posts = await seedPosts(users);

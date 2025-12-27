@@ -6,6 +6,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useGetUserFollowing } from '@hooks/queries/useUserQueries';
 import { useToggleFollow } from '@hooks/mutations/useConnectionMutations';
 import { useAuthStore } from '@store/auth';
+import useRequireAuth from '@hooks/useRequireAuth';
 import UserListItem from './UserListItem';
 
 const FollowingList = ({ userId, onClose }) => {
@@ -15,26 +16,29 @@ const FollowingList = ({ userId, onClose }) => {
   const { data: followingData, isLoading } = useGetUserFollowing(userId);
   const { toggleFollow } = useToggleFollow();
   const [followingStates, setFollowingStates] = useState({});
+  const { requireAuth } = useRequireAuth();
 
   const following = followingData?.data?.following || [];
 
-  const handleFollowClick = async (targetUserId, isFollowing) => {
-    try {
-      setFollowingStates(prev => ({ ...prev, [targetUserId]: true }));
-      await toggleFollow(targetUserId, isFollowing);
-      // Invalidate queries to refetch updated data
-      queryClient.invalidateQueries(['userFollowing', userId]);
-      queryClient.invalidateQueries(['userProfile']);
-      setFollowingStates(prev => ({ ...prev, [targetUserId]: false }));
-    } catch (error) {
-      console.error('Failed to toggle follow:', error);
-      setFollowingStates(prev => ({ ...prev, [targetUserId]: false }));
-    }
+  const handleFollowClick = (targetUserId, isFollowing) => {
+    requireAuth(async () => {
+      try {
+        setFollowingStates(prev => ({ ...prev, [targetUserId]: true }));
+        await toggleFollow(targetUserId, isFollowing);
+        // Invalidate queries to refetch updated data
+        queryClient.invalidateQueries(['userFollowing', userId]);
+        queryClient.invalidateQueries(['userProfile']);
+        setFollowingStates(prev => ({ ...prev, [targetUserId]: false }));
+      } catch (error) {
+        console.error('Failed to toggle follow:', error);
+        setFollowingStates(prev => ({ ...prev, [targetUserId]: false }));
+      }
+    });
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-neutral-100 rounded-lg shadow-xl w-full max-w-lg max-h-[80vh] flex flex-col">
+    <div className="fixed inset-0 bg-black/5 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-white dark:bg-neutral-100 rounded-lg shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col z-[60]">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200 dark:border-neutral-200">
           <h2 className="text-xl font-bold text-neutral-900 dark:text-neutral-900">

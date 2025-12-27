@@ -63,6 +63,48 @@ export default {
       ar: "السيرة الذاتية",
     }),
 
+    // Edit Profile Form
+    fullName: t({
+      en: "Full Name",
+      ar: "الاسم الكامل",
+    }),
+    fullNamePlaceholder: t({
+      en: "Enter your full name",
+      ar: "أدخل اسمك الكامل",
+    }),
+    fullNameRequired: t({
+      en: "Full name is required",
+      ar: "الاسم الكامل مطلوب",
+    }),
+    fullNameTooShort: t({
+      en: "Full name must be at least 2 characters",
+      ar: "يجب أن يكون الاسم الكامل على الأقل حرفين",
+    }),
+    fullNameTooLong: t({
+      en: "Full name must be less than 50 characters",
+      ar: "يجب أن يكون الاسم الكامل أقل من 50 حرفاً",
+    }),
+    bioPlaceholder: t({
+      en: "Tell us about yourself",
+      ar: "أخبرنا عن نفسك",
+    }),
+    bioTooLong: t({
+      en: "Bio must be less than 500 characters",
+      ar: "يجب أن تكون السيرة الذاتية أقل من 500 حرف",
+    }),
+    saving: t({
+      en: "Saving...",
+      ar: "جاري الحفظ...",
+    }),
+    profileUpdated: t({
+      en: "Profile updated successfully",
+      ar: "تم تحديث الملف الشخصي بنجاح",
+    }),
+    failedToUpdateProfile: t({
+      en: "Failed to update profile",
+      ar: "فشل تحديث الملف الشخصي",
+    }),
+
     // Profile Posts
     noPosts: t({
       en: "No Posts Yet",
@@ -196,7 +238,7 @@ export default {
     // Followers & Following Lists
     followBack: t({
       en: "Follow Back",
-      ar: "متابعة متبادلة",
+      ar: "رد المتابعة",
     }),
     loadingFollowers: t({
       en: "Loading followers...",
