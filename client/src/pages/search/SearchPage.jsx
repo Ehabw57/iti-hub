@@ -1,22 +1,33 @@
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useIntlayer } from 'react-intlayer';
+import { useFastSearch } from '@/hooks/mutations/useFastSearch';
 import api from '@/lib/api';
 import UserListItem from './UserListItem';
 import PostItem from './PostItem';
 import CommunityItem from './CommunityItem';
 
 export default function SearchPage() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const navigate = useNavigate();
-  const q = searchParams.get('q') || '';
-  const tab = searchParams.get('tab') || 'posts';
+const [searchParams, setSearchParams] = useSearchParams();
+const navigate = useNavigate();
+const q = searchParams.get('q') || '';
+const tab = searchParams.get('tab') || 'posts';
+const t = useIntlayer('search-page');
+const { query, setQuery, results, loading } = useFastSearch(q);
+ 
 
   const [pageState, setPageState] = useState({ users: 1, posts: 1, communities: 1 });
 
   useEffect(() => {
     setPageState({ users: 1, posts: 1, communities: 1 });
   }, [q]);
+
+  useEffect(() => {
+  if (q !== query) {
+    setQuery(q);
+  }
+}, [q]);
 
   // Fetch functions
   const fetchUsers = async ({ page = 1 }) => {
@@ -82,9 +93,9 @@ export default function SearchPage() {
   return (
     <div className="max-w-4xl mx-auto p-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">Search results for "{q}"</h2>
+        <h2 className="text-2xl font-semibold">{t.searchResultsFor} "{q}"</h2>
         <button className="text-sm text-neutral-500" onClick={() => navigate('/')}>
-          Back
+          {t.back}
         </button>
       </div>
 
@@ -92,60 +103,62 @@ export default function SearchPage() {
       <div className="mt-4 border-b border-neutral-200">
         <nav className="flex gap-6">
           <TabButton active={tab === 'posts'} onClick={() => goToTab('posts')}>
-            Posts<CountBadge count={postsQuery.data?.pagination?.total} />
+            {t.postsTab}<CountBadge count={postsQuery.data?.pagination?.total} />
           </TabButton>
           <TabButton active={tab === 'users'} onClick={() => goToTab('users')}>
-            Users<CountBadge count={usersQuery.data?.pagination?.total} />
+            {t.usersTab}<CountBadge count={usersQuery.data?.pagination?.total} />
           </TabButton>
           <TabButton active={tab === 'communities'} onClick={() => goToTab('communities')}>
-            Communities<CountBadge count={communitiesQuery.data?.pagination?.total} />
+            {t.communitiesTab}<CountBadge count={communitiesQuery.data?.pagination?.total} />
           </TabButton>
         </nav>
       </div>
 
-      {/* Results */}
-      <div className="mt-6">
-        {isLoading && <p>Loading results...</p>}
-        {error && <p className="text-red-600">Error loading results: {error?.message}</p>}
+{/* Results from fast search */}
+<div className="results mt-4">
+  {loading && <p>Loading...</p>}
 
-        {!isLoading && tab === 'posts' && (
-          <ResultsList
-            items={postsQuery.data?.posts || []}
-            renderItem={(p) => <PostItem key={p._id} post={p} />}
-            pagination={postsQuery.data?.pagination}
-            onPageChange={(page) => gotoPage('posts', page)}
-          />
-        )}
-        {!isLoading && tab === 'users' && (
-          <ResultsList
-            items={usersQuery.data?.users || []}
-            renderItem={(u) => <UserListItem key={u._id} user={u} />}
-            pagination={usersQuery.data?.pagination}
-            onPageChange={(page) => gotoPage('users', page)}
-          />
-        )}
-        {!isLoading && tab === 'communities' && (
-          <ResultsList
-            items={communitiesQuery.data?.communities || []}
-            renderItem={(c) => <CommunityItem key={c._id} community={c} />}
-            pagination={communitiesQuery.data?.pagination}
-            onPageChange={(page) => gotoPage('communities', page)}
-          />
-        )}
+  {tab === "users" &&
+    results.users.map((u) => (
+      <div key={u._id} className="p-2 border-b">
+        <p className="font-bold">{u.username}</p>
+        <p>{u.fullName}</p>
+        <p>Followers: {u.followersCount}</p>
+      </div>
+    ))}
+
+  {tab === "posts" &&
+    results.posts.map((p) => (
+      <div key={p._id} className="p-2 border-b">
+        <p>{p.content}</p>
+        <p>Author: {p.author.username}</p>
+        <p>Likes: {p.likesCount}</p>
+      </div>
+    ))}
+
+  {tab === "communities" &&
+    results.communities.map((c) => (
+      <div key={c._id} className="p-2 border-b">
+        <p className="font-bold">{c.name}</p>
+        <p>Members: {c.memberCount}</p>
+      </div>
+    ))}
+</div>
 
         {!isLoading &&
           ((tab === 'posts' && (postsQuery.data?.posts || []).length === 0) ||
             (tab === 'users' && (usersQuery.data?.users || []).length === 0) ||
             (tab === 'communities' && (communitiesQuery.data?.communities || []).length === 0)) && (
-            <p className="text-sm text-neutral-500">No results found.</p>
+            <p className="text-sm text-neutral-500">{t.noResults}.</p>
           )}
-      </div>
     </div>
   );
 }
 
 // Helpers
 function TabButton({ children, active, onClick }) {
+      const t = useIntlayer('search-page');
+
   return (
     <button
       onClick={onClick}
@@ -162,6 +175,8 @@ function CountBadge({ count }) {
 }
 
 function ResultsList({ items, renderItem, pagination, onPageChange }) {
+      const t = useIntlayer('search-page');
+
   return (
     <div>
       <div className="border rounded-md overflow-hidden">{items.map(renderItem)}</div>
@@ -173,17 +188,17 @@ function ResultsList({ items, renderItem, pagination, onPageChange }) {
             onClick={() => onPageChange(Math.max(1, pagination.page - 1))}
             disabled={!pagination.hasPrevPage}
           >
-            Prev
+            {t.prev}
           </button>
           <div className="text-sm text-neutral-500">
-            Page {pagination.page} / {pagination.pages}
+            {t.page} {pagination.page} / {pagination.pages}
           </div>
           <button
             className="px-3 py-1 border rounded disabled:opacity-50"
             onClick={() => onPageChange(Math.min(pagination.pages, pagination.page + 1))}
             disabled={!pagination.hasNextPage}
           >
-            Next
+            {t.next}
           </button>
         </div>
       )}
