@@ -22,6 +22,7 @@ export default {
     noTrendingPosts: t({ en: "No trending posts in this period", ar: "لا توجد منشورات رائجة في هذه الفترة" }),
     noSavedPostsTitle: t({en: "No saved posts", ar: "لا توجد منشورات محفوظه"}),
     noSavedPosts: t({ en: "You haven't saved any posts yet", ar: "لم تحفظ أي منشورات بعد" }),
+    savedPostsTitle: t({ en: "Saved Posts", ar: "المنشورات المحفوظة" }),
     
     // Errors
     errorLoadingFeed: t({ en: "Failed to load feed", ar: "فشل تحميل الخلاصة" }),

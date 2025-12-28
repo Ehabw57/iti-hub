@@ -36,8 +36,7 @@ export default function SavedPostsController() {
 
   if (isLoading) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-6">
-        <h1 className="text-heading-2 mb-6">Saved Posts</h1>
+      <div className="max-w-2xl mx-auto  py-6">
         <FeedPostSkeleton />
         <FeedPostSkeleton />
         <FeedPostSkeleton />
@@ -47,8 +46,7 @@ export default function SavedPostsController() {
 
   if (isError) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-6">
-        <h1 className="text-heading-2 mb-6">Saved Posts</h1>
+      <div className="max-w-2xl mx-auto  py-6">
         <ErrorDisplay 
           message={error?.response?.data?.error?.message || content.errorLoadingFeed}
           onRetry={refetch}
@@ -59,8 +57,7 @@ export default function SavedPostsController() {
 
   if (posts.length === 0) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-6">
-        <h1 className="text-heading-2 mb-6">Saved Posts</h1>
+      <div className="max-w-2xl mx-auto  py-6">
         <EmptyFeed 
           title={content.noSavedPostsTitle}
           message={content.noSavedPosts}
@@ -70,7 +67,7 @@ export default function SavedPostsController() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-6 flex flex-col gap-3">
+    <div className="max-w-2xl mx-auto  py-6 flex flex-col gap-3">
       <h1 className="text-heading-2 mb-3">Saved Posts</h1>
       
       {posts.map(post => (

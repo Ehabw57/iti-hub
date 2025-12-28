@@ -28,7 +28,6 @@ export default function FeedLayout() {
     { path: "/", label: content.homeTab, public: true },
     { path: "/feed/following", label: content.followingTab, public: false },
     { path: "/feed/trending", label: content.trendingTab, public: true },
-    { path: "/saved", label: content.savedTab, public: false },
   ];
 
   const handleTabClick = (path, isPublic) => {
@@ -46,7 +45,7 @@ export default function FeedLayout() {
   return (
     <div className="min-h-screen bg-neutral-200">
       {/* Header with tabs */}
-      <div className="bg-neutral-50 border-b border-neutral-200 sticky top-0 z-40">
+      <div className="bg-neutral-50 border-b border-neutral-200 sticky top-0 z-2">
         <div className="max-w-4xl mx-auto px-4">
           <div className="flex items-center justify-between">
             <div className="flex gap-1 overflow-x-auto">
@@ -74,9 +73,10 @@ export default function FeedLayout() {
             <Button
               onClick={handleCreatePost}
               variant="primary"
+              className="lg:hidden"
             >
               <HiPencil className="w-5 h-5" />
-              <span className="hidden sm:inline">{content.createPost}</span>
+              <span className="hidden md:inline">{content.createPost}</span>
             </Button>
           </div>
         </div>
