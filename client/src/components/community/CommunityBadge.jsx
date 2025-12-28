@@ -19,7 +19,7 @@ export function CommunityBadge({ community, onClick, size = 'md' }) {
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-2 text-sm text-primary-600 hover:text-primary-700 transition-colors"
+      className={`flex items-center gap-2 text-${size} text-primary-600 hover:text-primary-700 transition-colors`}
     >
       <HiBuildingLibrary className="w-4 h-4" />
       <span>{community.name}</span>
