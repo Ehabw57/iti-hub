@@ -41,10 +41,11 @@ const likePost = asyncHandler(async (req, res) => {
   // Create or update notification (don't block on failure)
   try {
     await Notification.createOrUpdateNotification(
-      post.author,
+      post.author._id,
       userId,
       NOTIFICATION_TYPES.LIKE,
-      post._id
+      post._id, // target: navigate to post
+      post._id  // groupingKey: group by post
     );
   } catch (notificationError) {
     console.error('Failed to create notification:', notificationError);

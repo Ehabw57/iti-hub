@@ -42,9 +42,7 @@ const getUserPosts = asyncHandler(async (req, res) => {
   // Check if current user has liked/saved each post
   const postsWithUserData = await Promise.all(
     posts.map(async (post) => {
-      if (currentUserId) {
         return buildPostResponse(post, currentUserId); 
-      }
 
     })
   );

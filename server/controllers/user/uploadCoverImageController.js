@@ -45,7 +45,7 @@ const uploadCoverImageController = asyncHandler(async (req, res) => {
   // Upload processed image to Cloudinary
   let uploadResult;
   try {
-    const publicId = `${CLOUDINARY_FOLDER_COVER}/user_${req.user._id}_${Date.now()}`;
+    const publicId = `user_${req.user._id}_${Date.now()}`;
     uploadResult = await uploadToCloudinary(processedBuffer, CLOUDINARY_FOLDER_COVER, publicId);
   } catch (error) {
     throw new InternalError('Failed to upload image');
@@ -60,7 +60,21 @@ const uploadCoverImageController = asyncHandler(async (req, res) => {
     throw new InternalError('Failed to update cover image');
   }
 
-  sendSuccess(res, { coverImage: user.coverImage }, 'Cover image updated successfully');
+  // Return full user object for frontend state update
+  sendSuccess(res, { 
+    user: {
+      _id: user._id,
+      username: user.username,
+      email: user.email,
+      fullName: user.fullName,
+      profilePicture: user.profilePicture,
+      coverImage: user.coverImage,
+      bio: user.bio,
+      specialization: user.specialization,
+      location: user.location,
+      isVerified: user.isVerified
+    }
+  }, 'Cover image updated successfully');
 });
 
 module.exports = uploadCoverImageController;

@@ -1,6 +1,6 @@
 const Post = require('../../models/Post');
 const Connection = require('../../models/Connection');
-const Enrollment = require('../../models/Enrollment');
+const CommunityMember = require('../../models/CommunityMember');
 const feedAlgorithm = require('../../utils/feedAlgorithm');
 const feedCache = require('../../utils/feedCache');
 const { buildPostResponse } = require('../../utils/postHelpers');
@@ -56,13 +56,15 @@ const getHomeFeed = asyncHandler(async (req, res) => {
 
   if (isAuthenticated) {
     // Authenticated: Algorithmic feed
-    const [connections, enrollments] = await Promise.all([
+    const [connections, communityMembers] = await Promise.all([
       Connection.find({ follower: currentUserId }),
-      Enrollment.find({ user: currentUserId })
+      CommunityMember.find({ user: currentUserId })
     ]);
 
     const followedUserIds = connections.map(c => c.following);
-    const communityIds = enrollments.map(e => e.branch);
+    const communityIds = communityMembers.map(cm => cm.community);
+    console.log('Followed Users:', followedUserIds);
+    console.log('Communities:', communityIds);
 
     // Build query for posts from followed users and communities
     const query = {};

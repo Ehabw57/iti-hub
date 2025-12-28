@@ -1,15 +1,9 @@
-import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { toast } from 'react-hot-toast';
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useIntlayer } from 'react-intlayer';
 import usePost from '@hooks/queries/usePost';
 import useFeedHome from '@hooks/queries/useFeedHome';
-import useToggleLike from '@hooks/mutations/useToggleLike';
-import useToggleSave from '@hooks/mutations/useToggleSave';
-import useRepost from '@hooks/mutations/useRepost';
-import useDeletePost from '@hooks/mutations/useDeletePost';
 import useIntersectionObserver from '@hooks/useIntersectionObserver';
-import useRequireAuth from '@hooks/useRequireAuth';
 import { PostCard } from '@/components/post/PostCard';
 import FeedPostSkeleton from '@components/feed/FeedPostSkeleton';
 import { Loading, ErrorDisplay } from '@components/common';
@@ -17,10 +11,16 @@ import { Loading, ErrorDisplay } from '@components/common';
 /**
  * Post detail controller - shows a featured post with comments auto-expanded,
  * followed by the regular home feed
+ * 
+ * Features:
+ * - Auto-expand comments when navigating from notifications
+ * - Scroll to specific comment when hash is present (e.g., #comment-123)
+ * - Show fallback error for 404 posts
  */
 export default function PostDetailController() {
   const { postId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { content } = useIntlayer('feedHome');
 
   // Fetch the featured post
@@ -41,14 +41,7 @@ export default function PostDetailController() {
   } = useFeedHome();
 
   const [expandedComments, setExpandedComments] = useState({ [postId]: true });
-  const [optimisticLikes, setOptimisticLikes] = useState({});
-  const [optimisticSaves, setOptimisticSaves] = useState({});
 
-  const toggleLike = useToggleLike();
-  const toggleSave = useToggleSave();
-  const repost = useRepost();
-  const deletePost = useDeletePost();
-  const { requireAuth } = useRequireAuth();
 
   const { observerTarget } = useIntersectionObserver({
     onIntersect: () => {
@@ -59,95 +52,43 @@ export default function PostDetailController() {
     enabled: hasNextPage && !isFetchingNextPage
   });
 
-  const handleLike = (postIdToLike, currentLiked, currentCount) => {
-    requireAuth(() => {
-      setOptimisticLikes(prev => ({
-        ...prev,
-        [postIdToLike]: {
-          isLiked: !currentLiked,
-          count: currentLiked ? currentCount - 1 : currentCount + 1
-        }
-      }));
+  // Handle comment navigation from notifications (e.g., #comment-123)
+  useEffect(() => {
+    if (!featuredPost || !location.hash) return;
 
-      toggleLike.mutate(
-        { postId: postIdToLike, isCurrentlyLiked: currentLiked },
-        {
-          onError: () => {
-            setOptimisticLikes(prev => {
-              const { [postIdToLike]: _, ...rest } = prev;
-              return rest;
-            });
-            toast.error(content.errorLikingPost);
-          }
-        }
-      );
-    });
-  };
+    // Extract comment ID from hash
+    const commentId = location.hash.replace('#comment-', '');
+    if (!commentId) return;
 
-  const handleSave = (postIdToSave, currentSaved) => {
-    requireAuth(() => {
-      setOptimisticSaves(prev => ({
-        ...prev,
-        [postIdToSave]: { isSaved: !currentSaved }
-      }));
-
-      toggleSave.mutate(
-        { postId: postIdToSave, isCurrentlySaved: currentSaved },
-        {
-          onSuccess: () => {
-            toast.success(currentSaved ? content.postUnsaved : content.postSaved);
-          },
-          onError: () => {
-            setOptimisticSaves(prev => {
-              const { [postIdToSave]: _, ...rest } = prev;
-              return rest;
-            });
-            toast.error(content.errorSavingPost);
-          }
-        }
-      );
-    });
-  };
-
-  const handleCommentToggle = (postIdToToggle) => {
-    requireAuth(() => {
+    // Auto-expand comments when navigating from notification
+    if (!expandedComments[postId]) {
       setExpandedComments(prev => ({
         ...prev,
-        [postIdToToggle]: !prev[postIdToToggle]
+        [postId]: true
       }));
-    });
-  };
-
-  const handleRepost = (postIdToRepost) => {
-    repost.mutate(
-      { postId: postIdToRepost, repostComment: null },
-      {
-        onSuccess: () => toast.success(content.postReposted),
-        onError: () => toast.error(content.errorRepostingPost)
-      }
-    );
-  };
-
-  const handleShare = (postIdToShare) => {
-    const url = `${window.location.origin}/posts/${postIdToShare}`;
-    navigator.clipboard.writeText(url)
-      .then(() => toast.success(content.linkCopied))
-      .catch(() => toast.error(content.errorCopyingLink));
-  };
-
-  const handleDelete = (postIdToDelete) => {
-    if (window.confirm('Are you sure you want to delete this post?')) {
-      deletePost.mutate(postIdToDelete, {
-        onSuccess: () => {
-          toast.success('Post deleted successfully');
-          navigate('/'); // Redirect to home after deleting featured post
-        },
-        onError: () => {
-          toast.error('Failed to delete post');
-        }
-      });
+        console.log('expanding comments for post', postId);
     }
-  };
+
+    // Scroll to the comment after a short delay to ensure DOM is ready
+    const timeoutId = setTimeout(() => {
+      const commentElement = document.getElementById(`comment-${commentId}`);
+      console.log('scrolling to comment element', commentElement);
+      if (commentElement) {
+        commentElement.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center' 
+        });
+        // Add a highlight effect
+        commentElement.classList.add('highlight-comment');
+        setTimeout(() => {
+          commentElement.classList.remove('highlight-comment');
+        }, 2000);
+      }
+    }, 2000);
+
+    return () => clearTimeout(timeoutId);
+  }, [featuredPost, location.hash, postId, expandedComments]);
+
 
   // Filter out the featured post from feed
   const feedPosts = feedData?.pages.flatMap(page => 
@@ -163,12 +104,68 @@ export default function PostDetailController() {
   }
 
   if (isErrorPost) {
+    const is404 = errorPost?.response?.status === 404;
+    const errorMessage = errorPost?.response?.data?.error?.message || 
+                        (is404 ? 'Post not found' : 'Failed to load post');
+    
     return (
       <div className="max-w-2xl mx-auto px-4 py-6">
-        <ErrorDisplay 
-          message={errorPost?.response?.data?.error?.message || 'Failed to load post'}
-          onRetry={() => navigate('/')}
-        />
+        <div className="bg-white rounded-lg shadow-sm border border-neutral-200 p-8 text-center">
+          <div className="mb-4">
+            <div 
+              className="w-16 h-16 mx-auto rounded-full flex items-center justify-center"
+              style={{ backgroundColor: 'var(--color-neutral-100)' }}
+            >
+              <svg 
+                className="w-8 h-8" 
+                style={{ color: 'var(--color-neutral-500)' }}
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth={2} 
+                  d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" 
+                />
+              </svg>
+            </div>
+          </div>
+          
+          <h2 className="text-heading-4 text-neutral-900 mb-2">
+            {is404 ? 'Post Not Found' : 'Unable to Load Post'}
+          </h2>
+          
+          <p className="text-body-2 text-neutral-600 mb-6">
+            {is404 
+              ? 'This post may have been deleted or the link is incorrect.' 
+              : errorMessage
+            }
+          </p>
+          
+          <div className="flex gap-3 justify-center">
+            <button
+              onClick={() => navigate(-1)}
+              className="px-4 py-2 rounded-lg border transition-colors"
+              style={{
+                borderColor: 'var(--color-neutral-300)',
+                color: 'var(--color-neutral-700)'
+              }}
+            >
+              Go Back
+            </button>
+            <button
+              onClick={() => navigate('/')}
+              className="px-4 py-2 rounded-lg transition-colors text-white"
+              style={{
+                backgroundColor: 'var(--color-primary-500)'
+              }}
+            >
+              Go to Home
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
@@ -180,15 +177,7 @@ export default function PostDetailController() {
         <div className="mb-6">
           <PostCard
             post={featuredPost}
-            onLike={() => handleLike(featuredPost._id, featuredPost.isLiked, featuredPost.likesCount)}
-            onRepost={() => handleRepost(featuredPost._id)}
-            onShare={() => handleShare(featuredPost._id)}
-            onCommentToggle={handleCommentToggle}
-            onSave={() => handleSave(featuredPost._id, featuredPost.isSaved)}
-            onDelete={handleDelete}
             isCommentsExpanded={expandedComments[featuredPost._id]}
-            optimisticLikes={optimisticLikes}
-            optimisticSaves={optimisticSaves}
           />
         </div>
       )}
@@ -212,15 +201,7 @@ export default function PostDetailController() {
         <PostCard
           key={post._id}
           post={post}
-          onLike={() => handleLike(post._id, post.isLiked, post.likesCount)}
-          onRepost={() => handleRepost(post._id)}
-          onShare={() => handleShare(post._id)}
-          onCommentToggle={handleCommentToggle}
-          onSave={() => handleSave(post._id, post.isSaved)}
-          onDelete={handleDelete}
           isCommentsExpanded={expandedComments[post._id]}
-          optimisticLikes={optimisticLikes}
-          optimisticSaves={optimisticSaves}
         />
       ))}
 

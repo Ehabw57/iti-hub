@@ -35,7 +35,8 @@ export default function CommentItem({
   postId, 
   onReply, 
   isReplyFormOpen,
-  onCancelReply 
+  onCancelReply,
+  authorId
 }) {
   const navigate = useNavigate();
   const { locale } = useUIStore();
@@ -51,6 +52,7 @@ export default function CommentItem({
   const deleteComment = useDeleteComment();
   const toggleCommentLike = useToggleCommentLike();
   const isOwnComment = user?._id === comment.author._id;
+  const isOwnPost = user?._id === authorId;
 
   // Local state for optimistic updates
   const [likeState, setLikeState] = useState({
@@ -182,9 +184,9 @@ export default function CommentItem({
   };
 
   return (
-    <div className="flex gap-3">
-      <img 
-        src={comment.author.profilePicture || '/default-avatar.png'}
+    <div className="flex gap-3" id={`comment-${comment._id}`}>
+      <img
+        src={comment.author.profilePicture || "/default-avatar.png"}
         alt={comment.author.fullName}
         className="w-8 h-8 rounded-full cursor-pointer object-cover shrink-0"
         onClick={() => handleProfileClick(comment.author.username)}
@@ -198,36 +200,38 @@ export default function CommentItem({
             >
               {comment.author.fullName}
             </button>
-            
+
             {/* Edit/Delete Menu */}
-            {isOwnComment && !isEditing && (
+            {(isOwnComment || isOwnPost) && !isEditing && (
               <Menu as="div" className="relative">
                 <MenuButton className="p-1 rounded-full hover:bg-neutral-100 transition-colors">
                   <HiEllipsisHorizontal className="w-4 h-4 text-neutral-600" />
                 </MenuButton>
-                <MenuItems 
+                <MenuItems
                   anchor="bottom end"
                   className="w-40 bg-neutral-50 rounded-lg shadow-elevation-2 border border-neutral-200 py-1 z-50 [--anchor-gap:4px]"
                 >
-                  <MenuItem>
-                    {({ focus }) => (
-                      <button
-                        onClick={handleEdit}
-                        className={`w-full px-4 py-2 text-start text-body-2 flex items-center gap-3 ${
-                          focus ? 'bg-neutral-50' : ''
-                        }`}
-                      >
-                        <HiPencil className="w-4 h-4" />
-                        <span>{content.editComment}</span>
-                      </button>
-                    )}
-                  </MenuItem>
+                  {isOwnComment && (
+                    <MenuItem>
+                      {({ focus }) => (
+                        <button
+                          onClick={handleEdit}
+                          className={`w-full px-4 py-2 text-start text-body-2 flex items-center gap-3 ${
+                            focus ? "bg-neutral-50" : ""
+                          }`}
+                        >
+                          <HiPencil className="w-4 h-4" />
+                          <span>{content.editComment}</span>
+                        </button>
+                      )}
+                    </MenuItem>
+                  )}
                   <MenuItem>
                     {({ focus }) => (
                       <button
                         onClick={handleDelete}
                         className={`w-full px-4 py-2 text-start text-body-2 flex items-center gap-3 text-red-600 ${
-                          focus ? 'bg-neutral-50' : ''
+                          focus ? "bg-neutral-50" : ""
                         }`}
                       >
                         <HiTrash className="w-4 h-4" />
@@ -274,20 +278,14 @@ export default function CommentItem({
         </div>
 
         <div className="flex items-center gap-4 mt-1 text-caption text-neutral-600">
-          <button 
+          <button
             onClick={handleLike}
             className={`flex items-center gap-1 transition-colors ${
-              likeState.isLiked 
-                ? 'text-red-600' 
-                : 'hover:text-red-600'
+              likeState.isLiked ? "text-red-600" : "hover:text-red-600"
             }`}
             aria-label={likeState.isLiked ? content.liked : content.like}
           >
-            {likeState.isLiked ? (
-                content.liked
-            ) : (
-                content.like
-            )}
+            {likeState.isLiked ? content.liked : content.like}
             {likeState.count > 0 && <span>{likeState.count}</span>}
           </button>
           <button onClick={onReply} className="hover:text-primary-600">
@@ -316,17 +314,18 @@ export default function CommentItem({
             onClick={() => setShowReplies(true)}
             className="mt-2 text-caption text-primary-600 hover:underline"
           >
-            {content.view} {comment.repliesCount} {comment.repliesCount === 1 ? content.reply : content.replies}
+            {content.view} {comment.repliesCount}{" "}
+            {comment.repliesCount === 1 ? content.reply : content.replies}
           </button>
         )}
 
         {/* Expanded replies */}
         {showReplies && replies.length > 0 && (
           <div className="mt-3 space-y-3 ms-4 border-s-2 border-neutral-200 ps-4">
-            {replies.map(reply => (
+            {replies.map((reply) => (
               <div key={reply._id} className="flex gap-2">
-                <img 
-                  src={reply.author.profilePicture || '/default-avatar.png'}
+                <img
+                  src={reply.author.profilePicture || "/default-avatar.png"}
                   alt={reply.author.fullName}
                   className="w-6 h-6 rounded-full cursor-pointer object-cover shrink-0"
                   onClick={() => handleProfileClick(reply.author.username)}
@@ -344,7 +343,7 @@ export default function CommentItem({
                     </p>
                   </div>
                   <div className="flex items-center gap-3 mt-1 text-caption text-neutral-600">
-                    <button 
+                    <button
                       className="flex items-center gap-1 hover:text-red-600"
                       onClick={() => handleReplyLike(reply)}
                     >
@@ -366,7 +365,7 @@ export default function CommentItem({
             onClick={() => setShowReplies(false)}
             className="mt-2 text-caption text-neutral-600 hover:underline"
           >
-           {content.hideReplies} 
+            {content.hideReplies}
           </button>
         )}
       </div>

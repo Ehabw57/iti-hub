@@ -30,7 +30,6 @@ const NotificationSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       refPath: 'targetModel',
       required: function() {
-        // Target is required for all types except 'follow'
         return this.type !== NOTIFICATION_TYPES.FOLLOW;
       }
     },
@@ -38,14 +37,21 @@ const NotificationSchema = new mongoose.Schema(
       type: String,
       enum: ['Post', 'Comment'],
       default: function() {
-        // Determine the model based on notification type
-        if (this.type === NOTIFICATION_TYPES.REPLY || this.type === NOTIFICATION_TYPES.COMMENT_LIKE) {
+        if (this.type === NOTIFICATION_TYPES.REPLY || this.type === NOTIFICATION_TYPES.COMMENT || this.type === NOTIFICATION_TYPES.COMMENT_LIKE) {
           return 'Comment';
         }
-        if (this.type === NOTIFICATION_TYPES.LIKE || this.type === NOTIFICATION_TYPES.COMMENT || this.type === NOTIFICATION_TYPES.REPOST) {
+        if (this.type === NOTIFICATION_TYPES.LIKE ||  this.type === NOTIFICATION_TYPES.REPOST) {
           return 'Post';
         }
         return undefined;
+      }
+    },
+    // NEW FIELD: The actual entity to group notifications by
+    groupingKey: {
+      type: mongoose.Schema.Types.ObjectId,
+      index: true,
+      required: function() {
+        return this.type !== NOTIFICATION_TYPES.FOLLOW;
       }
     },
     isRead: {
@@ -60,15 +66,11 @@ const NotificationSchema = new mongoose.Schema(
 );
 
 // Indexes for efficient querying
-NotificationSchema.index({ recipient: 1, createdAt: -1 });
+// Sort by updatedAt to show most recently updated notifications first
+NotificationSchema.index({ recipient: 1, updatedAt: -1 });
 NotificationSchema.index({ recipient: 1, isRead: 1 });
-NotificationSchema.index({ recipient: 1, type: 1, target: 1 }); // For finding existing notification to group with
+NotificationSchema.index({ recipient: 1, type: 1, groupingKey: 1 }); // CHANGED: Use groupingKey instead of target
 
-/**
- * Check if a notification type is groupable
- * @param {string} type - Notification type
- * @returns {boolean}
- */
 NotificationSchema.statics.isGroupableType = function(type) {
   return GROUPABLE_NOTIFICATION_TYPES.includes(type);
 };
@@ -78,56 +80,85 @@ NotificationSchema.statics.isGroupableType = function(type) {
  * @param {ObjectId} recipientId - User receiving the notification
  * @param {ObjectId} actorId - User performing the action
  * @param {string} type - Notification type
- * @param {ObjectId} targetId - Target post/comment (null for follow)
+ * @param {ObjectId} targetId - Target comment/post for navigation
+ * @param {ObjectId} postId - The post being interacted with (for grouping)
  * @returns {Promise<Notification|null>}
  */
-NotificationSchema.statics.createOrUpdateNotification = async function(recipientId, actorId, type, targetId) {
+NotificationSchema.statics.createOrUpdateNotification = async function(recipientId, actorId, type, targetId, postId = null) {
   // Don't notify user of their own actions
   if (recipientId.toString() === actorId.toString()) {
     return null;
   }
 
   const isGroupable = this.isGroupableType(type);
-  let isUpdate = false;
 
-  if (isGroupable && targetId) {
-    // Check if notification already exists for grouping
+  // Determine grouping key:
+  // - For COMMENT/REPLY: group by POST (not by individual comment)
+  // - For LIKE/REPOST: group by POST
+  // - For COMMENT_LIKE: group by COMMENT
+  let groupingKey = targetId; // Default to targetId
+  
+  if (type === NOTIFICATION_TYPES.COMMENT || type === NOTIFICATION_TYPES.REPLY) {
+    // Group comments/replies by POST, not by individual comment
+    groupingKey = postId || targetId; // Use postId if provided, fallback to targetId
+  }
+
+  if (isGroupable && groupingKey) {
+    // FIXED: Query by groupingKey instead of target
     const existingNotification = await this.findOne({
       recipient: recipientId,
       type: type,
-      target: targetId
+      groupingKey: groupingKey
     });
 
     if (existingNotification) {
-      // Check if the same actor is trying to create duplicate
+      
+      // Check if same actor is trying to re-trigger
       if (existingNotification.actor.toString() === actorId.toString()) {
-        // Return existing notification without changes
+        // Same user performing action again - just update timestamp, don't increase count
+        existingNotification.isRead = false;
+        existingNotification.updatedAt = new Date();
+        // Note: Don't update createdAt - it should remain the original creation time
+        // Update target to most recent comment/interaction
+        existingNotification.target = targetId;
+        
+        await existingNotification.save();
+        await existingNotification.populate("actor", "username fullName profilePicture bio");
+        await existingNotification.populate("target");
+
+        try {
+          const { emitNotificationUpdate, emitNotificationCount } = require("../utils/socketEvents");
+          const unreadCount = await this.getUnreadCount(recipientId);
+          emitNotificationUpdate(recipientId.toString(), existingNotification);
+          emitNotificationCount(recipientId.toString(), unreadCount);
+        } catch (socketError) {
+          console.error("Failed to emit notification update via socket:", socketError);
+        }
+
         return existingNotification;
       }
 
-      // Update existing notification (group)
+      // Different user - increase actor count
       existingNotification.actor = actorId; // Most recent actor
       existingNotification.actorCount += 1;
-      existingNotification.isRead = false; // Mark as unread again
+      existingNotification.isRead = false;
       existingNotification.updatedAt = new Date();
-      
+      // Update target to most recent comment/interaction
+      existingNotification.target = targetId;
+
       await existingNotification.save();
-      
-      // Populate for socket emission
-      await existingNotification.populate('actor', 'username fullName profilePicture bio');
-      await existingNotification.populate('target');
-      
-      // Emit socket event for update
-      isUpdate = true;
+      await existingNotification.populate("actor", "username fullName profilePicture bio");
+      await existingNotification.populate("target");
+
       try {
-        const { emitNotificationUpdate, emitNotificationCount } = require('../utils/socketEvents');
+        const { emitNotificationUpdate, emitNotificationCount } = require("../utils/socketEvents");
         const unreadCount = await this.getUnreadCount(recipientId);
         emitNotificationUpdate(recipientId.toString(), existingNotification);
         emitNotificationCount(recipientId.toString(), unreadCount);
       } catch (socketError) {
-        console.error('Failed to emit notification update via socket:', socketError);
+        console.error("Failed to emit notification update via socket:", socketError);
       }
-      
+
       return existingNotification;
     }
   }
@@ -137,7 +168,8 @@ NotificationSchema.statics.createOrUpdateNotification = async function(recipient
     recipient: recipientId,
     actor: actorId,
     type: type,
-    actorCount: 1
+    actorCount: 1,
+    groupingKey: groupingKey // Store grouping key
   };
 
   if (targetId) {
@@ -146,11 +178,9 @@ NotificationSchema.statics.createOrUpdateNotification = async function(recipient
 
   const notification = await this.create(notificationData);
   
-  // Populate for socket emission
   await notification.populate('actor', 'username fullName profilePicture bio');
   await notification.populate('target');
   
-  // Emit socket event for new notification
   try {
     const { emitNotification, emitNotificationCount } = require('../utils/socketEvents');
     const unreadCount = await this.getUnreadCount(recipientId);
@@ -163,11 +193,6 @@ NotificationSchema.statics.createOrUpdateNotification = async function(recipient
   return notification;
 };
 
-/**
- * Get count of unread notifications for a user
- * @param {ObjectId} userId - User ID
- * @returns {Promise<number>}
- */
 NotificationSchema.statics.getUnreadCount = async function(userId) {
   return this.countDocuments({
     recipient: userId,
@@ -175,12 +200,6 @@ NotificationSchema.statics.getUnreadCount = async function(userId) {
   });
 };
 
-/**
- * Mark a notification as read
- * @param {ObjectId} notificationId - Notification ID
- * @param {ObjectId} userId - User ID (for verification)
- * @returns {Promise<Notification|null>}
- */
 NotificationSchema.statics.markAsRead = async function(notificationId, userId) {
   const notification = await this.findOneAndUpdate(
     {
@@ -198,11 +217,6 @@ NotificationSchema.statics.markAsRead = async function(notificationId, userId) {
   return notification;
 };
 
-/**
- * Mark all notifications as read for a user
- * @param {ObjectId} userId - User ID
- * @returns {Promise<Object>}
- */
 NotificationSchema.statics.markAllAsRead = async function(userId) {
   const result = await this.updateMany(
     {

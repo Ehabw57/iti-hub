@@ -12,6 +12,7 @@ import FeedFollowingController from '@pages/feed/FeedFollowingController';
 import FeedTrendingController from '@pages/feed/FeedTrendingController';
 import SavedPostsController from '@pages/feed/SavedPostsController';
 import PostDetailController from '@pages/post/PostDetailController';
+import NotificationsCenterController from '@pages/notifications/NotificationsCenterController';
 
 // Placeholder components for routes not yet implemented
 const NotFoundPage = () => <div>404 - Page Not Found</div>;
@@ -72,6 +73,16 @@ const router = createBrowserRouter([
                 element: <SavedPostsController />,
               },
             ],
+          },
+        ],
+      },
+      // Protected routes outside FeedLayout
+      {
+        element: <ProtectedRoute />,
+        children: [
+          {
+            path: '/notifications',
+            element: <NotificationsCenterController />,
           },
         ],
       },

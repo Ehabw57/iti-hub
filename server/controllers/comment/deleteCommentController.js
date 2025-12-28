@@ -22,6 +22,8 @@ const deleteComment = asyncHandler(async (req, res) => {
     throw new NotFoundError('Comment');
   }
 
+  await comment.populate('post');
+
   // Check authorization
   if (!canModifyComment(comment, user)) {
     throw new ForbiddenError('Not authorized to delete this comment');

@@ -35,12 +35,14 @@ const likeComment = asyncHandler(async (req, res) => {
   await comment.save();
 
   // Create or update notification (don't block on failure)
+  // For comment likes, we group by the comment itself (not the post)
   try {
     await Notification.createOrUpdateNotification(
       comment.author,
       userId,
       NOTIFICATION_TYPES.COMMENT_LIKE,
-      comment._id
+      comment._id, // target: navigate to comment
+      comment._id  // groupingKey: group by comment (multiple users liking same comment)
     );
   } catch (notificationError) {
     console.error('Failed to create notification:', notificationError);
