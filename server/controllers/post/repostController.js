@@ -63,13 +63,15 @@ const repost = asyncHandler(async (req, res) => {
   originalPost.repostsCount += 1;
   await originalPost.save();
 
-  // Create notification (don't block on failure) - NOT GROUPED (individual notification)
+  // Create notification (don't block on failure)
+  // Group reposts by the original post (not by individual repost)
   try {
     await Notification.createOrUpdateNotification(
       originalPost.author,
       userId,
       NOTIFICATION_TYPES.REPOST,
-      originalPost._id
+      repostDoc._id,    // target: navigate to the repost with comment
+      originalPost._id  // groupingKey: group by original post
     );
   } catch (notificationError) {
     console.error('Failed to create notification:', notificationError);

@@ -7,19 +7,20 @@ import AuthLoginController from '@pages/auth/AuthLoginController';
 import RegisterController from '@pages/auth/RegisterController';
 import PasswordResetRequestController from '@pages/auth/PasswordResetRequestController';
 import PasswordResetConfirmController from '@pages/auth/PasswordResetConfirmController';
-// import FeedHomeController from '@pages/feed/FeedHomeController';
-// import FeedFollowingController from '@pages/feed/FeedFollowingController';
-// import FeedTrendingController from '@pages/feed/FeedTrendingController';
-// import SavedPostsController from '@pages/feed/SavedPostsController';
-// import PostDetailController from '@pages/post/PostDetailController';
-import SearchPage from "../pages/search/SearchPage.jsx";
+import FeedHomeController from '@pages/feed/FeedHomeController';
+import FeedFollowingController from '@pages/feed/FeedFollowingController';
+import FeedTrendingController from '@pages/feed/FeedTrendingController';
+import SavedPostsController from '@pages/feed/SavedPostsController';
+import PostDetailController from '@pages/post/PostDetailController';
+import NotificationsCenterController from '@pages/notifications/NotificationsCenterController';
+import ProfileController from '../pages/profile/ProfileController';
 
 // Placeholder components for routes not yet implemented
 const NotFoundPage = () => <div>404 - Page Not Found</div>;
 
 const router = createBrowserRouter([
   {
-    path: '/',
+    path: "/",
     element: <Layout />,
     children: [
        { path: '/search',
@@ -30,58 +31,72 @@ const router = createBrowserRouter([
         element: <PublicRoute />,
         children: [
           {
-            path: '/login',
+            path: "/login",
             element: <AuthLoginController />,
           },
           {
-            path: '/register',
+            path: "/register",
             element: <RegisterController />,
           },
           {
-            path: '/password-reset/request',
+            path: "/password-reset/request",
             element: <PasswordResetRequestController />,
           },
           {
-            path: '/password-reset/confirm',
+            path: "/password-reset/confirm",
             element: <PasswordResetConfirmController />,
           },
         ],
       },
       // Feed routes with FeedLayout
-      // {
-      //   element: <FeedLayout />,
-      //   children: [
-      //     {
-      //       path: '/',
-      //       element: <FeedHomeController />,
-      //     },
-      //     {
-      //       path: '/feed/trending',
-      //       element: <FeedTrendingController />,
-      //     },
-      //     {
-      //       path: '/posts/:postId',
-      //       element: <PostDetailController />,
-      //     },
+      {
+        element: <FeedLayout />,
+        children: [
+          {
+            path: "/",
+            element: <FeedHomeController />,
+          },
+          {
+            path: "/feed/trending",
+            element: <FeedTrendingController />,
+          },
+          {
+            path: "/posts/:postId",
+            element: <PostDetailController />,
+          },
           // Protected feed routes
-      //     {
-      //       element: <ProtectedRoute />,
-      //       children: [
-      //         {
-      //           path: '/feed/following',
-      //           element: <FeedFollowingController />,
-      //         },
-      //         {
-      //           path: '/saved',
-      //           element: <SavedPostsController />,
-      //         },
-      //       ],
-      //     },
-      //   ],
-      // },
+          {
+            element: <ProtectedRoute />,
+            children: [
+              {
+                path: "/feed/following",
+                element: <FeedFollowingController />,
+              },
+              {
+                path: "/saved",
+                element: <SavedPostsController />,
+              },
+            ],
+          },
+        ],
+      },
+      {
+        path: "/profile/:username",
+        element: <ProfileController />,
+      },
+      // Protected routes outside FeedLayout
+      {
+        element: <ProtectedRoute />,
+        children: [
+          {
+            path: "/notifications",
+            element: <NotificationsCenterController />,
+          },
+        ],
+      },
       // 404 route
       {
-        path: '*',
+        path: "*",
         element: <NotFoundPage />,
       },
     ],

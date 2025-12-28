@@ -44,7 +44,7 @@ const uploadProfilePictureController = asyncHandler(async (req, res) => {
   // Upload processed image to Cloudinary
   let uploadResult;
   try {
-    const publicId = `${CLOUDINARY_FOLDER_PROFILE}/user_${req.user._id}_${Date.now()}`;
+    const publicId = `user_${req.user._id}_${Date.now()}`;
     uploadResult = await uploadToCloudinary(processedBuffer, CLOUDINARY_FOLDER_PROFILE, publicId);
   } catch (error) {
     throw new InternalError('Failed to upload image');
@@ -59,7 +59,21 @@ const uploadProfilePictureController = asyncHandler(async (req, res) => {
     throw new InternalError('Failed to update profile picture');
   }
 
-  sendSuccess(res, { profilePicture: user.profilePicture }, 'Profile picture updated successfully');
+  // Return full user object for frontend state update
+  sendSuccess(res, { 
+    user: {
+      _id: user._id,
+      username: user.username,
+      email: user.email,
+      fullName: user.fullName,
+      profilePicture: user.profilePicture,
+      coverImage: user.coverImage,
+      bio: user.bio,
+      specialization: user.specialization,
+      location: user.location,
+      isVerified: user.isVerified
+    }
+  }, 'Profile picture updated successfully');
 });
 
 module.exports = uploadProfilePictureController;

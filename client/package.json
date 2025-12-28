@@ -20,6 +20,7 @@
     "@vitejs/plugin-react-swc": "^4.2.1",
     "axios": "^1.13.2",
     "dayjs": "^1.11.19",
+    "embla-carousel-react": "^8.6.0",
     "intlayer": "^7.0.8",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",

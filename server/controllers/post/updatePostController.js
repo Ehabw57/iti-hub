@@ -3,7 +3,7 @@ const { validatePostUpdate, canModifyPost, buildPostResponse } = require('../../
 const { asyncHandler } = require('../../middlewares/errorHandler');
 const { ValidationError, NotFoundError, ForbiddenError } = require('../../utils/errors');
 const { sendSuccess } = require('../../utils/responseHelpers');
-const {invalidateUserFeed} = require('../../utils/feedCache');
+const {invalidateUserFeeds} = require('../../utils/feedCache');
 
 /**
  * Update post
@@ -13,7 +13,6 @@ const {invalidateUserFeed} = require('../../utils/feedCache');
 const updatePost = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const updates = req.body;
-  const userId = req.user._id;
 
   // Find post
   const post = await Post.findById(id);
@@ -40,6 +39,9 @@ const updatePost = asyncHandler(async (req, res) => {
   if (updates.tags !== undefined) {
     post.tags = updates.tags;
   }
+  if (updates.repostComment !== undefined) {
+    post.repostComment = updates.repostComment;
+  }
 
   // Set editedAt timestamp
   post.editedAt = new Date();
@@ -50,7 +52,7 @@ const updatePost = asyncHandler(async (req, res) => {
   await post.populate('author', 'username fullName profilePicture');
 
   // Invalidate user feed cache
-  await invalidateUserFeed(req.user._id);
+  await invalidateUserFeeds(req.user._id);
 
   sendSuccess(res, { post: buildPostResponse(post, req.user._id) }, 'Post updated successfully');
 });

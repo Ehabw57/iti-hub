@@ -33,8 +33,9 @@ const PostSchema = new mongoose.Schema(
       },
     },
     tags: {
-      type: [mongoose.Schema.Types.ObjectId],
-      ref: "Tag",
+      type: [String],
+      // type: [mongoose.Schema.Types.ObjectId],
+      // ref: "Tag",
       default: [],
       validate: {
         validator: function (v) {
@@ -100,8 +101,8 @@ function autoPopulateOriginalPost(next) {
   next();
 }
 
-PostSchema.pre("findOne", autoPopulateOriginalPost);
-PostSchema.pre("find", autoPopulateOriginalPost);
+
+PostSchema.pre(["findOne", "find"], autoPopulateOriginalPost);
 
 // Custom validation: require content or images (unless it's a repost)
 PostSchema.pre("validate", function (next) {

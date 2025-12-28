@@ -1,12 +1,18 @@
 const cloudinary = require('cloudinary').v2;
 const { Readable } = require('stream');
 
-// Configure Cloudinary (credentials from environment variables)
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET
-});
+// Configure Cloudinary lazily (on first use)
+let isConfigured = false;
+function ensureCloudinaryConfig() {
+  if (!isConfigured) {
+    cloudinary.config({
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+      api_key: process.env.CLOUDINARY_API_KEY,
+      api_secret: process.env.CLOUDINARY_API_SECRET
+    });
+    isConfigured = true;
+  }
+}
 
 /**
  * Upload image buffer to Cloudinary
@@ -16,12 +22,8 @@ cloudinary.config({
  * @returns {Promise<Object>} Cloudinary upload result
  */
 function uploadToCloudinary(buffer, folder, publicId) {
-  return process.env.NODE_ENV === 'dev' ? new Promise((resolve, reject) => {
-    resolve({
-      secure_url: 'https://res-console.cloudinary.com/djdhnueis/thumbnails/v1/image/upload/v1761820115/Y2xkLXNhbXBsZQ==/drilldown',
-      public_id: 'folder/image'
-    });
-  }) : new Promise((resolve, reject) => {
+  ensureCloudinaryConfig();
+  return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
         folder,
@@ -51,6 +53,7 @@ function uploadToCloudinary(buffer, folder, publicId) {
  * @returns {Promise<Object>} Cloudinary deletion result
  */
 function deleteFromCloudinary(publicId) {
+  ensureCloudinaryConfig();
   return cloudinary.uploader.destroy(publicId);
 }
 

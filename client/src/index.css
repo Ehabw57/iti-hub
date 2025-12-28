@@ -290,3 +290,30 @@
   background-color: var(--color-neutral-50);
   color: var(--color-neutral-900);
 }
+
+/* ========================================
+   COMMENT HIGHLIGHT ANIMATION
+   ======================================== */
+
+@keyframes highlightPulse {
+  0% {
+    background-color: transparent;
+  }
+  50% {
+    background-color: var(--color-primary-100);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.highlight-comment {
+  animation: highlightPulse 2s ease-in-out;
+  border-left: 3px solid var(--color-primary-900);
+  padding-left: 0.5rem;
+  margin-left: -0.5rem;
+}
+
+.dark .highlight-comment {
+  border-left-color: var(--color-primary-700);
+}
