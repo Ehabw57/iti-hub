@@ -3,10 +3,12 @@ import { HiBars3, HiMagnifyingGlass, HiBell, HiChatBubbleBottomCenter, HiUserGro
 import { useAuthStore } from "@store/auth";
 import { useState, useEffect } from "react";
 import ThemeSwitcher from "../Navbar/ThemeSwitcher";
-import SearchInput from "./SearchInput";
+// import SearchInput from "./SearchInput";
 import LanguageSwitcher from "../common/LanguageSwitcher";
 import { Menu } from "@headlessui/react";
 import UserMenu from "./UserMenu";
+import NavbarSearch from "./NavbarSearch";
+
 
 export default function Navbar() {
   const { isAuthenticated, user, logout } = useAuthStore();
@@ -47,7 +49,9 @@ export default function Navbar() {
         {/* Search (Desktop) */}
           <div className="flex flex-1 max-w-md">
             <div className="relative w-full">
-              <SearchInput />
+              {/* <SearchInput /> */}
+              <NavbarSearch />
+
             </div>
           </div>
 

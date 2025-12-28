@@ -2,23 +2,32 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useIntlayer } from 'react-intlayer';
+import { useFastSearch } from '@/hooks/mutations/useFastSearch';
 import api from '@/lib/api';
 import UserListItem from './UserListItem';
 import PostItem from './PostItem';
 import CommunityItem from './CommunityItem';
 
 export default function SearchPage() {
-    const t = useIntlayer('search-page');
-  const [searchParams, setSearchParams] = useSearchParams();
-  const navigate = useNavigate();
-  const q = searchParams.get('q') || '';
-  const tab = searchParams.get('tab') || 'posts';
+const [searchParams, setSearchParams] = useSearchParams();
+const navigate = useNavigate();
+const q = searchParams.get('q') || '';
+const tab = searchParams.get('tab') || 'posts';
+const t = useIntlayer('search-page');
+const { query, setQuery, results, loading } = useFastSearch(q);
+ 
 
   const [pageState, setPageState] = useState({ users: 1, posts: 1, communities: 1 });
 
   useEffect(() => {
     setPageState({ users: 1, posts: 1, communities: 1 });
   }, [q]);
+
+  useEffect(() => {
+  if (q !== query) {
+    setQuery(q);
+  }
+}, [q]);
 
   // Fetch functions
   const fetchUsers = async ({ page = 1 }) => {
@@ -105,35 +114,36 @@ export default function SearchPage() {
         </nav>
       </div>
 
-      {/* Results */}
-      <div className="mt-6">
-        {isLoading && <p>{t.loadingResults}...</p>}
-        {error && <p className="text-red-600">{t.errorLoadingResults}: {error?.message}</p>}
+{/* Results from fast search */}
+<div className="results mt-4">
+  {loading && <p>Loading...</p>}
 
-        {!isLoading && tab === 'posts' && (
-          <ResultsList
-            items={postsQuery.data?.posts || []}
-            renderItem={(p) => <PostItem key={p._id} post={p} />}
-            pagination={postsQuery.data?.pagination}
-            onPageChange={(page) => gotoPage('posts', page)}
-          />
-        )}
-        {!isLoading && tab === 'users' && (
-          <ResultsList
-            items={usersQuery.data?.users || []}
-            renderItem={(u) => <UserListItem key={u._id} user={u} />}
-            pagination={usersQuery.data?.pagination}
-            onPageChange={(page) => gotoPage('users', page)}
-          />
-        )}
-        {!isLoading && tab === 'communities' && (
-          <ResultsList
-            items={communitiesQuery.data?.communities || []}
-            renderItem={(c) => <CommunityItem key={c._id} community={c} />}
-            pagination={communitiesQuery.data?.pagination}
-            onPageChange={(page) => gotoPage('communities', page)}
-          />
-        )}
+  {tab === "users" &&
+    results.users.map((u) => (
+      <div key={u._id} className="p-2 border-b">
+        <p className="font-bold">{u.username}</p>
+        <p>{u.fullName}</p>
+        <p>Followers: {u.followersCount}</p>
+      </div>
+    ))}
+
+  {tab === "posts" &&
+    results.posts.map((p) => (
+      <div key={p._id} className="p-2 border-b">
+        <p>{p.content}</p>
+        <p>Author: {p.author.username}</p>
+        <p>Likes: {p.likesCount}</p>
+      </div>
+    ))}
+
+  {tab === "communities" &&
+    results.communities.map((c) => (
+      <div key={c._id} className="p-2 border-b">
+        <p className="font-bold">{c.name}</p>
+        <p>Members: {c.memberCount}</p>
+      </div>
+    ))}
+</div>
 
         {!isLoading &&
           ((tab === 'posts' && (postsQuery.data?.posts || []).length === 0) ||
@@ -141,13 +151,13 @@ export default function SearchPage() {
             (tab === 'communities' && (communitiesQuery.data?.communities || []).length === 0)) && (
             <p className="text-sm text-neutral-500">{t.noResults}.</p>
           )}
-      </div>
     </div>
   );
 }
 
 // Helpers
 function TabButton({ children, active, onClick }) {
+      const t = useIntlayer('search-page');
 
   return (
     <button
@@ -165,7 +175,8 @@ function CountBadge({ count }) {
 }
 
 function ResultsList({ items, renderItem, pagination, onPageChange }) {
-        const t = useIntlayer('search-page');
+      const t = useIntlayer('search-page');
+
   return (
     <div>
       <div className="border rounded-md overflow-hidden">{items.map(renderItem)}</div>

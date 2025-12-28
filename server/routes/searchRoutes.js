@@ -9,6 +9,7 @@ const { optionalAuth } = require("../middlewares/checkAuth");
 const { searchUsers } = require("../controllers/user");
 const { searchPosts } = require("../controllers/post");
 const { searchCommunities } = require("../controllers/community");
+const { fastSearch } = require("../controllers/search/fastSearchController");
 
 /**
  * @route   GET /api/v1/search/users
@@ -44,5 +45,6 @@ router.get("/posts", optionalAuth, searchPosts);
  * @access  Public (optional authentication for isMember metadata)
  */
 router.get("/communities", optionalAuth, searchCommunities);
+router.get("/fast", fastSearch);
 
 module.exports = router;
