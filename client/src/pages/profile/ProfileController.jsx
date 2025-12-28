@@ -1,7 +1,7 @@
 import React from 'react'
 import Profile from '../../components/profile'
 
-function profile() {
+export default function ProfileController() {
   return (
     <div>
       <Profile />
@@ -9,4 +9,3 @@ function profile() {
   )
 }
 
-export default profile

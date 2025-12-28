@@ -13,13 +13,14 @@ import FeedTrendingController from '@pages/feed/FeedTrendingController';
 import SavedPostsController from '@pages/feed/SavedPostsController';
 import PostDetailController from '@pages/post/PostDetailController';
 import NotificationsCenterController from '@pages/notifications/NotificationsCenterController';
+import ProfileController from '../pages/profile/ProfileController';
 
 // Placeholder components for routes not yet implemented
 const NotFoundPage = () => <div>404 - Page Not Found</div>;
 
 const router = createBrowserRouter([
   {
-    path: '/',
+    path: "/",
     element: <Layout />,
     children: [
       // Public routes - redirect to home if authenticated
@@ -27,19 +28,19 @@ const router = createBrowserRouter([
         element: <PublicRoute />,
         children: [
           {
-            path: '/login',
+            path: "/login",
             element: <AuthLoginController />,
           },
           {
-            path: '/register',
+            path: "/register",
             element: <RegisterController />,
           },
           {
-            path: '/password-reset/request',
+            path: "/password-reset/request",
             element: <PasswordResetRequestController />,
           },
           {
-            path: '/password-reset/confirm',
+            path: "/password-reset/confirm",
             element: <PasswordResetConfirmController />,
           },
         ],
@@ -49,15 +50,15 @@ const router = createBrowserRouter([
         element: <FeedLayout />,
         children: [
           {
-            path: '/',
+            path: "/",
             element: <FeedHomeController />,
           },
           {
-            path: '/feed/trending',
+            path: "/feed/trending",
             element: <FeedTrendingController />,
           },
           {
-            path: '/posts/:postId',
+            path: "/posts/:postId",
             element: <PostDetailController />,
           },
           // Protected feed routes
@@ -65,30 +66,34 @@ const router = createBrowserRouter([
             element: <ProtectedRoute />,
             children: [
               {
-                path: '/feed/following',
+                path: "/feed/following",
                 element: <FeedFollowingController />,
               },
               {
-                path: '/saved',
+                path: "/saved",
                 element: <SavedPostsController />,
               },
             ],
           },
         ],
       },
+      {
+        path: "/profile/:username",
+        element: <ProfileController />,
+      },
       // Protected routes outside FeedLayout
       {
         element: <ProtectedRoute />,
         children: [
           {
-            path: '/notifications',
+            path: "/notifications",
             element: <NotificationsCenterController />,
           },
         ],
       },
       // 404 route
       {
-        path: '*',
+        path: "*",
         element: <NotFoundPage />,
       },
     ],
