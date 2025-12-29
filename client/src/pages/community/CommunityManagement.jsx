@@ -5,7 +5,7 @@ import { AiOutlineUserAdd, AiOutlineUserDelete } from 'react-icons/ai';
 import { useIntlayer } from 'react-intlayer';
 import communityContent from '@content/community/community.content';
 import { useCommunityDetails, useCommunityMembersInfinite } from '@hooks/queries/useCommunity';
-import { useAddModerator, useRemoveModerator } from '@hooks/mutations/useCommunityMutations';
+import { useAddModerator, useRemoveModerator, useKickMember } from '@hooks/mutations/useCommunityMutations';
 import useIntersectionObserver from '@hooks/useIntersectionObserver';
 import useRequireAuth from '@hooks/useRequireAuth';
 
@@ -20,8 +20,8 @@ const CommunityManagement = () => {
   const content = useIntlayer(communityContent.key);
   const { requireAuth } = useRequireAuth();
   
-  const [activeTab, setActiveTab] = useState('members'); // 'members' | 'moderators'
   const [selectedRole, setSelectedRole] = useState('all'); // 'all' | 'member' | 'moderator' | 'owner'
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Fetch community details to check role
   const { data: community, isLoading: loadingCommunity } = useCommunityDetails(communityId);
@@ -36,12 +36,14 @@ const CommunityManagement = () => {
     isFetchingNextPage
   } = useCommunityMembersInfinite(communityId, {
     limit: 20,
-    role: selectedRole === 'all' ? undefined : selectedRole
+    role: selectedRole === 'all' ? undefined : selectedRole,
+    search: searchTerm || undefined
   });
 
   // Mutations
   const addModeratorMutation = useAddModerator(communityId);
   const removeModeratorMutation = useRemoveModerator(communityId);
+  const kickMemberMutation = useKickMember(communityId);
 
   // Infinite scroll observer
   const { observerTarget } = useIntersectionObserver({
@@ -82,6 +84,17 @@ const CommunityManagement = () => {
     });
   };
 
+  // Handle kick member
+  const handleKickMember = (userId) => {
+    requireAuth(async () => {
+      try {
+        await kickMemberMutation.mutateAsync(userId);
+      } catch (err) {
+        console.error('Error kicking member:', err);
+      }
+    });
+  };
+
   // Navigate to member profile
   const handleMemberClick = (username) => {
     navigate(`/profile/${username}`);
@@ -112,7 +125,7 @@ const CommunityManagement = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
-                onClick={() => navigate(`/communities/${communityId}`)}
+                onClick={() => navigate(`/community/${communityId}`)}
                 className="p-2 rounded-lg hover:bg-neutral-200 transition-colors"
                 aria-label="Back to community"
               >
@@ -129,7 +142,7 @@ const CommunityManagement = () => {
               </div>
             </div>
             {isOwner && (
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-100 text-amber-800 rounded-full text-caption font-semibold">
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-red-100 text-red-700 rounded-full text-caption font-semibold">
                 <FaCrown size={14} />
                 <span>{content.owner || 'Owner'}</span>
               </div>
@@ -168,8 +181,8 @@ const CommunityManagement = () => {
 
           <div className="bg-neutral-100 rounded-lg shadow-elevation-2 p-6">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center">
-                <FaCrown size={24} className="text-amber-600" />
+              <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                <FaCrown size={24} className="text-red-600" />
               </div>
               <div>
                 <p className="text-caption text-neutral-600">{content.owners || 'Owners'}</p>
@@ -180,7 +193,8 @@ const CommunityManagement = () => {
         </div>
 
         {/* Filters */}
-        <div className="bg-neutral-100 rounded-lg shadow-elevation-2 p-4 mb-6">
+        <div className="bg-neutral-100 rounded-lg shadow-elevation-2 p-4 mb-6 space-y-4">
+          {/* Role Filter */}
           <div className="flex items-center gap-4 flex-wrap">
             <span className="text-body-2 font-semibold text-neutral-700">
               {content.filterByRole || 'Filter by Role'}:
@@ -203,6 +217,30 @@ const CommunityManagement = () => {
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Search Input */}
+          <div className="flex items-center gap-3">
+            <label htmlFor="search" className="text-body-2 font-semibold text-neutral-700 whitespace-nowrap">
+              {content.search || 'Search'}:
+            </label>
+            <input
+              id="search"
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder={content.searchPlaceholder.value || 'Search by name or username...'}
+              className="flex-1 px-4 py-2 bg-neutral-200 border border-neutral-300 rounded-lg text-body-1 text-neutral-900 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+            />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm('')}
+                className="px-3 py-2 bg-neutral-200 text-neutral-700 rounded-lg hover:bg-neutral-300 transition-colors text-button font-medium"
+                aria-label="Clear search"
+              >
+                ✕ {content.clear || 'Clear'}
+              </button>
+            )}
           </div>
         </div>
 
@@ -241,7 +279,7 @@ const CommunityManagement = () => {
                     className="flex items-center gap-3 flex-1 cursor-pointer"
                   >
                     {/* Avatar */}
-                    <div className="w-12 h-12 rounded-full bg-linear-to-br from-primary-400 to-primary-600 flex items-center justify-center shrink-0">
+                    <div className="w-12 h-12 rounded-full bg-neutral-300 flex items-center justify-center shrink-0">
                       {member.profilePicture ? (
                         <img
                           src={member.profilePicture}
@@ -263,7 +301,7 @@ const CommunityManagement = () => {
                       <p className="text-caption text-neutral-600">@{member.username}</p>
                       <div className="flex items-center gap-2 mt-1">
                         <span className={`px-2 py-0.5 rounded-full text-caption font-medium ${
-                          member.role === 'owner' ? 'bg-amber-100 text-amber-700' :
+                          member.role === 'owner' ? 'bg-red-100 text-red-700' :
                           member.role === 'moderator' ? 'bg-secondary-100 text-secondary-700' :
                           'bg-neutral-300 text-neutral-700'
                         }`}>
@@ -281,36 +319,55 @@ const CommunityManagement = () => {
                     </div>
                   </div>
 
-                  {/* Actions (Owner Only) */}
-                  {isOwner && member.role !== 'owner' && (
+                  {/* Actions (Moderator/Owner) */}
+                  {isModerator && member.role !== 'owner' && (
                     <div className="flex items-center gap-2">
-                      {member.role === 'member' ? (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleAddModerator(member._id);
-                          }}
-                          disabled={addModeratorMutation.isPending}
-                          className="flex items-center gap-2 px-4 py-2 bg-secondary-600 text-white rounded-lg hover:bg-secondary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-button"
-                          title={content.makeModerator}
-                        >
-                          <AiOutlineUserAdd size={16} />
-                          <span className="hidden sm:inline">{content.makeModerator || 'Make Moderator'}</span>
-                        </button>
-                      ) : member.role === 'moderator' ? (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleRemoveModerator(member._id);
-                          }}
-                          disabled={removeModeratorMutation.isPending}
-                          className="flex items-center gap-2 px-4 py-2 bg-error text-white rounded-lg hover:bg-error/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-button"
-                          title={content.removeModerator}
-                        >
-                          <AiOutlineUserDelete size={16} />
-                          <span className="hidden sm:inline">{content.removeModerator || 'Remove Moderator'}</span>
-                        </button>
-                      ) : null}
+                      {/* Promote/Demote Moderator (Owner Only) */}
+                      {isOwner && (
+                        member.role === 'member' ? (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAddModerator(member._id);
+                            }}
+                            disabled={addModeratorMutation.isPending}
+                            className="flex items-center gap-2 px-3 py-2 bg-secondary-600 text-white rounded-lg hover:bg-secondary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-button"
+                            title={content.makeModerator}
+                          >
+                            <AiOutlineUserAdd size={16} />
+                            <span className="hidden lg:inline">{content.makeModerator || 'Make Moderator'}</span>
+                          </button>
+                        ) : member.role === 'moderator' ? (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemoveModerator(member._id);
+                            }}
+                            disabled={removeModeratorMutation.isPending}
+                            className="flex items-center gap-2 px-3 py-2 bg-neutral-600 text-white rounded-lg hover:bg-neutral-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-button"
+                            title={content.removeModerator}
+                          >
+                            <FaUserMinus size={14} />
+                            <span className="hidden lg:inline">{content.removeModerator || 'Remove Moderator'}</span>
+                          </button>
+                        ) : null
+                      )}
+
+                      {/* Kick Member (Moderator/Owner) */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (window.confirm(content.confirmKick || 'Are you sure you want to remove this member from the community?')) {
+                            handleKickMember(member._id);
+                          }
+                        }}
+                        disabled={kickMemberMutation.isPending || (member.role === 'moderator' && !isOwner)}
+                        className="flex items-center gap-2 px-3 py-2 bg-error text-white rounded-lg hover:bg-error/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-button"
+                        title={content.kickMember || 'Remove from Community'}
+                      >
+                        <FaUserMinus size={14} />
+                        <span className="hidden lg:inline">{content.kickMember || 'Kick'}</span>
+                      </button>
                     </div>
                   )}
                 </div>

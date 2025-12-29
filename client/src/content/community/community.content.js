@@ -14,11 +14,27 @@ export default {
     }),
     members: t({
       en: 'Members',
-      ar: 'عضو',
+      ar: 'أعضاء',
     }),
     posts: t({
       en: 'Posts',
       ar: 'منشور',
+    }),
+    manageCommunity: t({
+      en: 'Manage Community',
+      ar: 'إدارة المجتمع',
+    }),
+    totalMembers: t({
+      en: 'Total Members',
+      ar: 'إجمالي الأعضاء',
+    }),
+    filterByRole: t({
+      en: 'Filter by Role',
+      ar: 'تصفية حسب الدور',
+    }),
+    all: t({
+      en: 'All',
+      ar: 'الكل',
     }),
     joinCommunity: t({
       en: 'Join Community',
@@ -85,10 +101,64 @@ export default {
       ar: 'جعله مشرفاً',
     }),
 
+    removeModerator: t({
+      en: 'Remove Moderator',
+      ar: 'إزالة المشرف',
+    }),
+
+    owners: t({
+      en: 'Owners',
+      ar: 'الملاك',
+    }),
+
     // Members
     membersTitle: t({
       en: 'Members',
       ar: 'الأعضاء',
+    }),
+    membersManagement: t({
+      en: 'Members Management',
+      ar: 'إدارة الأعضاء',
+    }),
+    shown: t({
+      en: 'shown',
+      ar: 'معروض',
+    }),
+    search: t({
+      en: 'Search',
+      ar: 'بحث',
+    }),
+    searchPlaceholder: t({
+      en: 'Search by name or username...',
+      ar: 'ابحث بالاسم أو اسم المستخدم...',
+    }),
+    clear: t({
+      en: 'Clear',
+      ar: 'مسح',
+    }),
+    loadingMore: t({
+      en: 'Loading more...',
+      ar: 'جارٍ تحميل المزيد...',
+    }),
+    errorLoadingMembers: t({
+      en: 'Error loading members',
+      ar: 'حدث خطأ عند تحميل الأعضاء',
+    }),
+    noMembers: t({
+      en: 'No members found',
+      ar: 'لم يتم العثور على أعضاء',
+    }),
+    joined: t({
+      en: 'Joined',
+      ar: 'انضم في',
+    }),
+    kickMember: t({
+      en: 'Remove from Community',
+      ar: 'إزالة من المجتمع',
+    }),
+    confirmKick: t({
+      en: 'Are you sure you want to remove this member from the community?',
+      ar: 'هل أنت متأكد من إزالة هذا العضو من المجتمع؟',
     }),
 
     // Feed

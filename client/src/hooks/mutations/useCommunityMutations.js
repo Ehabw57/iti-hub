@@ -71,7 +71,7 @@ export const useUpdateCommunityProfilePicture = (communityId) => {
   return useMutation({
     mutationFn: async (file) => {
       const formData = new FormData();
-      formData.append('profile', file);
+      formData.append('image', file);
       const response = await api.post(`/communities/${communityId}/profile-picture`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -96,7 +96,7 @@ export const useUpdateCommunityCoverImage = (communityId) => {
   return useMutation({
     mutationFn: async (file) => {
       const formData = new FormData();
-      formData.append('cover', file);
+      formData.append('image', file);
       const response = await api.post(`/communities/${communityId}/cover-image`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -144,6 +144,27 @@ export const useRemoveModerator = (communityId) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['community', communityId] });
+      queryClient.invalidateQueries({ queryKey: ['community', communityId, 'members'] });
+    },
+  });
+};
+
+/**
+ * Hook for kicking a member from community
+ * @param {string} communityId - The community ID
+ * @returns {object} React Query mutation object
+ */
+export const useKickMember = (communityId) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (userId) => {
+      const response = await api.delete(`/communities/${communityId}/members/${userId}`);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['community', communityId] });
+      queryClient.invalidateQueries({ queryKey: ['community', communityId, 'members'] });
     },
   });
 };
@@ -156,4 +177,5 @@ export default {
   useUpdateCommunityCoverImage,
   useAddModerator,
   useRemoveModerator,
+  useKickMember,
 };

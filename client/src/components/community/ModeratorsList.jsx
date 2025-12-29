@@ -67,7 +67,7 @@ const ModeratorsList = ({ community }) => {
         {ownersCount > 0 && (
             <div className="space-y-2">
               <div className="flex items-center gap-2 mb-2">
-                <FaCrown size={14} className="text-amber-600" />
+                <FaCrown size={14} className="text-red-600" />
                 <h3 className="text-caption font-semibold text-neutral-700 uppercase tracking-wide">
                   {content.owners || 'Owners'}
                 </h3>
@@ -76,10 +76,10 @@ const ModeratorsList = ({ community }) => {
                 <div
                   key={owner._id}
                   onClick={() => handleUserClick(owner.username)}
-                  className="flex items-center gap-3 p-3 bg-amber-50 border border-amber-100 rounded-lg hover:bg-amber-100 transition-colors cursor-pointer"
+                  className="flex items-center gap-3 p-3 bg-red-50 border border-red-100 rounded-lg hover:bg-red-100 transition-colors cursor-pointer"
                 >
                   {/* Avatar */}
-                  <div className="w-10 h-10 rounded-full bg-linear-to-br from-amber-400 to-amber-600 flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-neutral-300 flex items-center justify-center shrink-0">
                     {owner.profilePicture ? (
                       <img
                         src={owner.profilePicture}
@@ -98,7 +98,7 @@ const ModeratorsList = ({ community }) => {
                     <p className="text-body-2 font-semibold text-neutral-900 truncate">
                       {owner.fullName || owner.username}
                     </p>
-                    <div className="flex items-center gap-1 text-caption text-amber-700">
+                    <div className="flex items-center gap-1 text-caption text-red-700">
                       <FaCrown size={12} />
                       <span>{content.owner}</span>
                     </div>
@@ -128,7 +128,7 @@ const ModeratorsList = ({ community }) => {
                     className="flex items-center gap-3 flex-1 cursor-pointer"
                   >
                   {/* Avatar */}
-                  <div className="w-10 h-10 rounded-full bg-linear-to-br from-secondary-400 to-secondary-600 flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-neutral-300 flex items-center justify-center shrink-0">
                     {moderator.profilePicture ? (
                       <img
                         src={moderator.profilePicture}

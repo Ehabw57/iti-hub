@@ -93,16 +93,17 @@ export const useCommunityMembers = (communityId, options = {}) => {
  * @returns {object} React Query infinite query object
  */
 export const useCommunityMembersInfinite = (communityId, options = {}) => {
-  const { limit = 20, role } = options;
+  const { limit = 20, role, search } = options;
   
   return useInfiniteQuery({
-    queryKey: ['community', communityId, 'members', 'infinite', { limit, role }],
+    queryKey: ['community', communityId, 'members', 'infinite', { limit, role, search }],
     queryFn: async ({ pageParam = 1 }) => {
       const response = await api.get(`/communities/${communityId}/members`, {
         params: {
           page: pageParam,
           limit,
-          role
+          role,
+          search
         }
       });
       return response.data.data;

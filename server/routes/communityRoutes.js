@@ -15,6 +15,7 @@ const joinCommunity = require('../controllers/community/joinCommunityController'
 const leaveCommunity = require('../controllers/community/leaveCommunityController');
 const addModerator = require('../controllers/community/addModeratorController');
 const removeModerator = require('../controllers/community/removeModeratorController');
+const kickMember = require('../controllers/community/kickMemberController');
 const listCommunities = require('../controllers/community/listCommunitiesController');
 
 const communityRoutes = express.Router();
@@ -95,6 +96,13 @@ communityRoutes.post('/:id/moderators', checkAuth, checkModeratorAccess, addMode
  * @access  Private (Owner only)
  */
 communityRoutes.delete('/:id/moderators/:userId', checkAuth, checkOwnerAccess, removeModerator);
+
+/**
+ * @route   DELETE /api/communities/:id/members/:userId
+ * @desc    Kick/Remove a member from the community
+ * @access  Private (Moderator/Owner only)
+ */
+communityRoutes.delete('/:id/members/:userId', checkAuth, checkModeratorAccess, kickMember);
 
 /**
  * @route   GET /api/communities/:communityId/feed

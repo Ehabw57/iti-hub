@@ -6,7 +6,7 @@ import { useIntlayer } from 'react-intlayer';
 import communityContent from '@content/community/community.content';
 import { useAddModerator } from '@hooks/mutations/useCommunityMutations';
 import useRequireAuth from '@hooks/useRequireAuth';
-import ModeratorsList from './ModeratorsList';
+import ModeratorsList from '../community/ModeratorsList';
 import { TextContent } from '@/components/shared/TextContent';
 
 /**
@@ -152,7 +152,7 @@ const CommunityInfo = ({ community, onUpdateCommunity }) => {
           <div className="flex items-center gap-2">
             <FaUsers size={20} className="text-primary-600" />
             <h2 className="text-heading-5 text-neutral-900 font-semibold">{content.membersTitle}</h2>
-            <span className="px-2 py-0.5 bg-primary-100 text-primary-700 text-caption rounded-full">
+            <span className="px-2 py-0.5 bg-neutral-200 text-neutral-700 text-caption rounded-full">
               {community?.memberCount || 0}
             </span>
           </div>
@@ -170,7 +170,7 @@ const CommunityInfo = ({ community, onUpdateCommunity }) => {
                   onClick={() => navigate(`/profile/${member.username}`)}
                   className="flex items-center gap-3 flex-1 cursor-pointer"
                 >
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-full bg-neutral-300 flex items-center justify-center">
                   {member.profilePicture ? (
                     <img
                       src={member.profilePicture}
