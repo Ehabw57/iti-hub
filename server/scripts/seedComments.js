@@ -14,7 +14,7 @@ const sampleComments = [
 const seedComments = async (posts, users) => {
   console.log("💬 Seeding comments...");
 
-  await Comment.deleteMany();
+  await Comment.deleteMany({});
 
   const allComments = [];
   let totalComments = 0;
@@ -57,7 +57,12 @@ const seedComments = async (posts, users) => {
             parentComment: parentComment._id,
           });
 
+          // initialize repliesCount if not present on the document
+          if (typeof parentComment.repliesCount !== "number") {
+            parentComment.repliesCount = 0;
+          }
           parentComment.repliesCount += 1;
+
           allComments.push(reply);
           postTotalComments++;
           totalComments++;
@@ -68,13 +73,12 @@ const seedComments = async (posts, users) => {
     }
 
     // ✅ تحديث عدد الكومنتات الحقيقي على البوست
-    await Post.findByIdAndUpdate(post._id, {
-      commentsCount: postTotalComments,
-    });
+    // set exact commentsCount for the post (keeps seed deterministic)
+    await Post.findByIdAndUpdate(post._id, { commentsCount: postTotalComments });
   }
 
   console.log(`✅ Comments seeded: ${totalComments}`);
-  return allComments; 
+  return allComments;
 };
 
 module.exports = seedComments;

@@ -10,6 +10,9 @@ const seedComments = require("./seedComments");
 const seedCommentLikes = require("./seedCommentLike");
 const seedNotifications = require("./seedNotifications");
 
+// add import for communities seeder
+const seedCommunities = require("./seedCommunities");
+
 async function seed() {
   try {
     console.log("🚀 Starting database seeding...");
@@ -23,6 +26,9 @@ async function seed() {
 
     // 3️⃣ seed connections (follows and blocks)
     await seedConnections(users);
+
+    // 3.1️⃣ seed communities (profiles & covers similar to post images)
+    const communities = await seedCommunities(users);
 
     // ⏭️ الخطوات الجاية (هنفعلها واحدة واحدة)
     const posts = await seedPosts(users);
