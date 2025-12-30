@@ -97,7 +97,7 @@ const ProfileHeader = ({ profile, isOwnProfile }) => {
     <div className="bg-white dark:bg-neutral-100 shadow-sm rounded-lg overflow-hidden mb-4">
       {/* Cover Image */}
       <div 
-        className="relative h-48 bg-linear-to-r from-primary-500 to-primary-700 group"
+        className="relative h-40 sm:h-48 md:h-56 bg-linear-to-r from-primary-500 to-primary-700 group"
         onMouseEnter={() => isOwnProfile && setShowCoverUpload(true)}
         onMouseLeave={() => setShowCoverUpload(false)}
       >
@@ -133,14 +133,14 @@ const ProfileHeader = ({ profile, isOwnProfile }) => {
 
       {/* Profile Info Container */}
       <div className="px-6 pb-6">
-        <div className="flex items-end justify-between -mt-16 mb-4">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between mb-4 gap-4">
           {/* Profile Picture */}
           <div 
-            className="relative group"
+            className="relative group -mt-12 sm:-mt-16 z-10"
             onMouseEnter={() => isOwnProfile && setShowProfileUpload(true)}
             onMouseLeave={() => setShowProfileUpload(false)}
           >
-            <div className="w-32 h-32 rounded-full border-4 border-white dark:border-neutral-100 shadow-lg overflow-hidden bg-neutral-200 dark:bg-neutral-200">
+            <div className="w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full border-4 border-white dark:border-neutral-100 shadow-lg overflow-hidden bg-neutral-200 dark:bg-neutral-200">
               {profile?.profilePicture ? (
                 <img
                   src={profile.profilePicture}
@@ -174,12 +174,12 @@ const ProfileHeader = ({ profile, isOwnProfile }) => {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-3 mb-4">
+          <div className="flex flex-col gap-3 w-full mt-3 sm:mt-0 sm:flex-row sm:w-auto">
             {isOwnProfile ? (
               // Own Profile Actions
               <button 
                 onClick={() => setShowEditProfile(true)}
-                className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium"
+                className="px-6 py-2 w-full sm:w-auto bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium"
               >
                 {editProfile}
               </button>
@@ -191,7 +191,7 @@ const ProfileHeader = ({ profile, isOwnProfile }) => {
                   <button
                     onClick={handleFollow}
                     disabled={isFollowLoading}
-                    className={`px-6 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                    className={`px-6 py-2 w-full sm:w-auto rounded-lg font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
                       profile?.isFollowing
                         ? 'bg-neutral-200 text-neutral-700 hover:bg-neutral-300'
                         : 'bg-primary-600 text-white hover:bg-primary-700'
@@ -214,7 +214,7 @@ const ProfileHeader = ({ profile, isOwnProfile }) => {
                 <button
                   onClick={handleBlock}
                   disabled={isBlockLoading}
-                  className={`px-6 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                  className={`px-6 py-2 w-full sm:w-auto rounded-lg font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
                     profile?.isBlocked
                       ? 'bg-red-600 text-white hover:bg-red-700'
                       : 'bg-neutral-200 text-neutral-700 hover:bg-neutral-300'

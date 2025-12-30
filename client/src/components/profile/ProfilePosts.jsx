@@ -53,7 +53,7 @@ const ProfilePosts = ({ userId, isOwnProfile }) => {
   return (
     <div className="space-y-4">
       {/* Posts Header */}
-      <div className="bg-white dark:bg-neutral-100 shadow-sm rounded-lg px-6 py-4">
+      <div className="bg-white dark:bg-neutral-100 shadow-sm rounded-lg px-4 sm:px-6 py-4">
         <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-900">
           {content.posts} ({posts.length})
         </h2>
