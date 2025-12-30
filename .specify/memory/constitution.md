@@ -1,44 +1,50 @@
-# ITI Hub Constitution
-
-This constitution establishes the engineering principles, workflow, and quality gates for the ITI Hub project. It is intended to keep the codebase readable, secure, and easy to maintain while favoring simplicity over heavy tooling.
+# [PROJECT_NAME] Constitution
+<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
 
 ## Core Principles
 
-### I. Readable & Self-Explanatory Code
-- Code is written for humans first. Prefer clear naming, small functions, and explicit control flow.
-- Prefer a few well-documented files over many indirection layers.
-- Inline comments only to explain "why" — not "what".
+### [PRINCIPLE_1_NAME]
+<!-- Example: I. Library-First -->
+[PRINCIPLE_1_DESCRIPTION]
+<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
 
-### II. Clarity & Consistency
-- Strive for clarity in APIs, function names, and data shapes. Keep naming consistent across the codebase.
-- Follow a shared style and lint rules so that code reads the same way across contributors.
+### [PRINCIPLE_2_NAME]
+<!-- Example: II. CLI Interface -->
+[PRINCIPLE_2_DESCRIPTION]
+<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
 
-### III. Modularity & Separation of Concerns
-- Structure code so that responsibilities are separated (controllers, services, models, utilities).
-- Prefer composing small modules rather than large monoliths; keep public interfaces minimal and stable.
+### [PRINCIPLE_3_NAME]
+<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
+[PRINCIPLE_3_DESCRIPTION]
+<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
 
-### IV. Tests (Test-First & Safety Nets)
-- Write unit tests for business logic and integration tests for HTTP boundaries (Jasmine + Supertest recommended per project).
-- Maintain a minimal set of fast-running core tests that run locally and on CI. Tests should be deterministic and isolated.
+### [PRINCIPLE_4_NAME]
+<!-- Example: IV. Integration Testing -->
+[PRINCIPLE_4_DESCRIPTION]
+<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
 
-### V. Efficiency, Scalability & Maintainability
-- Design for efficient common-case performance, but optimize only where profiling shows need.
-- Keep code maintainable: prefer simple, well-tested solutions that are easy to reason about and modify.
+### [PRINCIPLE_5_NAME]
+<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
+[PRINCIPLE_5_DESCRIPTION]
+<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
 
-### VI. Simplicity over Tooling
-- Prefer small focused libraries and native APIs over introducing heavy frameworks unless justified.
-- Add tooling only when it improves developer velocity or production reliability measurably.
+## [SECTION_2_NAME]
+<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
 
-## Development Standards & Practices
+[SECTION_2_CONTENT]
+<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
 
-1. Project structure
-- Keep a predictable layout: `server/controllers`, `server/services`, `server/models`, `server/middlewares`, `server/routes`, `tests`.
+## [SECTION_3_NAME]
+<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
 
-6. Configuration & Secrets
-- Use environment variables for configuration. Validate required env at startup (fail-fast if critical secrets like `JWT_SECRET` missing).
+[SECTION_3_CONTENT]
+<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
 
-7. Dependencies
-- Keep dependencies minimal and actively reviewed. Prefer well-maintained and widely-used libraries. Run `npm audit` regularly.
+## Governance
+<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
+[GOVERNANCE_RULES]
+<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
 
----
+**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
+<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->

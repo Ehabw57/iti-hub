@@ -1,0 +1,42 @@
+{
+  "locale": "en",
+  "translations": {
+    "admin": {
+      "dashboard": {
+        "title": "Dashboard",
+        "totalUsers": "Total Users",
+        "totalPosts": "Total Posts",
+        "activity": "Activity"
+      },
+      "users": {
+        "title": "Users",
+        "search": "Search users",
+        "filter": "Filter",
+        "edit": "Edit",
+        "suspend": "Suspend",
+        "activate": "Activate",
+        "delete": "Delete",
+        "export": "Export",
+        "bulkActions": "Bulk Actions"
+      },
+      "posts": {
+        "title": "Posts",
+        "delete": "Delete"
+      },
+      "comments": {
+        "title": "Comments",
+        "delete": "Delete"
+      },
+      "communities": {
+        "title": "Communities",
+        "create": "Create Community",
+        "delete": "Delete"
+      },
+      "auth": {
+        "login": "Login",
+        "logout": "Logout",
+        "unauthorized": "Unauthorized"
+      }
+    }
+  }
+}
