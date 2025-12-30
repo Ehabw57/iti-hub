@@ -270,7 +270,7 @@ const Sidebar = ({
          <div
         className={`
           fixed inset-0
-          z-3
+          z-4
           bg-black/30 
           transition-opacity duration-300
           lg:hidden
@@ -283,7 +283,7 @@ const Sidebar = ({
       <aside
         className={`
           min-w-70
-          z-3
+          z-4
           fixed inset-y-0 ltr:left-0 rtl:right-0
           lg:sticky lg:top-0 lg:h-[92vh] lg:inset-auto
           bg-neutral-50 

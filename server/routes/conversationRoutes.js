@@ -24,10 +24,11 @@ const {
 const conversationRoutes = express.Router();
 
 // Conversation routes
+conversationRoutes.get("/unread/count", checkAuth, require("../controllers/conversation").getUnreadMessagesCount);
 conversationRoutes.get("/", checkAuth, getConversations);
 conversationRoutes.get("/:conversationId", checkAuth, getConversation);
 conversationRoutes.post("/", checkAuth, createConversation);
-conversationRoutes.post("/group", checkAuth, createGroupConversation);
+conversationRoutes.post("/group", checkAuth, upload.profile, createGroupConversation);
 
 // Group management routes
 conversationRoutes.post("/:conversationId/members", checkAuth, addGroupMember);

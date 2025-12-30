@@ -11,6 +11,7 @@ const User = require('../models/User');
 async function isParticipant(conversationId, userId) {
   try {
     const conversation = await Conversation.findById(conversationId);
+    
     if (!conversation) {
       return false;
     }
@@ -104,8 +105,12 @@ async function formatConversation(conversation, currentUserId) {
   const formatted = {
     _id: conversation._id,
     type: conversation.type,
+    image: conversation.image,
+    name: conversation.name,
     participants: formattedParticipants,
     unreadCount,
+    isGroup: conversation.isGroup,
+    lastMessage: conversation.lastMessage,
     createdAt: conversation.createdAt,
     updatedAt: conversation.updatedAt
   };

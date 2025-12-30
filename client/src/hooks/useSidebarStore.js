@@ -1,5 +1,6 @@
 import { useAuthStore } from '@store/auth';
 import { useUnreadCount } from '@hooks/queries/useUnreadCount';
+import { useUnreadMessagesCount } from '@hooks/queries/useUnreadMessagesCount';
 
 /**
  * @fileoverview Zustand adapter hook for sidebar store needs
@@ -30,10 +31,9 @@ export const useSidebarStore = () => {
   const { data: unreadData } = useUnreadCount();
   const unreadNotifications = unreadData?.data?.unreadCount || 0;
 
-  // TODO: Replace with real messages unread count when messaging system is integrated
-  // For now, mock the messages unread count
-  // When messaging is ready, use: const { data: messagesData } = useUnreadMessagesCount();
-  const unreadMessages = 0; // Mock value
+  // Unread messages count (from React Query + socket updates)
+  const { data: messagesData } = useUnreadMessagesCount();
+  const unreadMessages = messagesData?.data?.unreadCount || 0;
 
   return {
     isAuthenticated,

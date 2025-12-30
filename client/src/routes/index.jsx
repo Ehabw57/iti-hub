@@ -15,6 +15,8 @@ import PostDetailController from "@pages/post/PostDetailController";
 import NotificationsCenterController from "@pages/notifications/NotificationsCenterController";
 import ProfileController from "../pages/profile/ProfileController";
 import FeedLayout from "../layout/FeedLayout";
+import MessagesList from "@pages/messages/MessagesList";
+import ConversationDetail from "@pages/messages/ConversationDetail";
 
 // Placeholder components for routes not yet implemented
 const NotFoundPage = () => <div>404 - Page Not Found</div>;
@@ -87,6 +89,14 @@ const router = createBrowserRouter([
           {
             path: "/saved",
             element: <SavedPostsController />,
+          },
+          {
+            path: "/messages",
+            element: <MessagesList />,
+          },
+          {
+            path: "/messages/:conversationId",
+            element: <ConversationDetail />,
           },
         ],
       },

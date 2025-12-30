@@ -44,7 +44,7 @@ exports.createConversation = asyncHandler(async (req, res) => {
   // Check if conversation already exists
   const sortedIds = [currentUserId.toString(), participantId.toString()].sort();
   const existingConversation = await Conversation.findOne({
-    type: 'individual',
+    isGroup: false,
     participants: { $all: sortedIds, $size: 2 }
   }).populate('participants', 'username fullName profilePicture isOnline lastSeen');
 

@@ -5,6 +5,7 @@ import { HiBars3 } from "react-icons/hi2";
 import Navbar from "../components/Navbar/Navbar";
 import { Sidebar } from "../components/Sidebar";
 import { GlobalNotificationHandler } from "../components/notifications/GlobalNotificationHandler";
+import { GlobalMessagingHandler } from "../components/messaging/GlobalMessagingHandler";
 import { useAuthStore } from "@store/auth";
 import PostComposerModal from "@components/post/PostComposerModal";
 import LoginRequiredModal from "@components/auth/LoginRequiredModal";
@@ -33,12 +34,12 @@ export default function Layout() {
   };
 
   return (
-    <div className="max-h-screen flex flex-col bg-neutral-50">
+    <div className="min-h-screen max-h-screen flex flex-col bg-neutral-50">
       {/* Navbar - Full width at top */}
       <Navbar />
 
       {/* Mobile hamburger button */}
-      <div className="lg:hidden fixed top-16 ltr:left-4 rtl:right-4 z-3">
+      <div className="lg:hidden fixed top-16 ltr:left-4 rtl:right-4 z-4">
         <button
           type="button"
           onClick={() => setIsMobileMenuOpen(true)}
@@ -64,6 +65,8 @@ export default function Layout() {
         <main className="flex-1">
           {/* Global notification handler - manages real-time updates across all pages */}
           {isAuthenticated && <GlobalNotificationHandler />}
+          {/* Global messaging handler - manages real-time message updates across all pages */}
+          {isAuthenticated && <GlobalMessagingHandler />}
           <Outlet />
         </main>
       </div>
