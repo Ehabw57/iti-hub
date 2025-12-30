@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useIntlayer } from 'react-intlayer';
 import { HiXMark } from 'react-icons/hi2';
 import { useSidebarStore } from '../../hooks/useSidebarStore';
@@ -124,11 +124,13 @@ const Sidebar = ({
         return (
           <div key={child.id} className="space-y-1">
             {communities.slice(0, 8).map(({community}) => (
+              <Link key={community._id} to={`/community/${community._id}`} onClick={handleNavigate} >
               <CommunityCard
                 key={community._id}
                 community={community}
                 size="small"
               />
+              </Link>
             ))}
             {communities.length > 8 && (
               <button

@@ -1,6 +1,5 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Layout from "@/layout/layout";
-// import FeedLayout from '@/layout/FeedLayout';
 import ProtectedRoute from "@components/routes/ProtectedRoute";
 import PublicRoute from "@components/routes/PublicRoute";
 import AuthLoginController from "@pages/auth/AuthLoginController";
@@ -17,6 +16,8 @@ import ProfileController from "../pages/profile/ProfileController";
 import FeedLayout from "../layout/FeedLayout";
 import MessagesList from "@pages/messages/MessagesList";
 import ConversationDetail from "@pages/messages/ConversationDetail";
+import CommunityManagement from "@pages/community/CommunityManagement";
+import Community from "@components/community/Community";
 
 // Placeholder components for routes not yet implemented
 const NotFoundPage = () => <div>404 - Page Not Found</div>;
@@ -78,10 +79,18 @@ const router = createBrowserRouter([
         path: "/profile/:username",
         element: <ProfileController />,
       },
+      {
+        path: "/community/:communityId",
+        element: <Community />,
+      },
       // Protected routes outside FeedLayout
       {
         element: <ProtectedRoute />,
         children: [
+          {
+            path: "/community/:communityId/manage",
+            element: <CommunityManagement />,
+          },
           {
             path: "/notifications",
             element: <NotificationsCenterController />,

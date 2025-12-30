@@ -101,10 +101,6 @@ export default {
       ar: 'جعله مشرفاً',
     }),
 
-    removeModerator: t({
-      en: 'Remove Moderator',
-      ar: 'إزالة المشرف',
-    }),
 
     owners: t({
       en: 'Owners',
