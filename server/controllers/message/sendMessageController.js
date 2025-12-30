@@ -97,7 +97,7 @@ exports.sendMessage = asyncHandler(async (req, res) => {
   const message = await Message.create(messageData);
 
   // Update conversation lastMessage
-  conversation.lastMessage = message._id;
+  conversation.lastMessage = {content: message.content, senderId: currentUserId};
 
   // Increment unreadCount for all participants except sender
   for (const participantId of conversation.participants) {
@@ -129,6 +129,7 @@ exports.sendMessage = asyncHandler(async (req, res) => {
               content: formatted.content,
               image: formatted.image,
               senderId: currentUserId.toString(),
+               senderProfilePicture: req.user.profilePicture,
               senderName: req.user.fullName || req.user.username,
               messageId: message._id.toString(),
               timestamp: message.createdAt

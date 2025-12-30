@@ -1,7 +1,6 @@
 const Post = require('../../models/Post');
 const Connection = require('../../models/Connection');
 const CommunityMember = require('../../models/CommunityMember');
-const feedAlgorithm = require('../../utils/feedAlgorithm');
 const feedCache = require('../../utils/feedCache');
 const { buildPostResponse } = require('../../utils/postHelpers');
 const { 
@@ -55,7 +54,7 @@ const getHomeFeed = asyncHandler(async (req, res) => {
   let total;
 
   if (isAuthenticated) {
-    // Authenticated: Algorithmic feed
+    // Authenticated: Get posts NOT from followed users or joined communities
     const [connections, communityMembers] = await Promise.all([
       Connection.find({ follower: currentUserId }),
       CommunityMember.find({ user: currentUserId })
@@ -63,37 +62,17 @@ const getHomeFeed = asyncHandler(async (req, res) => {
 
     const followedUserIds = connections.map(c => c.following);
     const communityIds = communityMembers.map(cm => cm.community);
-    console.log('Followed Users:', followedUserIds);
-    console.log('Communities:', communityIds);
 
-    // Build query for posts from followed users and communities
+    // Build query for posts NOT from followed users or joined communities
     const query = {};
-    
     if (followedUserIds.length > 0 || communityIds.length > 0) {
-      query.$or = [];
-      
+      query.$and = [];
       if (followedUserIds.length > 0) {
-        query.$or.push({ author: { $in: followedUserIds } });
+        query.$and.push({ author: { $nin: followedUserIds } });
       }
-      
       if (communityIds.length > 0) {
-        query.$or.push({ community: { $in: communityIds } });
+        query.$and.push({ $or: [ { community: { $exists: false } }, { community: { $nin: communityIds } } ] });
       }
-    } else {
-      // User has no connections or communities - return empty feed
-      return sendSuccess(res, {
-        cached: false,
-        feedType: 'home',
-        posts: [],
-        pagination: {
-          page,
-          limit,
-          total: 0,
-          pages: 0,
-          hasNextPage: false,
-          hasPrevPage: false
-        }
-      });
     }
 
     // Add time filter for home feed
@@ -101,45 +80,16 @@ const getHomeFeed = asyncHandler(async (req, res) => {
     timeThreshold.setDate(timeThreshold.getDate() - HOME_FEED_DAYS);
     query.createdAt = { $gte: timeThreshold };
 
-    // Fetch more posts than needed for algorithmic sorting
-    const fetchLimit = limit * 3; // Fetch 3x to have enough for sorting
-
+    // Pagination and fetch
     posts = await Post.find(query)
       .sort({ createdAt: -1 })
-      .limit(fetchLimit)
+      .skip(skip)
+      .limit(limit)
       .populate('author', 'username fullName profilePicture')
       .populate('originalPost')
       .populate('community', 'name');
 
-    // Get total count
     total = await Post.countDocuments(query);
-
-    // Calculate feed scores and sort
-    const userConnections = {
-      followedUsers: followedUserIds.map(id => id.toString()),
-      communities: communityIds.map(id => id.toString())
-    };
-
-    const postsWithScores = posts.map(post => {
-      const postObj = post.toObject();
-      const score = feedAlgorithm.calculateFeedScore(
-        postObj,
-        currentUserId.toString(),
-        userConnections,
-        'home'
-      );
-      return { ...postObj, _score: score };
-    });
-
-    // Sort by score and take only requested limit
-    postsWithScores.sort((a, b) => b._score - a._score);
-    posts = postsWithScores.slice(skip, skip + limit);
-
-    // Remove score from final output
-    posts = posts.map(post => {
-      const { _score, ...postWithoutScore } = post;
-      return postWithoutScore;
-    });
 
   } else {
     // Unauthenticated: Show recent posts (no featured tags filter until Tag system is implemented)

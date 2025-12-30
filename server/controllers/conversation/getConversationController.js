@@ -1,9 +1,13 @@
-const mongoose = require('mongoose');
-const Conversation = require('../../models/Conversation');
-const { formatConversation } = require('../../utils/messageHelpers');
-const { asyncHandler } = require('../../middlewares/errorHandler');
-const { ValidationError, NotFoundError, ForbiddenError } = require('../../utils/errors');
-const { sendSuccess } = require('../../utils/responseHelpers');
+const mongoose = require("mongoose");
+const Conversation = require("../../models/Conversation");
+const { formatConversation } = require("../../utils/messageHelpers");
+const { asyncHandler } = require("../../middlewares/errorHandler");
+const {
+  ValidationError,
+  NotFoundError,
+  ForbiddenError,
+} = require("../../utils/errors");
+const { sendSuccess } = require("../../utils/responseHelpers");
 
 /**
  * Get a specific conversation by ID
@@ -17,33 +21,32 @@ const getConversation = asyncHandler(async (req, res) => {
 
   // Validate conversation ID
   if (!mongoose.Types.ObjectId.isValid(conversationId)) {
-    throw new ValidationError('Invalid conversation ID');
+    throw new ValidationError("Invalid conversation ID");
   }
 
   // Find conversation
   const conversation = await Conversation.findById(conversationId)
-    .populate('participants', 'username fullName profilePicture lastSeen')
-    .populate('admin', 'username fullName profilePicture');
+    .populate("participants", "username fullName profilePicture lastSeen")
+    .populate("admin", "username fullName profilePicture")
+    .populate("lastMessage.senderId", "username fullName profilePicture");
 
   if (!conversation) {
-    throw new NotFoundError('Conversation not found');
+    throw new NotFoundError("Conversation not found");
   }
 
   // Verify user is a participant
   const isParticipant = conversation.participants.some(
-    participant => participant._id.toString() === userId.toString()
+    (participant) => participant._id.toString() === userId.toString()
   );
 
   if (!isParticipant) {
-    throw new ForbiddenError('You are not a participant in this conversation');
+    throw new ForbiddenError("You are not a participant in this conversation");
   }
 
   // Format conversation
   const formattedConversation = await formatConversation(conversation, userId);
 
-  sendSuccess(res, {
-    conversation: formattedConversation
-  });
+  sendSuccess(res, formattedConversation);
 });
 
 module.exports = { getConversation };

@@ -35,7 +35,9 @@ const getConversations = asyncHandler(async (req, res) => {
     .skip(skip)
     .limit(limit)
     .populate('participants', 'username fullName profilePicture lastSeen')
-    .populate('admin', 'username fullName profilePicture');
+    .populate('admin', 'username fullName profilePicture')
+    .populate('lastMessage.senderId', 'username fullName profilePicture');
+    console.log('[getConversations] Fetched conversations count:', conversations);
 
   // Format each conversation
   const formattedConversations = await Promise.all(

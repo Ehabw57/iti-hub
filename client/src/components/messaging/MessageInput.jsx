@@ -1,0 +1,203 @@
+import { useState, useRef, useEffect } from 'react';
+import { useIntlayer } from 'react-intlayer';
+import { HiOutlinePaperAirplane, HiOutlinePhoto, HiOutlineXMark } from 'react-icons/hi2';
+import Button from '@/components/common/Button';
+
+/**
+ * @fileoverview Message input component with text and image support
+ * Handles typing indicators and auto-expanding textarea
+ */
+
+/**
+ * MessageInput - Input field for sending messages
+ * 
+ * @param {Object} props
+ * @param {string} props.value - Current text value
+ * @param {Function} props.onChange - Callback when text changes
+ * @param {Function} props.onSend - Callback to send message
+ * @param {Function} [props.onTyping] - Callback for typing indicator
+ * @param {boolean} [props.disabled=false] - Whether input is disabled
+ * @param {boolean} [props.sending=false] - Whether message is being sent
+ * @returns {JSX.Element}
+ */
+export function MessageInput({
+  value = '',
+  onChange,
+  onSend,
+  onTyping,
+  disabled = false,
+  sending = false,
+}) {
+  const content = useIntlayer('conversationDetail');
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const textareaRef = useRef(null);
+  const fileInputRef = useRef(null);
+
+  // Auto-expand textarea
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      const newHeight = Math.min(textareaRef.current.scrollHeight, 120); // Max 5 lines
+      textareaRef.current.style.height = `${newHeight}px`;
+    }
+  }, [value]);
+  
+    // Refocus textarea after sending completes and input is cleared
+    const prevSendingRef = useRef(sending);
+    useEffect(() => {
+      if (prevSendingRef.current && !sending && value === '' && textareaRef.current) {
+        textareaRef.current.focus();
+      }
+      prevSendingRef.current = sending;
+    }, [sending]);
+
+  // Handle image selection
+  const handleImageSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file');
+      return;
+    }
+
+    // Validate file size (10MB max)
+    if (file.size > 10 * 1024 * 1024) {
+      alert('Image size should be less than 10MB');
+      return;
+    }
+
+    setSelectedImage(file);
+
+    // Create preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setImagePreview(e.target.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Remove selected image
+  const handleRemoveImage = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  // Handle send
+  const handleSend = () => {
+    if (disabled || sending) return;
+    if (!value.trim() && !selectedImage) return;
+
+    onSend({
+      content: value.trim(),
+      image: selectedImage,
+    });
+
+    // Reset state
+    onChange('');
+    handleRemoveImage();
+  };
+
+  // Handle key press
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  // Handle text change
+  const handleChange = (e) => {
+    onChange(e.target.value);
+    onTyping?.();
+  };
+
+  const canSend = (value.trim() || selectedImage) && !disabled && !sending;
+
+  return (
+    <div className="border-t border-neutral-200 bg-white">
+      {/* Image Preview */}
+      {imagePreview && (
+        <div className="px-4 pt-3 pb-2">
+          <div className="relative inline-block">
+            <img
+              src={imagePreview}
+              alt="Preview"
+              className="h-24 w-auto rounded-lg object-cover"
+            />
+            <button
+              onClick={handleRemoveImage}
+              className="absolute -top-2 -right-2 bg-neutral-800 text-white rounded-full p-1 hover:bg-neutral-900 transition-colors"
+              aria-label="Remove image"
+            >
+              <HiOutlineXMark className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Input Row */}
+      <div className="flex items-end gap-2 p-3">
+        {/* Image Upload Button */}
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          disabled={disabled || sending}
+          className="shrink-0 p-2 text-neutral-600 hover:text-secondary-600 hover:bg-secondary-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          aria-label={content.attachImage.value}
+        >
+          <HiOutlinePhoto className="w-6 h-6" />
+        </button>
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleImageSelect}
+          className="hidden"
+        />
+
+        {/* Text Input */}
+        <textarea
+          ref={textareaRef}
+          value={value}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
+          disabled={disabled || sending}
+          placeholder={content.messageInputPlaceholder.value}
+          rows={1}
+          className="
+            flex-1 resize-none
+            px-4 py-2
+            bg-neutral-100
+            border border-transparent
+            rounded-xl
+            text-body-2
+            placeholder:text-neutral-500
+            focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:bg-white
+            disabled:opacity-50 disabled:cursor-not-allowed
+            transition-colors
+          "
+        />
+
+        {/* Send Button */}
+        <Button
+          onClick={handleSend}
+          disabled={!canSend}
+          loading={sending}
+          variant="primary"
+          className="shrink-0 rounded-full! p-2! h-10! w-10!"
+          aria-label={content.sendButton.value}
+        >
+          {!sending && <HiOutlinePaperAirplane className="w-5 h-5" />}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+export default MessageInput;

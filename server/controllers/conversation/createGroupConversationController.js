@@ -18,6 +18,7 @@ const { sendCreated } = require('../../utils/responseHelpers');
  */
 exports.createGroupConversation = asyncHandler(async (req, res) => {
   const currentUserId = req.user._id;
+  console.log(req.body);
   let { name, participantIds, image } = req.body;
 
   // Validate name is provided
@@ -41,6 +42,8 @@ exports.createGroupConversation = asyncHandler(async (req, res) => {
   if (!participantIds) {
     throw new ValidationError('participantIds is required');
   }
+
+  participantIds = JSON.parse(participantIds);
 
   // Validate participantIds is array
   if (!Array.isArray(participantIds)) {

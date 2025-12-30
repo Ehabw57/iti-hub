@@ -59,7 +59,7 @@ export function PostMenu({
 
       <MenuItems 
         anchor="bottom end"
-        className="w-48 bg-neutral-100 rounded-lg shadow-elevation-2 border border-neutral-200 py-1 z-50 [--anchor-gap:4px]"
+        className="w-48 bg-neutral-100 rounded-lg shadow-elevation-2 border border-neutral-200 py-1 z-5 [--anchor-gap:4px]"
       >
         {/* Save/Unsave - Available to all users */}
         <MenuItem>
