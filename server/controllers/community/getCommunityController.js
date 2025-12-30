@@ -21,11 +21,19 @@ const getCommunity = asyncHandler(async (req, res) => {
   }
 
   // Find community
-  const community = await Community.findById(id);
+  const community = await Community.findById(id)
+    .populate('owners', 'username fullName profilePicture')
+    .populate('moderators', 'username fullName profilePicture');
   
   if (!community) {
     throw new NotFoundError('Community not found');
   }
+
+  // Get community members
+  const members = await CommunityMember.find({ community: id })
+    .populate('user', 'username fullName profilePicture email')
+    .sort({ createdAt: -1 })
+    .limit(50); // Limit to 50 members for performance
 
   // Build response object
   const communityData = {
@@ -37,6 +45,17 @@ const getCommunity = asyncHandler(async (req, res) => {
     tags: community.tags,
     memberCount: community.memberCount,
     postCount: community.postCount,
+    owners: community.owners,
+    moderators: community.moderators,
+    members: members.map(m => ({
+      _id: m.user._id,
+      username: m.user.username,
+      fullName: m.user.fullName,
+      profilePicture: m.user.profilePicture,
+      email: m.user.email,
+      role: m.role,
+      joinedAt: m.createdAt
+    })),
     createdAt: community.createdAt,
     updatedAt: community.updatedAt,
     isJoined: false, // Default to false

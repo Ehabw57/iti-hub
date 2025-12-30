@@ -216,7 +216,7 @@ const PostCard = React.memo(({ post, onPostClick, isCommentsExpanded = false, cl
 
   const handleCommunityClick = useCallback(
     (communityId) => {
-      navigate(`/communities/${communityId}`);
+      navigate(`/community/${communityId}`);
     },
     [navigate]
   );

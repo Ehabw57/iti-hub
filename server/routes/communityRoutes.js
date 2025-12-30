@@ -1,11 +1,13 @@
 const express = require('express');
 const { checkAuth, optionalAuth } = require('../middlewares/checkAuth');
+const { checkModeratorAccess, checkOwnerAccess } = require('../middlewares/checkCommunityAccess');
 const { communityCreate, profile, cover } = require('../middlewares/upload');
 
 // Community controllers
 const getCommunityFeed = require('../controllers/community/getCommunityFeedController');
 const createCommunity = require('../controllers/community/createCommunityController');
 const getCommunity = require('../controllers/community/getCommunityController');
+const getCommunityMembers = require('../controllers/community/getCommunityMembersController');
 const updateCommunityDetails = require('../controllers/community/updateCommunityDetailsController');
 const updateCommunityProfilePicture = require('../controllers/community/updateCommunityProfilePictureController');
 const updateCommunityCoverImage = require('../controllers/community/updateCommunityCoverImageController');
@@ -13,6 +15,7 @@ const joinCommunity = require('../controllers/community/joinCommunityController'
 const leaveCommunity = require('../controllers/community/leaveCommunityController');
 const addModerator = require('../controllers/community/addModeratorController');
 const removeModerator = require('../controllers/community/removeModeratorController');
+const kickMember = require('../controllers/community/kickMemberController');
 const listCommunities = require('../controllers/community/listCommunitiesController');
 
 const communityRoutes = express.Router();
@@ -37,6 +40,13 @@ communityRoutes.post('/', checkAuth, communityCreate, createCommunity);
  * @access  Public (optional auth for membership status)
  */
 communityRoutes.get('/:id', optionalAuth, getCommunity);
+
+/**
+ * @route   GET /api/communities/:id/members
+ * @desc    Get community members with pagination
+ * @access  Public (optional auth)
+ */
+communityRoutes.get('/:id/members', optionalAuth, getCommunityMembers);
 
 /**
  * @route   PATCH /api/communities/:id
@@ -78,14 +88,21 @@ communityRoutes.post('/:id/leave', checkAuth, leaveCommunity);
  * @desc    Add a moderator to the community
  * @access  Private (Owner/Moderator only)
  */
-communityRoutes.post('/:id/moderators', checkAuth, addModerator);
+communityRoutes.post('/:id/moderators', checkAuth, checkModeratorAccess, addModerator);
 
 /**
  * @route   DELETE /api/communities/:id/moderators/:userId
  * @desc    Remove a moderator from the community
- * @access  Private (Owner/Moderator only)
+ * @access  Private (Owner only)
  */
-communityRoutes.delete('/:id/moderators/:userId', checkAuth, removeModerator);
+communityRoutes.delete('/:id/moderators/:userId', checkAuth, checkOwnerAccess, removeModerator);
+
+/**
+ * @route   DELETE /api/communities/:id/members/:userId
+ * @desc    Kick/Remove a member from the community
+ * @access  Private (Moderator/Owner only)
+ */
+communityRoutes.delete('/:id/members/:userId', checkAuth, checkModeratorAccess, kickMember);
 
 /**
  * @route   GET /api/communities/:communityId/feed
