@@ -81,7 +81,7 @@ const searchCommunities = asyncHandler(async (req, res) => {
           community: community._id,
           user: req.user._id,
         });
-
+             console.log(communityObj);
         return {
           ...communityObj,
           isMember: !!membership,

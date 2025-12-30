@@ -1,6 +1,6 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Layout from '@/layout/layout';
-// import FeedLayout from '@/layout/FeedLayout';
+import FeedLayout from '@/layout/FeedLayout';
 import ProtectedRoute from '@components/routes/ProtectedRoute';
 import PublicRoute from '@components/routes/PublicRoute';
 import AuthLoginController from '@pages/auth/AuthLoginController';
@@ -14,7 +14,7 @@ import SavedPostsController from '@pages/feed/SavedPostsController';
 import PostDetailController from '@pages/post/PostDetailController';
 import NotificationsCenterController from '@pages/notifications/NotificationsCenterController';
 import ProfileController from '../pages/profile/ProfileController';
-
+import SearchPage from '@/pages/search/SearchPage';
 // Placeholder components for routes not yet implemented
 const NotFoundPage = () => <div>404 - Page Not Found</div>;
 

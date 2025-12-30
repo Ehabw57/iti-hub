@@ -22,9 +22,10 @@
   "scripts": {
     "start": "node app.js",
     "test": "NODE_ENV=test jasmine",
-    "dev": "NODE_ENV=dev nodemon --watch"
+    "dev": "cross-env NODE_ENV=dev nodemon --watch ."
   },
   "devDependencies": {
+    "cross-env": "^10.1.0",
     "jasmine": "^5.12.0",
     "socket.io-client": "^4.8.1",
     "supertest": "^7.1.4"

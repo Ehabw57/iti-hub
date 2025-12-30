@@ -1,4 +1,4 @@
-import { useSearchParams, useNavigate } from 'react-router-dom';
+ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useIntlayer } from 'react-intlayer';
@@ -9,13 +9,12 @@ import PostItem from './PostItem';
 import CommunityItem from './CommunityItem';
 
 export default function SearchPage() {
-const [searchParams, setSearchParams] = useSearchParams();
-const navigate = useNavigate();
-const q = searchParams.get('q') || '';
-const tab = searchParams.get('tab') || 'posts';
-const t = useIntlayer('search-page');
-const { query, setQuery, results, loading } = useFastSearch(q);
- 
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const q = searchParams.get('q') || '';
+  const tab = searchParams.get('tab') || 'posts';
+  const t = useIntlayer('search-page');
+  const { query, setQuery, results, loading } = useFastSearch(q);
 
   const [pageState, setPageState] = useState({ users: 1, posts: 1, communities: 1 });
 
@@ -24,10 +23,10 @@ const { query, setQuery, results, loading } = useFastSearch(q);
   }, [q]);
 
   useEffect(() => {
-  if (q !== query) {
-    setQuery(q);
-  }
-}, [q]);
+    if (q !== query) {
+      setQuery(q);
+    }
+  }, [q]);
 
   // Fetch functions
   const fetchUsers = async ({ page = 1 }) => {
@@ -114,50 +113,50 @@ const { query, setQuery, results, loading } = useFastSearch(q);
         </nav>
       </div>
 
-{/* Results from fast search */}
-<div className="results mt-4">
-  {loading && <p>Loading...</p>}
+      {/* Results from fast search */}
+      <div className="results mt-4">
+        {loading && <p>Loading...</p>}
 
-  {tab === "users" &&
-    results.users.map((u) => (
-      <div key={u._id} className="p-2 border-b">
-        <p className="font-bold">{u.username}</p>
-        <p>{u.fullName}</p>
-        <p>Followers: {u.followersCount}</p>
+        {tab === "users" &&
+          results.users.map((u) => (
+            <div key={u._id} className="p-2 border-b">
+              <p className="font-bold">{u.username}</p>
+              <p>{u.fullName}</p>
+              <p>Followers: {u.followersCount}</p>
+            </div>
+          ))}
+
+        {tab === "posts" &&
+          results.posts.map((p) => (
+            <div key={p._id} className="p-2 border-b">
+              <p>{p.content}</p>
+              <p>Author: {p.author.username}</p>
+              <p>Likes: {p.likesCount}</p>
+            </div>
+          ))}
+
+        {tab === "communities" &&
+          results.communities.map((c) => (
+            <div key={c._id} className="p-2 border-b">
+              <p className="font-bold">{c.name}</p>
+              <p>Members: {c.memberCount}</p>
+            </div>
+          ))}
       </div>
-    ))}
 
-  {tab === "posts" &&
-    results.posts.map((p) => (
-      <div key={p._id} className="p-2 border-b">
-        <p>{p.content}</p>
-        <p>Author: {p.author.username}</p>
-        <p>Likes: {p.likesCount}</p>
-      </div>
-    ))}
-
-  {tab === "communities" &&
-    results.communities.map((c) => (
-      <div key={c._id} className="p-2 border-b">
-        <p className="font-bold">{c.name}</p>
-        <p>Members: {c.memberCount}</p>
-      </div>
-    ))}
-</div>
-
-        {!isLoading &&
-          ((tab === 'posts' && (postsQuery.data?.posts || []).length === 0) ||
-            (tab === 'users' && (usersQuery.data?.users || []).length === 0) ||
-            (tab === 'communities' && (communitiesQuery.data?.communities || []).length === 0)) && (
-            <p className="text-sm text-neutral-500">{t.noResults}.</p>
-          )}
+      {!isLoading &&
+        ((tab === 'posts' && (postsQuery.data?.posts || []).length === 0) ||
+          (tab === 'users' && (usersQuery.data?.users || []).length === 0) ||
+          (tab === 'communities' && (communitiesQuery.data?.communities || []).length === 0)) && (
+          <p className="text-sm text-neutral-500">{t.noResults}.</p>
+      )}
     </div>
   );
 }
 
 // Helpers
 function TabButton({ children, active, onClick }) {
-      const t = useIntlayer('search-page');
+  const t = useIntlayer('search-page');
 
   return (
     <button
@@ -175,7 +174,7 @@ function CountBadge({ count }) {
 }
 
 function ResultsList({ items, renderItem, pagination, onPageChange }) {
-      const t = useIntlayer('search-page');
+  const t = useIntlayer('search-page');
 
   return (
     <div>

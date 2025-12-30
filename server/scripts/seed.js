@@ -9,6 +9,7 @@ const seedPostLikes = require("./seedPostLikes");
 const seedComments = require("./seedComments");
 const seedCommentLikes = require("./seedCommentLike");
 const seedNotifications = require("./seedNotifications");
+const seedCommunities = require("./seedCommunities");
 
 async function seed() {
   try {
@@ -30,6 +31,7 @@ async function seed() {
     await seedCommentLikes(users, comments);
     await seedPostLikes(posts, users);
     await seedNotifications(users, posts, comments);
+    await seedCommunities(users);
 
     console.log("🎉 Database seeding completed successfully");
   } catch (error) {
