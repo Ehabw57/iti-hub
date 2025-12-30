@@ -26,11 +26,11 @@ const ProfileInfo = ({ profile }) => {
         )}
 
         {/* Stats Section */}
-        <div className="flex items-center gap-8 pt-4 border-t border-neutral-200 dark:border-neutral-200">
+        <div className="flex flex-wrap items-center gap-4 pt-4 border-t border-neutral-200 dark:border-neutral-200">
           {/* Followers */}
           <button 
             onClick={() => setShowFollowers(true)}
-            className="flex items-center gap-3 group hover:bg-neutral-50 dark:hover:bg-neutral-50 px-3 py-2 rounded-lg transition-colors"
+            className="flex items-center gap-3 w-1/2 sm:w-auto group hover:bg-neutral-50 dark:hover:bg-neutral-50 px-3 py-2 rounded-lg transition-colors"
           >
           <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center group-hover:bg-primary-200 transition-colors">
             <FaUsers className="w-5 h-5 text-primary-600" />
@@ -46,7 +46,7 @@ const ProfileInfo = ({ profile }) => {
         {/* Following */}
         <button 
           onClick={() => setShowFollowing(true)}
-          className="flex items-center gap-3 group hover:bg-neutral-50 dark:hover:bg-neutral-50 px-3 py-2 rounded-lg transition-colors"
+          className="flex items-center gap-3 w-1/2 sm:w-auto group hover:bg-neutral-50 dark:hover:bg-neutral-50 px-3 py-2 rounded-lg transition-colors"
         >
           <div className="w-10 h-10 rounded-full bg-secondary-100 flex items-center justify-center group-hover:bg-secondary-200 transition-colors">
             <FaUserCheck className="w-5 h-5 text-secondary-600" />
