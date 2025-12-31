@@ -1,0 +1,269 @@
+<div class="dashboard">
+  <header class="page-header">
+    <h1 class="text-heading-2">{{ i18n.t('dashboard.title') }}</h1>
+    
+    <!-- Time Filters -->
+    <div class="filters">
+      <div class="filter-group">
+        <label class="text-caption">{{ i18n.t('dashboard.timeRange') }}</label>
+        <select class="input input-sm" [(ngModel)]="selectedTimeRange" (change)="onFilterChange()">
+          <option value="7">{{ i18n.t('dashboard.last7Days') }}</option>
+          <option value="30">{{ i18n.t('dashboard.last30Days') }}</option>
+          <option value="90">{{ i18n.t('dashboard.last90Days') }}</option>
+          <option value="365">{{ i18n.t('dashboard.lastYear') }}</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label class="text-caption">{{ i18n.t('dashboard.interval') }}</label>
+        <select class="input input-sm" [(ngModel)]="selectedInterval" (change)="onFilterChange()">
+          <option value="day">{{ i18n.t('dashboard.daily') }}</option>
+          <option value="week">{{ i18n.t('dashboard.weekly') }}</option>
+          <option value="month">{{ i18n.t('dashboard.monthly') }}</option>
+        </select>
+      </div>
+    </div>
+  </header>
+
+  @if (isLoading()) {
+    <div class="loading-state">
+      <span class="spinner-lg"></span>
+      <p>{{ i18n.t('common.loading') }}</p>
+    </div>
+  } @else {
+    <!-- Stats Cards -->
+    <section class="stats-grid">
+      <div class="stat-card card">
+        <div class="stat-icon users">
+          <lucide-icon [img]="UsersIcon" [size]="24"></lucide-icon>
+        </div>
+        <div class="stat-content">
+          <p class="stat-label text-body-2">{{ i18n.t('dashboard.totalUsers') }}</p>
+          <p class="stat-value text-heading-3">{{ stats()?.users?.total | number }}</p>
+          <p class="stat-meta text-caption">
+            <span class="stat-highlight">{{ stats()?.users?.active }}</span>
+            {{ i18n.t('dashboard.activeUsers') }}
+          </p>
+        </div>
+      </div>
+
+      <div class="stat-card card">
+        <div class="stat-icon posts">
+          <lucide-icon [img]="FileTextIcon" [size]="24"></lucide-icon>
+        </div>
+        <div class="stat-content">
+          <p class="stat-label text-body-2">{{ i18n.t('dashboard.totalPosts') }}</p>
+          <p class="stat-value text-heading-3">{{ stats()?.posts?.total | number }}</p>
+        </div>
+      </div>
+
+      <div class="stat-card card">
+        <div class="stat-icon comments">
+          <lucide-icon [img]="MessageSquareIcon" [size]="24"></lucide-icon>
+        </div>
+        <div class="stat-content">
+          <p class="stat-label text-body-2">{{ i18n.t('dashboard.totalComments') }}</p>
+          <p class="stat-value text-heading-3">{{ stats()?.comments?.total | number }}</p>
+        </div>
+      </div>
+
+      <div class="stat-card card">
+        <div class="stat-icon communities">
+          <lucide-icon [img]="HomeIcon" [size]="24"></lucide-icon>
+        </div>
+        <div class="stat-content">
+          <p class="stat-label text-body-2">{{ i18n.t('dashboard.totalCommunities') }}</p>
+          <p class="stat-value text-heading-3">{{ stats()?.communities?.total | number }}</p>
+        </div>
+      </div>
+
+      <div class="stat-card card online-card">
+        <div class="stat-icon online">
+          <lucide-icon [img]="ActivityIcon" [size]="24"></lucide-icon>
+        </div>
+        <div class="stat-content">
+          <p class="stat-label text-body-2">{{ i18n.t('dashboard.onlineNow') }}</p>
+          <p class="stat-value text-heading-3">{{ totalOnline() | number }}</p>
+          <p class="stat-meta text-caption">
+            <span class="stat-highlight">{{ stats()?.users?.blocked }}</span>
+            {{ i18n.t('dashboard.blockedUsers') }}
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Charts Section -->
+    <section class="charts-section">
+      <!-- User Registrations Chart -->
+      <div class="card chart-card">
+        <h2 class="text-heading-5 section-title">
+          <lucide-icon [img]="TrendingUpIcon" [size]="20" class="section-icon"></lucide-icon>
+          {{ i18n.t('dashboard.registrations') }}
+        </h2>
+        <div class="chart-container">
+          @if (registrationData().length > 0 && registrationData()[0]?.series?.length > 0) {
+            <ngx-charts-line-chart
+              [results]="registrationData()"
+              [scheme]="colorScheme"
+              [xAxis]="true"
+              [yAxis]="true"
+              [showXAxisLabel]="false"
+              [showYAxisLabel]="false"
+              [autoScale]="true"
+              [timeline]="false">
+            </ngx-charts-line-chart>
+          } @else {
+            <p class="empty-text text-body-2">{{ i18n.t('common.noResults') }}</p>
+          }
+        </div>
+      </div>
+
+      <!-- Growth Chart -->
+      <div class="card chart-card">
+        <h2 class="text-heading-5 section-title">
+          <lucide-icon [img]="TrendingUpIcon" [size]="20" class="section-icon"></lucide-icon>
+          {{ i18n.t('dashboard.growth') }}
+        </h2>
+        <div class="chart-container">
+          @if (growthData().length > 0 && growthData()[0]?.series?.length > 0) {
+            <ngx-charts-line-chart
+              [results]="growthData()"
+              [scheme]="colorScheme"
+              [xAxis]="true"
+              [yAxis]="true"
+              [legend]="true"
+              [showXAxisLabel]="false"
+              [showYAxisLabel]="false"
+              [autoScale]="true"
+              [timeline]="false">
+            </ngx-charts-line-chart>
+          } @else {
+            <p class="empty-text text-body-2">{{ i18n.t('common.noResults') }}</p>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- Users Section: Online Users & Most Active Users side by side -->
+    <section class="two-column-section">
+      <!-- Online Users -->
+      <div class="card">
+        <h2 class="text-heading-5 section-title">
+          <lucide-icon [img]="CircleIcon" [size]="20" class="section-icon online-icon"></lucide-icon>
+          {{ i18n.t('dashboard.onlineUsers') }}
+          <span class="badge badge-success">{{ totalOnline() }}</span>
+        </h2>
+        <div class="users-list">
+          @for (user of onlineUsers(); track user._id) {
+            <div class="user-item online">
+              <div class="user-avatar">
+                @if (user.profilePicture) {
+                  <img [src]="user.profilePicture" [alt]="user.fullName" />
+                } @else {
+                  <span class="avatar-placeholder">{{ user.fullName.charAt(0) }}</span>
+                }
+                <span class="online-indicator"></span>
+              </div>
+              <div class="user-details">
+                <p class="user-name text-body-2">{{ user.fullName }}</p>
+                <p class="user-username text-caption">&#64;{{ user.username }}</p>
+              </div>
+            </div>
+          } @empty {
+            <p class="empty-text text-body-2">{{ i18n.t('dashboard.noOnlineUsers') }}</p>
+          }
+        </div>
+      </div>
+
+      <!-- Most Active Users -->
+      <div class="card">
+        <h2 class="text-heading-5 section-title">
+          <lucide-icon [img]="ActivityIcon" [size]="20" class="section-icon"></lucide-icon>
+          {{ i18n.t('dashboard.mostActiveUsers') }}
+        </h2>
+        <div class="users-list">
+          @for (user of activeUsers(); track user._id) {
+            <div class="user-item">
+              <div class="user-avatar">
+                @if (user.profilePicture) {
+                  <img [src]="user.profilePicture" [alt]="user.fullName" />
+                } @else {
+                  <span class="avatar-placeholder">{{ user.fullName.charAt(0) }}</span>
+                }
+              </div>
+              <div class="user-details">
+                <p class="user-name text-body-2">{{ user.fullName }}</p>
+                <p class="user-username text-caption">&#64;{{ user.username }}</p>
+              </div>
+              <div class="user-stats">
+                <span class="badge badge-primary">{{ user.postsCount }} {{ i18n.t('users.posts') }}</span>
+                <span class="badge badge-secondary">{{ user.commentsCount }} {{ i18n.t('dashboard.comments') }}</span>
+              </div>
+            </div>
+          } @empty {
+            <p class="empty-text text-body-2">{{ i18n.t('common.noResults') }}</p>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- Tags & Communities Section: side by side -->
+    <section class="two-column-section">
+      <!-- Top Tags -->
+      <div class="card">
+        <h2 class="text-heading-5 section-title">
+          <lucide-icon [img]="HashIcon" [size]="20" class="section-icon"></lucide-icon>
+          {{ i18n.t('dashboard.topTags') }}
+        </h2>
+        <div class="tags-chart-container">
+          @if (getTagsChartData().length > 0) {
+            <ngx-charts-pie-chart
+              [results]="getTagsChartData()"
+              [scheme]="colorScheme"
+              [legend]="true"
+              [labels]="true"
+              [doughnut]="true">
+            </ngx-charts-pie-chart>
+          } @else {
+            <p class="empty-text text-body-2">{{ i18n.t('common.noResults') }}</p>
+          }
+        </div>
+        <div class="tags-list">
+          @for (tag of topTags(); track tag.tag) {
+            <div class="tag-item">
+              <span class="tag-name">#{{ tag.tag }}</span>
+              <span class="tag-count badge badge-secondary">{{ tag.count }}</span>
+            </div>
+          } @empty {
+            <p class="empty-text text-body-2">{{ i18n.t('common.noResults') }}</p>
+          }
+        </div>
+      </div>
+
+      <!-- Active Communities -->
+      <div class="card">
+        <h2 class="text-heading-5 section-title">
+          <lucide-icon [img]="HomeIcon" [size]="20" class="section-icon"></lucide-icon>
+          {{ i18n.t('dashboard.activeCommunities') }}
+        </h2>
+        <div class="communities-list">
+          @for (community of activeCommunities(); track community._id) {
+            <div class="community-item">
+              <div class="community-icon">
+                <lucide-icon [img]="HomeIcon" [size]="20"></lucide-icon>
+              </div>
+              <div class="community-details">
+                <p class="community-name text-body-2">{{ community.name }}</p>
+                <p class="community-stats text-caption">
+                  {{ community.memberCount }} {{ i18n.t('communities.members') }} · 
+                  {{ community.postCount }} {{ i18n.t('communities.posts') }}
+                </p>
+              </div>
+            </div>
+          } @empty {
+            <p class="empty-text text-body-2">{{ i18n.t('common.noResults') }}</p>
+          }
+        </div>
+      </div>
+    </section>
+  }
+</div>

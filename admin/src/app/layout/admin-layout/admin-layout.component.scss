@@ -1,0 +1,227 @@
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+// Sidebar
+.sidebar {
+  width: var(--sidebar-width);
+  background-color: white;
+  border-inline-end: 1px solid var(--color-neutral-200);
+  display: flex;
+  flex-direction: column;
+  transition: width 0.3s ease;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  inset-inline-start: 0;
+  z-index: 100;
+  
+  &.collapsed {
+    width: var(--sidebar-collapsed-width);
+    
+    .nav-label {
+      display: none;
+    }
+    
+    .nav-item {
+      justify-content: center;
+      padding: var(--spacing-3);
+    }
+  }
+}
+
+.sidebar-header {
+  padding: var(--spacing-4);
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.logo-text {
+  font-size: var(--font-size-h5);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary-600);
+}
+
+.logo-icon {
+  font-size: var(--font-size-h6);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary-600);
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: var(--spacing-4) var(--spacing-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  padding: var(--spacing-3) var(--spacing-4);
+  border-radius: var(--radius-md);
+  color: var(--color-neutral-700);
+  font-size: var(--font-size-body-2);
+  font-weight: var(--font-weight-medium);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  
+  &:hover {
+    background-color: var(--color-neutral-100);
+    color: var(--color-neutral-900);
+  }
+  
+  &.active {
+    background-color: var(--color-primary-50);
+    color: var(--color-primary-600);
+    
+    .nav-icon {
+      color: var(--color-primary-600);
+    }
+  }
+}
+
+.nav-icon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sidebar-footer {
+  padding: var(--spacing-4) var(--spacing-2);
+  border-top: 1px solid var(--color-neutral-200);
+}
+
+.logout-btn {
+  width: 100%;
+  background: none;
+  border: none;
+  color: var(--color-neutral-600);
+  
+  &:hover {
+    background-color: var(--color-red-50);
+    color: var(--color-error);
+  }
+}
+
+// Main Content
+.main-content {
+  flex: 1;
+  margin-inline-start: var(--sidebar-width);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  transition: margin-inline-start 0.3s ease;
+  
+  .sidebar.collapsed ~ & {
+    margin-inline-start: var(--sidebar-collapsed-width);
+  }
+}
+
+.collapsed ~ .main-content {
+  margin-inline-start: var(--sidebar-collapsed-width);
+}
+
+// Header
+.header {
+  height: var(--header-height);
+  background-color: white;
+  border-bottom: 1px solid var(--color-neutral-200);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--spacing-6);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.toggle-btn {
+  background: none;
+  border: none;
+  padding: var(--spacing-2);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  color: var(--color-neutral-600);
+  font-size: 20px;
+  
+  &:hover {
+    background-color: var(--color-neutral-100);
+  }
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+}
+
+.lang-toggle {
+  padding: var(--spacing-2) var(--spacing-3);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: var(--radius-md);
+  background-color: white;
+  color: var(--color-neutral-700);
+  font-size: var(--font-size-body-2);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background-color: var(--color-neutral-100);
+  }
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.user-name {
+  font-size: var(--font-size-body-2);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-neutral-700);
+}
+
+.user-role {
+  text-transform: capitalize;
+}
+
+// Page Content
+.page-content {
+  flex: 1;
+  padding: var(--spacing-6);
+  background-color: var(--color-neutral-50);
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+    
+    [dir="rtl"] & {
+      transform: translateX(100%);
+    }
+    
+    &.collapsed {
+      transform: translateX(0);
+      width: var(--sidebar-collapsed-width);
+    }
+  }
+  
+  .main-content {
+    margin-inline-start: 0;
+  }
+}
