@@ -1,0 +1,24 @@
+<div *ngIf="isOpen" class="fixed inset-0 z-50 overflow-y-auto">
+  <div class="flex items-center justify-center min-h-screen px-4">
+    <!-- Backdrop -->
+    <div class="fixed inset-0 bg-black opacity-50" (click)="onClose()"></div>
+    
+    <!-- Modal -->
+    <div class="relative z-50 w-full max-w-lg p-6 bg-white rounded-lg shadow-xl">
+      <!-- Header -->
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-xl font-semibold text-gray-800">{{ title }}</h3>
+        <button (click)="onClose()" class="text-gray-400 hover:text-gray-600">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      
+      <!-- Content -->
+      <div class="mb-4">
+        <ng-content></ng-content>
+      </div>
+    </div>
+  </div>
+</div>

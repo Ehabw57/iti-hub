@@ -1,0 +1,42 @@
+{
+  "locale": "ar",
+  "translations": {
+    "admin": {
+      "dashboard": {
+        "title": "لوحة التحكم",
+        "totalUsers": "إجمالي المستخدمين",
+        "totalPosts": "إجمالي المنشورات",
+        "activity": "النشاط"
+      },
+      "users": {
+        "title": "المستخدمون",
+        "search": "بحث عن مستخدمين",
+        "filter": "تصفية",
+        "edit": "تعديل",
+        "suspend": "تعليق",
+        "activate": "تفعيل",
+        "delete": "حذف",
+        "export": "تصدير",
+        "bulkActions": "إجراءات جماعية"
+      },
+      "posts": {
+        "title": "المنشورات",
+        "delete": "حذف"
+      },
+      "comments": {
+        "title": "التعليقات",
+        "delete": "حذف"
+      },
+      "communities": {
+        "title": "المجتمعات",
+        "create": "إنشاء مجتمع",
+        "delete": "حذف"
+      },
+      "auth": {
+        "login": "تسجيل الدخول",
+        "logout": "تسجيل الخروج",
+        "unauthorized": "غير مصرح"
+      }
+    }
+  }
+}

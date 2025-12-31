@@ -1,0 +1,103 @@
+{
+  "analytics": {
+    "totalUsers": 1234,
+    "totalPosts": 5678,
+    "activity": [
+      {
+        "date": "2025-12-01",
+        "posts": 100,
+        "users": 50
+      },
+      {
+        "date": "2025-12-02",
+        "posts": 120,
+        "users": 55
+      },
+      {
+        "date": "2025-12-03",
+        "posts": 110,
+        "users": 52
+      },
+      {
+        "date": "2025-12-04",
+        "posts": 130,
+        "users": 60
+      },
+      {
+        "date": "2025-12-05",
+        "posts": 140,
+        "users": 65
+      }
+    ]
+  },
+  "users": [
+    {
+      "id": "u1",
+      "name": "John Doe",
+      "email": "john@example.com",
+      "status": "active",
+      "role": "user",
+      "createdAt": "2025-01-15T10:00:00Z"
+    },
+    {
+      "id": "u2",
+      "name": "Jane Smith",
+      "email": "jane@example.com",
+      "status": "active",
+      "role": "user",
+      "createdAt": "2025-02-20T14:30:00Z"
+    }
+  ],
+  "posts": [
+    {
+      "id": "p1",
+      "content": "This is a sample post about technology.",
+      "author": "u1",
+      "authorName": "John Doe",
+      "createdAt": "2025-12-01T12:00:00Z",
+      "likes": 45
+    },
+    {
+      "id": "p2",
+      "content": "Another interesting post about development.",
+      "author": "u2",
+      "authorName": "Jane Smith",
+      "createdAt": "2025-12-02T15:30:00Z",
+      "likes": 32
+    }
+  ],
+  "comments": [
+    {
+      "id": "c1",
+      "content": "Great post!",
+      "author": "u2",
+      "authorName": "Jane Smith",
+      "postId": "p1",
+      "createdAt": "2025-12-01T13:00:00Z"
+    },
+    {
+      "id": "c2",
+      "content": "Thanks for sharing.",
+      "author": "u3",
+      "authorName": "Bob Johnson",
+      "postId": "p1",
+      "createdAt": "2025-12-01T14:00:00Z"
+    }
+  ],
+  "communities": [
+    {
+      "id": "cm1",
+      "name": "Tech Enthusiasts",
+      "description": "A community for technology lovers",
+      "members": 250,
+      "createdAt": "2025-01-01T00:00:00Z"
+    },
+    {
+      "id": "cm2",
+      "name": "Web Developers",
+      "description": "Community for web development discussions",
+      "members": 180,
+      "createdAt": "2025-02-01T00:00:00Z"
+    }
+  ]
+}
