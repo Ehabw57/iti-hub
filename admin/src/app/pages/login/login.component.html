@@ -1,0 +1,61 @@
+<div class="login-page" [attr.dir]="i18n.dir()">
+  <div class="login-container">
+    <div class="login-card card">
+      <div class="login-header">
+        <h1 class="text-heading-3">{{ i18n.t('auth.loginTitle') }}</h1>
+        <p class="text-body-2 login-subtitle">{{ i18n.t('auth.loginSubtitle') }}</p>
+      </div>
+      
+      @if (error()) {
+        <div class="error-message">
+          {{ error() }}
+        </div>
+      }
+      
+      <form (ngSubmit)="onSubmit()" class="login-form">
+        <div class="form-group">
+          <label class="label" for="email">{{ i18n.t('auth.email') }}</label>
+          <input
+            type="email"
+            id="email"
+            class="input"
+            [(ngModel)]="email"
+            name="email"
+            required
+            [placeholder]="i18n.t('auth.email')"
+          />
+        </div>
+        
+        <div class="form-group">
+          <label class="label" for="password">{{ i18n.t('auth.password') }}</label>
+          <input
+            type="password"
+            id="password"
+            class="input"
+            [(ngModel)]="password"
+            name="password"
+            required
+            [placeholder]="i18n.t('auth.password')"
+          />
+        </div>
+        
+        <button 
+          type="submit" 
+          class="btn btn-primary btn-lg login-btn"
+          [disabled]="isLoading()"
+        >
+          @if (isLoading()) {
+            <span class="spinner"></span>
+          }
+          {{ i18n.t('auth.login') }}
+        </button>
+      </form>
+      
+      <div class="login-footer">
+        <button class="lang-toggle" (click)="i18n.toggleLanguage()">
+          {{ i18n.currentLang() === 'en' ? 'العربية' : 'English' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

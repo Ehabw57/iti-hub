@@ -1,0 +1,112 @@
+<div class="comments-page">
+  <header class="page-header">
+    <h1 class="text-heading-2">{{ i18n.t('comments.title') }}</h1>
+  </header>
+
+  @if (successMessage()) {
+    <div class="success-message">{{ successMessage() }}</div>
+  }
+
+  <div class="filters card">
+    <div class="filter-row">
+      <div class="search-box">
+        <input type="text" class="input" [placeholder]="i18n.t('common.search')" [(ngModel)]="search" (keyup.enter)="onSearch()" />
+        <button class="btn btn-primary" (click)="onSearch()">{{ i18n.t('common.search') }}</button>
+      </div>
+      <div class="filter-group">
+        <input type="text" class="input" [placeholder]="i18n.t('comments.filterByAuthor')" [(ngModel)]="authorFilter" (keyup.enter)="onSearch()" />
+      </div>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div class="loading-state"><span class="spinner-lg"></span></div>
+  } @else {
+    <div class="table-container card">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>{{ i18n.t('comments.content') }}</th>
+            <th>{{ i18n.t('comments.author') }}</th>
+            <th>{{ i18n.t('comments.post') }}</th>
+            <th>{{ i18n.t('comments.likes') }}</th>
+            <th>{{ i18n.t('comments.createdAt') }}</th>
+            <th>{{ i18n.t('common.actions') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (comment of comments(); track comment._id) {
+            <tr>
+              <td class="content-cell">
+                <a 
+                  class="comment-link" 
+                  (click)="viewComment(comment.post._id, comment._id)"
+                  [title]="i18n.t('comments.viewComment')"
+                >
+                  {{ truncateContent(comment.content) }}
+                </a>
+              </td>
+              <td>
+                <div class="author-cell">
+                  <div class="avatar-sm">
+                    @if (comment.author.profilePicture) {
+                      <img [src]="comment.author.profilePicture" [alt]="comment.author.username" />
+                    } @else {
+                      <span>{{ comment.author.username.charAt(0).toUpperCase() }}</span>
+                    }
+                  </div>
+                  <a 
+                    class="user-link" 
+                    (click)="viewUserProfile(comment.author.username)"
+                    [title]="i18n.t('users.viewProfile')"
+                  >
+                    &#64;{{ comment.author.username }}
+                  </a>
+                </div>
+              </td>
+              <td class="content-cell">{{ truncateContent(comment.post.content, 50) }}</td>
+              <td>{{ comment.likes }}</td>
+              <td>{{ formatDate(comment.createdAt) }}</td>
+              <td>
+                <button class="btn btn-sm btn-danger" (click)="confirmDelete(comment)" [disabled]="actionLoading() === comment._id">
+                  {{ i18n.t('common.delete') }}
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="6" class="empty-cell">{{ i18n.t('common.noResults') }}</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (pagination()) {
+      <div class="pagination">
+        <span class="pagination-info text-body-2">
+          {{ i18n.t('common.showing') }} 
+          {{ ((pagination()?.currentPage || 1) - 1) * (pagination()?.itemsPerPage || 0) + 1 }}
+          - {{ Math.min((pagination()?.currentPage || 1) * (pagination()?.itemsPerPage || 0), pagination()?.totalItems || 0) }}
+          {{ i18n.t('common.of') }} {{ pagination()?.totalItems }}
+        </span>
+        <div class="pagination-controls">
+          <button class="btn btn-secondary btn-sm" (click)="goToPage(currentPage - 1)" [disabled]="!pagination()?.hasPrevPage">{{ i18n.t('common.previous') }}</button>
+          <span class="page-number text-body-2">{{ i18n.t('common.page') }} {{ pagination()?.currentPage }} {{ i18n.t('common.of') }} {{ pagination()?.totalPages }}</span>
+          <button class="btn btn-secondary btn-sm" (click)="goToPage(currentPage + 1)" [disabled]="!pagination()?.hasNextPage">{{ i18n.t('common.next') }}</button>
+        </div>
+      </div>
+    }
+  }
+
+  @if (showConfirmModal()) {
+    <div class="modal-overlay" (click)="cancelDelete()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <h3 class="text-heading-5 modal-title">{{ i18n.t('comments.deleteComment') }}</h3>
+        <p class="text-body-2 modal-message">{{ i18n.t('comments.confirmDelete') }}</p>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" (click)="cancelDelete()">{{ i18n.t('common.cancel') }}</button>
+          <button class="btn btn-danger" (click)="executeDelete()">{{ i18n.t('common.delete') }}</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>
