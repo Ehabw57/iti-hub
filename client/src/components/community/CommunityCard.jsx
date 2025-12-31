@@ -1,10 +1,16 @@
 // size: 'large' | 'medium' | 'small'
-// community: object with fields from Community.js
+// community: object with fields from Community.js OR extended object with { community, role, joinedAt }
 
 import { Link } from "react-router-dom";
 
-const CommunityCard = ({ community, size = 'small' }) => {
-    if (!community) return null;
+const CommunityCard = ({ community: communityProp, size = 'small' }) => {
+    if (!communityProp) return null;
+
+    // Handle both direct community object and extended object with role/joinedAt
+    const isExtended = communityProp.community !== undefined;
+    const community = isExtended ? communityProp.community : communityProp;
+    const userRole = isExtended ? communityProp.role : null;
+    const joinedAt = isExtended ? communityProp.joinedAt : null;
 
     const {
         name,
@@ -76,7 +82,14 @@ const CommunityCard = ({ community, size = 'small' }) => {
                     alt={name}
                 />
                 <div className="flex-1">
-                    <h3 className="text-heading-4 text-primary-700">{name}</h3>
+                    <div className="flex items-center gap-2">
+                        <h3 className="text-heading-4 text-primary-700">{name}</h3>
+                        {userRole && (
+                            <span className="bg-primary-600 text-white text-caption px-2 py-0.5 rounded-full">
+                                {userRole}
+                            </span>
+                        )}
+                    </div>
                     <div className="flex flex-wrap gap-2 mt-1">
                         {tags && tags.slice(0, 3).map(tag => (
                             <span
@@ -94,6 +107,9 @@ const CommunityCard = ({ community, size = 'small' }) => {
                     <div className="flex gap-4 text-caption text-neutral-600 mt-2">
                         <span>{memberCount} members</span>
                         <span>{postCount} posts</span>
+                        {joinedAt && (
+                            <span>Joined {new Date(joinedAt).toLocaleDateString()}</span>
+                        )}
                     </div>
                 </div>
             </div>
@@ -108,8 +124,15 @@ const CommunityCard = ({ community, size = 'small' }) => {
                 src={profilePicture || '/default-community.png'}
                 alt={name}
             />
-            <div>
-                <p className="text-xs text-neutral-700 truncate">{name}</p>
+            <div className="flex-1">
+                <div className="flex items-center gap-2">
+                    <p className="text-xs text-neutral-700 truncate">{name}</p>
+                    {userRole && (
+                        <span className="bg-primary-600 text-white text-[10px] px-1.5 py-0.5 rounded-full">
+                            {userRole}
+                        </span>
+                    )}
+                </div>
             </div>
         </div>
     );

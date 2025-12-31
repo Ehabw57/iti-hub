@@ -12,6 +12,7 @@ const seedNotifications = require("./seedNotifications");
 
 // add import for communities seeder
 const seedCommunities = require("./seedCommunities");
+const seedCommunityMembers = require("./seedCommunityMembers");
 
 async function seed() {
   try {
@@ -29,6 +30,9 @@ async function seed() {
 
     // 3.1️⃣ seed communities (profiles & covers similar to post images)
     const communities = await seedCommunities(users);
+
+    // 3.2️⃣ seed community members (ensure each user joins at least 9 communities)
+    await seedCommunityMembers(users, communities);
 
     // ⏭️ الخطوات الجاية (هنفعلها واحدة واحدة)
     const posts = await seedPosts(users);
