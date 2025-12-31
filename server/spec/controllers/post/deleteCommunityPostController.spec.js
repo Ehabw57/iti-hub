@@ -32,7 +32,7 @@ describe('Delete Community Post Controller', () => {
     testCommunity = await Community.create({
       name: 'Test Community',
       description: 'A test community',
-      tags: ['Technology', 'Education'],
+      tags: ['technology', 'Education'],
       owners: [testUser._id],
       moderators: [testUser._id],
       memberCount: 1,
@@ -107,6 +107,128 @@ describe('Delete Community Post Controller', () => {
 
       const updatedCommunity = await Community.findById(testCommunity._id);
       expect(updatedCommunity.postCount).toBe(0); // Should not go negative
+    });
+  });
+
+  describe('Community Moderator/Owner Permissions', () => {
+    let moderatorUser, memberUser, nonMemberUser, memberPost;
+
+    beforeEach(async () => {
+      // Create moderator user
+      moderatorUser = await User.create({
+        email: 'moderator@example.com',
+        username: 'moderator',
+        password: 'hashedpassword123',
+        fullName: 'Moderator User'
+      });
+
+      // Create member user
+      memberUser = await User.create({
+        email: 'member@example.com',
+        username: 'member',
+        password: 'hashedpassword123',
+        fullName: 'Member User'
+      });
+
+      // Create non-member user
+      nonMemberUser = await User.create({
+        email: 'nonmember@example.com',
+        username: 'nonmember',
+        password: 'hashedpassword123',
+        fullName: 'Non-Member User'
+      });
+
+      // Add moderator to community
+      await CommunityMember.create({
+        user: moderatorUser._id,
+        community: testCommunity._id,
+        role: 'moderator'
+      });
+
+      // Add member to community
+      await CommunityMember.create({
+        user: memberUser._id,
+        community: testCommunity._id,
+        role: 'member'
+      });
+
+      // Update community moderators list
+      testCommunity.moderators.push(moderatorUser._id);
+      testCommunity.memberCount = 3;
+      await testCommunity.save();
+
+      // Create post by member
+      memberPost = await Post.create({
+        author: memberUser._id,
+        content: 'Post by member',
+        community: testCommunity._id
+      });
+    });
+
+    it('should allow community owner to delete any post in community', async () => {
+      req.user = testUser; // owner
+      req.params.id = memberPost._id.toString();
+
+      await deletePost(req, res);
+
+      expect(res.statusCode).toBe(204);
+      const deletedPost = await Post.findById(memberPost._id);
+      expect(deletedPost).toBeNull();
+    });
+
+    it('should allow community moderator to delete any post in community', async () => {
+      req.user = moderatorUser;
+      req.params.id = memberPost._id.toString();
+
+      await deletePost(req, res);
+
+      expect(res.statusCode).toBe(204);
+      const deletedPost = await Post.findById(memberPost._id);
+      expect(deletedPost).toBeNull();
+    });
+
+    it('should not allow regular member to delete other members posts', async () => {
+      const anotherMember = await User.create({
+        email: 'another@example.com',
+        username: 'another',
+        password: 'hashedpassword123',
+        fullName: 'Another User'
+      });
+
+      await CommunityMember.create({
+        user: anotherMember._id,
+        community: testCommunity._id,
+        role: 'member'
+      });
+
+      req.user = anotherMember;
+      req.params.id = memberPost._id.toString();
+
+      await deletePost(req, res);
+
+      expect(res.statusCode).toBe(403);
+      expect(res.jsonData.message).toContain('permission');
+    });
+
+    it('should not allow non-members to delete community posts', async () => {
+      req.user = nonMemberUser;
+      req.params.id = memberPost._id.toString();
+
+      await deletePost(req, res);
+
+      expect(res.statusCode).toBe(403);
+      expect(res.jsonData.message).toContain('permission');
+    });
+
+    it('should allow post author to delete their own community post', async () => {
+      req.user = memberUser; // author of memberPost
+      req.params.id = memberPost._id.toString();
+
+      await deletePost(req, res);
+
+      expect(res.statusCode).toBe(204);
+      const deletedPost = await Post.findById(memberPost._id);
+      expect(deletedPost).toBeNull();
     });
   });
 });

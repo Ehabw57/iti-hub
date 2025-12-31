@@ -1,16 +1,19 @@
 import { useState, useRef } from 'react';
 import { FaCamera, FaUserPlus, FaBan } from 'react-icons/fa';
 import { useIntlayer } from 'react-intlayer';
+import { toast } from 'react-hot-toast';
 import { useUploadProfilePicture, useUploadCoverImage } from '@hooks/mutations/useUserMutations';
 import { useToggleFollow, useToggleBlock } from '@hooks/mutations/useConnectionMutations';
 import { useAuthStore } from '@store/auth';
 import useRequireAuth from '@hooks/useRequireAuth';
 import EditProfile from './EditProfile';
+import ConfirmDialog from '@components/common/ConfirmDialog';
 
 const ProfileHeader = ({ profile, isOwnProfile }) => {
   const [showCoverUpload, setShowCoverUpload] = useState(false);
   const [showProfileUpload, setShowProfileUpload] = useState(false);
   const [showEditProfile, setShowEditProfile] = useState(false);
+  const [showBlockConfirm, setShowBlockConfirm] = useState(false);
   const coverInputRef = useRef(null);
   const profileInputRef = useRef(null);
   const { requireAuth } = useRequireAuth();
@@ -34,7 +37,7 @@ const ProfileHeader = ({ profile, isOwnProfile }) => {
     if (!file) return;
 
     if (file.size > 5 * 1024 * 1024) {
-      alert(fileSizeError);
+      toast.error(fileSizeError);
       return;
     }
 
@@ -42,7 +45,7 @@ const ProfileHeader = ({ profile, isOwnProfile }) => {
       await uploadCoverMutation.mutateAsync(file);
     } catch (error) {
       console.error('Upload failed:', error);
-      alert(failedToUploadCover);
+      toast.error(failedToUploadCover);
     }
   };
 
@@ -51,7 +54,7 @@ const ProfileHeader = ({ profile, isOwnProfile }) => {
     if (!file) return;
 
     if (file.size > 5 * 1024 * 1024) {
-      alert(fileSizeError);
+      toast.error(fileSizeError);
       return;
     }
 
@@ -62,7 +65,7 @@ const ProfileHeader = ({ profile, isOwnProfile }) => {
       }
     } catch (error) {
       console.error('Upload failed:', error);
-      alert(failedToUploadProfilePicture);
+      toast.error(failedToUploadProfilePicture);
     }
   };
 
@@ -72,25 +75,24 @@ const ProfileHeader = ({ profile, isOwnProfile }) => {
         await toggleFollow(profile._id, profile.isFollowing);
       } catch (error) {
         console.error('Failed to toggle follow:', error);
-        alert(failedToUpdateFollowStatus);
+        toast.error(failedToUpdateFollowStatus);
       }
     });
   };
 
   const handleBlock =  () => {
-   requireAuth(async () => {
-    const confirmed = window.confirm(
-      profile.isBlocked ? confirmUnblock : confirmBlock
-    );
-    
-    if (!confirmed) return;
+   requireAuth(() => {
+    setShowBlockConfirm(true);
+   });
+  };
 
+  const handleConfirmBlock = async () => {
     try {
       await toggleBlock(profile._id, profile.isBlocked);
     } catch (error) {
       console.error('Failed to toggle block:', error);
-      alert(failedToUpdateBlockStatus);
-    }});
+      toast.error(failedToUpdateBlockStatus);
+    }
   };
 
   return (
@@ -271,6 +273,18 @@ const ProfileHeader = ({ profile, isOwnProfile }) => {
           onClose={() => setShowEditProfile(false)} 
         />
       )}
+
+      {/* Block Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={showBlockConfirm}
+        onClose={() => setShowBlockConfirm(false)}
+        onConfirm={handleConfirmBlock}
+        title={profile.isBlocked ? confirmUnblock : confirmBlock}
+        message={profile.isBlocked 
+          ? "Are you sure you want to unblock this user?" 
+          : "Are you sure you want to block this user?"}
+        variant="warning"
+      />
     </div>
   );
 };

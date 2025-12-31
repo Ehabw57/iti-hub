@@ -1,7 +1,7 @@
 import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react';
 import { HiOutlineXMark } from 'react-icons/hi2';
 import { useIntlayer } from 'react-intlayer';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Button from '@/components/common/Button';
 import { UserAvatar } from '@/components/user/UserAvatar';
 import { useCreateConversation } from '@hooks/mutations/useCreateConversation';
@@ -23,12 +23,21 @@ import { useSearchUsers } from '@hooks/queries/useSearchUsers';
 export function NewMessageModal({ isOpen, onClose }) {
   const content = useIntlayer('messagesList');
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedValue, setDebouncedValue] = useState('');
   
   const createConversation = useCreateConversation();
+
+  // Debounce logic
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(searchQuery);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
   
   // Search users with real API
   const { data: searchData, isLoading: isSearching } = useSearchUsers({
-    query: searchQuery,
+    query: debouncedValue,
     limit: 20,
   });
   
