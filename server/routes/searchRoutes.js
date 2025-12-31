@@ -9,6 +9,15 @@ const { optionalAuth } = require("../middlewares/checkAuth");
 const { searchUsers } = require("../controllers/user");
 const { searchPosts } = require("../controllers/post");
 const { searchCommunities } = require("../controllers/community");
+const { fastSearch } = require("../controllers/search/fastSearchController");
+
+/**
+ * @route   GET /api/v1/search/fast
+ * @desc    Fast search for users and communities (for instant dropdown)
+ * @query   q - search query (required, min 2 chars)
+ * @access  Public (optional authentication for metadata)
+ */
+router.get("/fast", optionalAuth, fastSearch);
 
 /**
  * @route   GET /api/v1/search/users

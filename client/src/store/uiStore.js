@@ -10,12 +10,13 @@ export const useUIStore = create(
 
       setTheme: (theme) => {
         set({ theme });
-        // Apply theme to document if needed (for future dark mode)
         if (typeof document !== 'undefined') {
           if (theme === 'dark') {
             document.documentElement.classList.add('dark');
+            document.documentElement.classList.remove('light');
           } else {
             document.documentElement.classList.remove('dark');
+            document.documentElement.classList.add('light');
           }
         }
       },
