@@ -320,3 +320,33 @@
 .dark .highlight-comment {
   border-left-color: var(--color-primary-700);
 }
+
+/* ========================================
+   AUTH LAYOUT FLOATING ANIMATIONS
+   ======================================== */
+
+@keyframes float-slow {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes float-slower {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-15px);
+  }
+}
+
+.animate-float-slow {
+  animation: float-slow 6s ease-in-out infinite;
+}
+
+.animate-float-slower {
+  animation: float-slower 8s ease-in-out infinite;
+}

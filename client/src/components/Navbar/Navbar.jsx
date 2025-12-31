@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { HiBars3 } from "react-icons/hi2";
-import { useAuthStore } from "@store/auth";
 import SearchBar from "./SearchBar";
 import NavMenu from "./NavMenu";
+import MinimalNavMenu from "./MinimalNavMenu";
 
 // SVG Logo (replace with your own or update as needed)
 const ItiHubLogo = ({ className = "w-8 h-8" }) => (
@@ -13,11 +13,35 @@ const ItiHubLogo = ({ className = "w-8 h-8" }) => (
 );
 
 export default function Navbar({
-  onOpenSidebar
+  onOpenSidebar,
+  variant = "default" // "default" or "minimal"
 }) {
   const navigate = useNavigate();
-  const { isAuthenticated, user } = useAuthStore();
 
+  // Minimal variant: Only logo, theme switcher, and language switcher
+  if (variant === "minimal") {
+    return (
+      <nav className="sticky top-0 z-4 w-full bg-neutral-50 border-b border-neutral-200 shadow-elevation-1 flex items-center px-2 lg:px-6 py-3">
+        {/* Logo */}
+        <div className="flex items-center cursor-pointer select-none" onClick={() => navigate("/")}> 
+          {/* Show SVG only on mobile, SVG+text on desktop */}
+          <span className="block lg:hidden"><ItiHubLogo /></span>
+          <span className="hidden lg:flex items-center gap-2">
+            <ItiHubLogo />
+            <span className="text-heading-4 font-bold text-primary-700 tracking-tight">itiHub</span>
+          </span>
+        </div>
+
+        {/* Spacer */}
+        <div className="flex-1" />
+
+        {/* Minimal menu: only theme and language switchers */}
+        <MinimalNavMenu />
+      </nav>
+    );
+  }
+
+  // Default variant: Full navbar with search, sidebar toggle, etc.
   return (
     <nav className="sticky top-0 z-4 w-full bg-neutral-50 border-b border-neutral-200 shadow-elevation-1 flex items-center  px-2 lg:px-6">
       {/* Hamburger (mobile only) */}

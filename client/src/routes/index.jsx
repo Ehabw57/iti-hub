@@ -1,5 +1,6 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Layout from "@/layout/layout";
+import AuthLayout from "@/layout/AuthLayout";
 import ProtectedRoute from "@components/routes/ProtectedRoute";
 import PublicRoute from "@components/routes/PublicRoute";
 import AuthLoginController from "@pages/auth/AuthLoginController";
@@ -30,20 +31,25 @@ const router = createBrowserRouter([
     element: <PublicRoute />,
     children: [
       {
-        path: "/login",
-        element: <AuthLoginController />,
-      },
-      {
-        path: "/register",
-        element: <RegisterController />,
-      },
-      {
-        path: "/password-reset/request",
-        element: <PasswordResetRequestController />,
-      },
-      {
-        path: "/password-reset/confirm",
-        element: <PasswordResetConfirmController />,
+        element: <AuthLayout />,
+        children: [
+          {
+            path: "/login",
+            element: <AuthLoginController />,
+          },
+          {
+            path: "/register",
+            element: <RegisterController />,
+          },
+          {
+            path: "/password-reset/request",
+            element: <PasswordResetRequestController />,
+          },
+          {
+            path: "/password-reset/confirm",
+            element: <PasswordResetConfirmController />,
+          },
+        ],
       },
     ],
   },
