@@ -114,37 +114,35 @@ export default function AuthLoginController() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-neutral-50 px-4 py-12">
-      <div className="w-full max-w-md space-y-4">
-        {/* Error Display */}
-        {loginMutation.isError && serverError?.code !== 'INVALID_CREDENTIALS' && (
-          <ErrorDisplay
-            error={serverError}
-            onRetry={!inCooldown ? () => loginMutation.reset() : undefined}
-          />
-        )}
-
-        {/* Cooldown Message */}
-        {inCooldown && (
-          <div className="bg-red-50 border-l-4 border-error rounded-lg p-4">
-            <p className="text-sm text-neutral-900">
-              Too many login attempts. Please wait{' '}
-              {dayjs.duration(cooldownRemaining).format('mm:ss')} before trying again.
-            </p>
-          </div>
-        )}
-
-        {/* Login Form */}
-        <AuthLoginForm
-          email={email}
-          password={password}
-          errors={formErrors}
-          submitting={loginMutation.isPending}
-          disabled={inCooldown}
-          onChange={handleFormChange}
-          onSubmit={onSubmit}
+    <div className="w-full max-w-md mx-auto space-y-4">
+      {/* Error Display */}
+      {loginMutation.isError && serverError?.code !== 'INVALID_CREDENTIALS' && (
+        <ErrorDisplay
+          error={serverError}
+          onRetry={!inCooldown ? () => loginMutation.reset() : undefined}
         />
-      </div>
+      )}
+
+      {/* Cooldown Message */}
+      {inCooldown && (
+        <div className="bg-red-50 border-l-4 border-error rounded-lg p-4">
+          <p className="text-sm text-neutral-900">
+            Too many login attempts. Please wait{' '}
+            {dayjs.duration(cooldownRemaining).format('mm:ss')} before trying again.
+          </p>
+        </div>
+      )}
+
+      {/* Login Form */}
+      <AuthLoginForm
+        email={email}
+        password={password}
+        errors={formErrors}
+        submitting={loginMutation.isPending}
+        disabled={inCooldown}
+        onChange={handleFormChange}
+        onSubmit={onSubmit}
+      />
     </div>
   );
 }
