@@ -10,7 +10,7 @@ const Profile = () => {
   const { username } = useParams();
   const currentUser = useAuthStore((state) => state.user);
   const content = useIntlayer('profile');
-  console.log(content);
+  // console.log(content);
 
   // جلب بيانات المستخدم
   const { data: profileData, isLoading, error } = useGetUserProfile(username);
@@ -66,12 +66,12 @@ const Profile = () => {
   const isOwnProfile = profile?.isOwnProfile || currentUser?._id === profile?._id;
 
   // Debug: Check if isBlocked is being received
-  console.log('Profile data:', { 
-    username: profile?.username, 
-    isBlocked: profile?.isBlocked,
-    isOwnProfile,
-    fullProfile: profile
-  });
+  // console.log('Profile data:', { 
+  //   username: profile?.username, 
+  //   isBlocked: profile?.isBlocked,
+  //   isOwnProfile,
+  //   fullProfile: profile
+  // });
 
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-neutral-50">

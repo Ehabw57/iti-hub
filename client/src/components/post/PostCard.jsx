@@ -48,6 +48,24 @@ const PostCard = React.memo(({ post, onPostClick, isCommentsExpanded = false, cl
   const deletePost = useDeletePost();
   const isRepost = !!(post.originalPost || post.repostComment);
 
+  // Check if user can delete/edit the post
+  const canModifyPost = useCallback(() => {
+    if (!user) return false;
+    
+    // Post author can always modify
+    if (user._id === post.author._id) return true;
+    
+    // Community moderators and owners can delete posts in their community
+    if (post.community?.userRole) {
+      // console.log("User is a community", post.community.userRole);
+      const role = post.community.userRole;
+      if (role === 'moderator' || role === 'owner') return true;
+    }
+    
+    return false;
+  }, [user, post.author._id, post.community]);
+
+
   // Local state for optimistic updates
   const [likeState, setLikeState] = useState({
     isLiked: post.isLiked || false,
@@ -128,7 +146,11 @@ const PostCard = React.memo(({ post, onPostClick, isCommentsExpanded = false, cl
   const handleDelete = useCallback(() => {
     requireAuth(() => {
       if (window.confirm('Are you sure you want to delete this post?')) {
-        deletePost.mutate(post._id, {
+        deletePost.mutate({
+          postId: post._id,
+          communityId: post.community?._id,
+          authorId: post.author._id
+        }, {
           onSuccess: () => {
             toast.success('Post deleted successfully');
           },
@@ -138,7 +160,7 @@ const PostCard = React.memo(({ post, onPostClick, isCommentsExpanded = false, cl
         });
       }
     });
-  }, [requireAuth, post._id, deletePost]);
+  }, [requireAuth, post._id, post.community, post.author._id, deletePost]);
 
   const handleComment = useCallback(() => {
       if (onPostClick) {
@@ -147,7 +169,7 @@ const PostCard = React.memo(({ post, onPostClick, isCommentsExpanded = false, cl
         // Toggle comments section
         setShowComments(prev => !prev);
       }
-  }, [requireAuth, post._id, onPostClick]);
+  }, [post._id, onPostClick]);
 
   const handleRepost = useCallback(() => {
     requireAuth(() => {
@@ -233,7 +255,7 @@ const PostCard = React.memo(({ post, onPostClick, isCommentsExpanded = false, cl
           repostComment={post.repostComment}
           onProfileClick={handleProfileClick}
           onEdit={user?._id === post.author._id ? handleEdit : undefined}
-          onDelete={user?._id === post.author._id ? handleDelete : undefined}
+          onDelete={canModifyPost() ? handleDelete : undefined}
           onSave={handleSave}
           isSaved={saveState.isSaved}
         />

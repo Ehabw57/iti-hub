@@ -23,7 +23,7 @@ const CommunityCard = ({ community: communityProp, size = 'small' }) => {
         owners,
         moderators,
     } = community;
-    console.log('[CommunityCard] community:', community);
+    // console.log('[CommunityCard] community:', community);
 
     if (size === 'large') {
         return (
