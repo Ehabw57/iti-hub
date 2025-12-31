@@ -18,6 +18,7 @@ import MessagesList from "@pages/messages/MessagesList";
 import ConversationDetail from "@pages/messages/ConversationDetail";
 import CommunityManagement from "@pages/community/CommunityManagement";
 import Community from "@components/community/Community";
+import SearchPage from "@pages/SearchPage";
 
 // Placeholder components for routes not yet implemented
 const NotFoundPage = () => <div>404 - Page Not Found</div>;
@@ -78,6 +79,10 @@ const router = createBrowserRouter([
       {
         path: "/profile/:username",
         element: <ProfileController />,
+      },
+      {
+        path: "/search",
+        element: <SearchPage />,
       },
       {
         path: "/community/:communityId",

@@ -49,8 +49,6 @@ const Sidebar = ({
   mobileOpen = false,
   onMobileClose,
   onCreatePost,
-  onLogin,
-  onSignUp,
 }) => {
   const navigate = useNavigate();
   const content = useIntlayer(sidebarContents.key);

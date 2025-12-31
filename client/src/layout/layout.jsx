@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import { useIntlayer } from "react-intlayer";
-import { HiBars3 } from "react-icons/hi2";
 import Navbar from "../components/Navbar/Navbar";
 import { Sidebar } from "../components/Sidebar";
 import { GlobalNotificationHandler } from "../components/notifications/GlobalNotificationHandler";
@@ -13,7 +12,6 @@ import useRequireAuth from "@hooks/useRequireAuth";
 import sidebarContent from "@/content/sidebar/sidebar.content";
 
 export default function Layout() {
-  const content = useIntlayer(sidebarContent.key);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showComposer, setShowComposer] = useState(false);
@@ -24,31 +22,12 @@ export default function Layout() {
     requireAuth(() => setShowComposer(true));
   };
 
-  const handleLogin = () => {
-    setShowLoginModal(true);
-  };
-
-  const handleSignUp = () => {
-    // TODO: Navigate to sign up page or open sign up modal
-    window.location.href = "/register";
-  };
 
   return (
     <div className="min-h-screen max-h-screen flex flex-col bg-neutral-50">
-      {/* Navbar - Full width at top */}
-      <Navbar />
 
-      {/* Mobile hamburger button */}
-      <div className="lg:hidden fixed top-16 ltr:left-4 rtl:right-4 z-4">
-        <button
-          type="button"
-          onClick={() => setIsMobileMenuOpen(true)}
-          className="p-2 bg-neutral-50 border border-neutral-200 rounded-lg shadow-sm hover:bg-neutral-50 transition-colors"
-          aria-label={content.openMenu}
-        >
-          <HiBars3 className="w-6 h-6 text-neutral-700" />
-        </button>
-      </div>
+      {/* Navbar - Full width at top, pass sidebar open handler */}
+      <Navbar onOpenSidebar={() => setIsMobileMenuOpen(true)} />
 
       {/* Main layout container - Sidebar + Content */}
       <div className="relative flex flex-1 overflow-y-scroll ">
@@ -57,8 +36,6 @@ export default function Layout() {
           mobileOpen={isMobileMenuOpen}
           onMobileClose={() => setIsMobileMenuOpen(false)}
           onCreatePost={handleCreatePost}
-          onLogin={handleLogin}
-          onSignUp={handleSignUp}
         />
 
         {/* Main content area */}
