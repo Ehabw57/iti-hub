@@ -19,15 +19,16 @@ import { sanitizeContent } from '@/utils/sanitizeContent';
  * @param {boolean} props.isOpen - Modal open state
  * @param {Function} props.onClose - Close handler
  * @param {Object} props.initialPost - Post object for edit mode (optional)
+ * @param {string} props.initialCommunityId - Pre-selected community ID (optional)
  */
-export default function PostComposerModal({ isOpen, onClose, initialPost = null }) {
+export default function PostComposerModal({ isOpen, onClose, initialPost = null, initialCommunityId = null }) {
   const content = useIntlayer(composerContent.key);
   const isEditMode = !!initialPost;
   
   const [postContent, setPostContent] = useState('');
   const [images, setImages] = useState([]);
   const [tags, setTags] = useState([]);
-  const [communityId, setCommunityId] = useState(null);
+  const [communityId, setCommunityId] = useState(initialCommunityId);
 
   const createPost = useCreatePost();
   const updatePost = useUpdatePost();
@@ -39,8 +40,10 @@ export default function PostComposerModal({ isOpen, onClose, initialPost = null 
       setImages(initialPost.images || []);
       setTags(initialPost.tags || []);
       setCommunityId(initialPost.community?._id || null);
+    } else if (initialCommunityId) {
+      setCommunityId(initialCommunityId);
     }
-  }, [initialPost]);
+  }, [initialPost, initialCommunityId]);
 
   const handleAddImages = (newImages) => {
     setImages([...images, ...newImages]);
@@ -75,6 +78,8 @@ export default function PostComposerModal({ isOpen, onClose, initialPost = null 
           content: sanitized || undefined,
           isrepost: !!initialPost.repostComment,
           tags: tags.length > 0 ? tags : undefined,
+          communityId: initialPost.community?._id,
+          authorId: initialPost.author?._id,
         },
         {
           onSuccess: () => {
@@ -115,9 +120,7 @@ export default function PostComposerModal({ isOpen, onClose, initialPost = null 
     // Reset form
     setPostContent('');
     setImages([]);
-    setTags([]);
-    setCommunityId(null);
-    
+    setTags([]);    
     onClose();
   };
 

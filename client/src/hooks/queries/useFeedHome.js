@@ -15,7 +15,7 @@ export const useFeedHome = () => {
           limit: 20
         }
       });
-      console.log(response.data);
+      // console.log(response.data);
       return response.data;
     },
     getNextPageParam: (lastPage) => {

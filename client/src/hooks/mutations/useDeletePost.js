@@ -9,14 +9,28 @@ export const useDeletePost = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (postId) => {
+    mutationFn: async ({ postId }) => {
       const response = await api.delete(`/posts/${postId}`);
       return response.data;
     },
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
       // Invalidate all feed and post queries
       queryClient.invalidateQueries({ queryKey: ['feed'] });
       queryClient.invalidateQueries({ queryKey: ['posts'] });
+      
+      // If post was in a community, invalidate community feed
+      if (variables.communityId) {
+        queryClient.invalidateQueries({ 
+          queryKey: ['community', variables.communityId, 'feed'] 
+        });
+      }
+      
+      // Invalidate the post author's profile posts
+      if (variables.authorId) {
+        queryClient.invalidateQueries({ 
+          queryKey: ['userPosts', variables.authorId] 
+        });
+      }
     },
   });
 };

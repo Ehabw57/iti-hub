@@ -38,11 +38,13 @@ function validatePostContent(content, images = []) {
  */
 function validatePostTags(tags) {
   if (!tags) return { isValid: true };
+
   
   if (!Array.isArray(tags)) {
     return { isValid: false, error: 'Tags must be an array' };
   }
 
+  
   if (tags.length > MAX_POST_TAGS) {
     return { isValid: false, error: `Cannot add more than ${MAX_POST_TAGS} tags` };
   }
@@ -129,9 +131,25 @@ async function buildPostResponse(post, user_id = null, options = {}) {
 
   // Add user-specific fields if user is provided
   if (user_id) {
-    // fetch postst likes and saves 
+    // fetch posts likes and saves 
     response.isLiked = !!(await PostLike.exists({ post: postObj._id, user: user_id }));
     response.isSaved = !!(await PostSave.exists({ post: postObj._id, user: user_id }));
+    
+    // If post is in a community, include user's role in that community
+    if (postObj.community) {
+      const CommunityMember = require('../models/CommunityMember');
+      const membership = await CommunityMember.findOne({
+        user: user_id,
+        community: postObj.community._id || postObj.community
+      });
+      
+      if (membership) {
+        // Add role to community object if it exists
+        if (response.community && typeof response.community === 'object') {
+          response.community.userRole = membership.role;
+        }
+      }
+    }
   }
 
   return response;
@@ -141,14 +159,19 @@ async function buildPostResponse(post, user_id = null, options = {}) {
  * Check if user can edit/delete post
  * @param {Object} post - Post document
  * @param {Object} user - Current user
- * @returns {boolean}
+ * @returns {Promise<boolean>}
  */
-function canModifyPost(post, user) {
+async function canModifyPost(post, user) {
   if (!user) return false;
   
-  console.log("Checking permissions for user:", user._id, "on post:", post.author._id);
+  // Handle both populated and unpopulated author
+  const postAuthorId = post.author._id || post.author;
+  const userId = user._id;
+  
+  console.log("Checking permissions for user:", userId, "on post:", postAuthorId);
+  
   // Owner can modify
-  if (post.author._id.toString() === user._id.toString()) {
+  if (postAuthorId.toString() === userId.toString()) {
     return true;
   }
 
@@ -157,7 +180,20 @@ function canModifyPost(post, user) {
     return true;
   }
 
-  // TODO: Check if user is moderator of the community (when communities are implemented)
+  // Check if user is moderator or owner of the post's community
+  if (post.community) {
+    const CommunityMember = require('../models/CommunityMember');
+    const communityId = post.community._id || post.community;
+    
+    const membership = await CommunityMember.findOne({
+      user: userId,
+      community: communityId
+    });
+
+    if (membership && (membership.role === 'moderator' || membership.role === 'owner')) {
+      return true;
+    }
+  }
   
   return false;
 }

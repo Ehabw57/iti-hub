@@ -48,6 +48,10 @@ export default {
       en: 'Manage',
       ar: 'إدارة',
     }),
+    createPost: t({
+      en: 'Create Post',
+      ar: 'إنشاء منشور',
+    }),
 
     // Info Section
     aboutCommunity: t({

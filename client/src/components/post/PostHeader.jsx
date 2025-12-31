@@ -127,7 +127,7 @@ export function PostHeader({
             isSaved={isSaved}
             onSave={onSave}
             onEdit={isOwnPost ? onEdit : undefined}
-            onDelete={isOwnPost ? onDelete : undefined}
+            onDelete={onDelete}
           />
         )}
 

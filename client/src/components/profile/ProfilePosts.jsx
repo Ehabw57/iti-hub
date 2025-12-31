@@ -10,7 +10,7 @@ const ProfilePosts = ({ userId, isOwnProfile }) => {
   // جلب البوستات من الـ API باستخدام userId
   const { data: postsData, isLoading } = useGetUserPosts(userId);
   const posts = postsData?.data?.posts || [];
-  console.log('User Posts:', posts);
+  // console.log('User Posts:', posts);
 
   if (isLoading) {
     return (

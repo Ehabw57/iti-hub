@@ -25,7 +25,7 @@ const deletePost = asyncHandler(async (req, res) => {
   }
 
   // Check permissions
-  if (!canModifyPost(post, req.user)) {
+  if (!(await canModifyPost(post, req.user))) {
     throw new ForbiddenError('You do not have permission to delete this post');
   }
 

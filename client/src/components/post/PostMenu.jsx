@@ -36,7 +36,7 @@ import { useIntlayer } from 'react-intlayer'
  * @param {boolean} [props.isSaved=false] - Whether post is saved by current user
  * @param {Function} props.onSave - Handler for save/unsave action
  * @param {Function} [props.onEdit] - Handler for edit action (owner only)
- * @param {Function} [props.onDelete] - Handler for delete action (owner only)
+ * @param {Function} [props.onDelete] - Handler for delete action (owner, community moderator/owner, or admin)
  * @param {Function} [props.onReport] - Handler for report action (non-owners)
  * @param {string} [props.className] - Additional CSS classes
  */
@@ -49,6 +49,7 @@ export function PostMenu({
   onReport,
   className = '',
 }) {
+  // console.log("onDelete", onDelete)
   const content = useIntlayer('post-menu');
 
   return (
@@ -102,8 +103,8 @@ export function PostMenu({
           </MenuItem>
         )}
 
-        {/* Delete - Only for own posts */}
-        {isOwnPost && onDelete && (
+        {/* Delete - For post owner, community moderator/owner, or admin */}
+        {onDelete && (
           <MenuItem>
             {({ focus }) => (
               <button
