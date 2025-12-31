@@ -8,7 +8,8 @@ export default {
     // Action buttons
     newMessage: t({ en: "New message", ar: "رسالة جديدة" }),
     newGroup: t({ en: "New group", ar: "مجموعة جديدة" }),
-
+    addMembers: t({ en: "Add members", ar: "إضافة أعضاء" }),
+    cancel: t({ en: "Cancel", ar: "إلغاء" }),
     // Empty states
     noConversations: t({ en: "No messages yet", ar: "لا توجد رسائل بعد" }),
     noConversationsDescription: t({
@@ -19,7 +20,7 @@ export default {
     // Loading states
     loadingConversations: t({ en: "Loading conversations...", ar: "جاري تحميل المحادثات..." }),
     loadingMore: t({ en: "Loading more...", ar: "جاري تحميل المزيد..." }),
-
+    editGroup: t({ en: "Editing group...", ar: "جاري تعديل المجموعة..." }),
     // Error messages
     errorLoadingConversations: t({
       en: "Failed to load conversations",
@@ -66,5 +67,9 @@ export default {
     // Message preview
     photoMessage: t({ en: "Photo", ar: "صورة" }),
     deletedMessage: t({ en: "Message deleted", ar: "الرسالة محذوفة" }),
+
+    // Validation messages
+    invalidImageType: t({ en: "Please select an image file", ar: "يرجى اختيار ملف صورة" }),
+    selectAtLeastTwoMembers: t({ en: "Please select at least 2 members", ar: "يرجى اختيار عضوين على الأقل" }),
   },
 };

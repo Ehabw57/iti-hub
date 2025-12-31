@@ -23,5 +23,13 @@ export default {
       en: 'Add your thoughts before sharing',
       ar: 'أضف رأيك قبل المشاركة',
     }),
+    confirmDeleteTitle: t({
+      en: 'Delete repost?',
+      ar: 'حذف إعادة النشر؟',
+    }),
+    confirmDeleteMessage: t({
+      en: 'Are you sure you want to delete this repost? This action cannot be undone.',
+      ar: 'هل أنت متأكد من حذف إعادة النشر؟ لا يمكن التراجع عن هذا الإجراء.',
+    }),
   },
 };

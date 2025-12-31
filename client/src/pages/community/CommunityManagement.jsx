@@ -8,6 +8,7 @@ import { useCommunityDetails, useCommunityMembersInfinite } from '@hooks/queries
 import { useAddModerator, useRemoveModerator, useKickMember } from '@hooks/mutations/useCommunityMutations';
 import useIntersectionObserver from '@hooks/useIntersectionObserver';
 import useRequireAuth from '@hooks/useRequireAuth';
+import ConfirmDialog from '@components/common/ConfirmDialog';
 
 /**
  * CommunityManagement Page
@@ -22,6 +23,8 @@ const CommunityManagement = () => {
   
   const [selectedRole, setSelectedRole] = useState('all'); // 'all' | 'member' | 'moderator' | 'owner'
   const [searchTerm, setSearchTerm] = useState('');
+  const [showKickConfirm, setShowKickConfirm] = useState(false);
+  const [memberToKick, setMemberToKick] = useState(null);
 
   // Fetch community details to check role
   const { data: community, isLoading: loadingCommunity } = useCommunityDetails(communityId);
@@ -357,9 +360,8 @@ const CommunityManagement = () => {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (window.confirm(content.confirmKick || 'Are you sure you want to remove this member from the community?')) {
-                            handleKickMember(member._id);
-                          }
+                          setMemberToKick(member);
+                          setShowKickConfirm(true);
                         }}
                         disabled={kickMemberMutation.isPending || (member.role === 'moderator' && !isOwner)}
                         className="flex items-center gap-2 px-3 py-2 bg-error text-white rounded-lg hover:bg-error/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-button"
@@ -388,6 +390,25 @@ const CommunityManagement = () => {
           )}
         </div>
       </div>
+
+      {/* Kick Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={showKickConfirm}
+        onClose={() => {
+          setShowKickConfirm(false);
+          setMemberToKick(null);
+        }}
+        onConfirm={() => {
+          if (memberToKick) {
+            handleKickMember(memberToKick._id);
+            setShowKickConfirm(false);
+            setMemberToKick(null);
+          }
+        }}
+        title={content.kickMember || 'Remove from Community'}
+        message={content.confirmKick || 'Are you sure you want to remove this member from the community?'}
+        variant="danger"
+      />
     </div>
   );
 };

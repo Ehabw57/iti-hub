@@ -23,5 +23,13 @@ export default {
       en: 'Report post',
       ar: 'الإبلاغ عن المنشور',
     }),
+    confirmDeleteTitle: t({
+      en: 'Delete post?',
+      ar: 'حذف المنشور؟',
+    }),
+    confirmDeleteMessage: t({
+      en: 'Are you sure you want to delete this post? This action cannot be undone.',
+      ar: 'هل أنت متأكد من حذف هذا المنشور؟ لا يمكن التراجع عن هذا الإجراء.',
+    }),
   },
 };

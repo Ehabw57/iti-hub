@@ -1,10 +1,13 @@
 import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useIntlayer } from 'react-intlayer';
 import { useAuthStore } from '@/store/auth';
 import { PostHeader } from './PostHeader';
 import { PostContent } from './PostContent';
 import { PostInteractions } from './PostInteractions';
+import ConfirmDialog from '@components/common/ConfirmDialog';
+import repostMenuContent from '@/content/post/repost-menu.content';
 
 /**
  * RepostContainer - Container component for reposts using unified PostHeader
@@ -33,6 +36,7 @@ export function RepostContainer({ repost, originalPost, onPostClick, className =
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const queryClient = useQueryClient();
+  const content = useIntlayer(repostMenuContent.key);
 
   // Local state for optimistic updates
   const [likeState, setLikeState] = useState({
@@ -48,6 +52,8 @@ export function RepostContainer({ repost, originalPost, onPostClick, className =
     isReposted: repost.isReposted || false,
     repostsCount: repost.repostsCount || 0,
   });
+
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Like mutation
   const likeMutation = useMutation({
@@ -172,9 +178,11 @@ export function RepostContainer({ repost, originalPost, onPostClick, className =
   }, []);
 
   const handleDeleteRepost = useCallback(() => {
-    if (window.confirm('Are you sure you want to delete this repost?')) {
-      deleteMutation.mutate();
-    }
+    setShowDeleteConfirm(true);
+  }, []);
+
+  const confirmDeleteRepost = useCallback(() => {
+    deleteMutation.mutate();
   }, [deleteMutation]);
 
   const handleProfileClick = useCallback(
@@ -249,6 +257,16 @@ export function RepostContainer({ repost, originalPost, onPostClick, className =
           onShare={handleShare}
         />
       </div>
+
+      {/* Delete Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={confirmDeleteRepost}
+        title={content.confirmDeleteTitle}
+        message={content.confirmDeleteMessage}
+        variant="danger"
+      />
     </article>
   );
 }

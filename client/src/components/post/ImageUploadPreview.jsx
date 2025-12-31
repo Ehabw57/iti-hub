@@ -1,5 +1,6 @@
 import { HiXMark, HiPhoto } from 'react-icons/hi2';
 import { useIntlayer } from 'react-intlayer';
+import { toast } from 'react-hot-toast';
 
 /**
  * Image upload and preview component
@@ -27,14 +28,14 @@ export default function ImageUploadPreview({
       // Check file type
       const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
       if (!validTypes.includes(file.type)) {
-        alert(content.invalidImageType);
+        toast.error(content.invalidImageType);
         return false;
       }
       
       // Check file size
       const sizeMB = file.size / (1024 * 1024);
       if (sizeMB > maxSizeMB) {
-        alert(content.imageTooLarge);
+        toast.error(content.imageTooLarge);
         return false;
       }
       
@@ -42,7 +43,7 @@ export default function ImageUploadPreview({
     });
 
     if (images.length + validFiles.length > maxImages) {
-      alert(content.tooManyImages);
+      toast.error(content.tooManyImages);
       return;
     }
 

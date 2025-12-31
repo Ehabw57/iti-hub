@@ -1,7 +1,8 @@
 import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react';
 import { HiOutlineXMark } from 'react-icons/hi2';
 import { useIntlayer } from 'react-intlayer';
-import { useState } from 'react';
+import { toast } from 'react-hot-toast';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import Button from '@/components/common/Button';
 import Input from '@/components/common/Input';
@@ -23,17 +24,26 @@ import { useSearchUsers } from '@hooks/queries/useSearchUsers';
  * @returns {JSX.Element}
  */
 export function NewGroupModal({ isOpen, onClose }) {
-  const content = useIntlayer('conversationDetail');
+  const content = useIntlayer('messagesList');
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedValue, setDebouncedValue] = useState('');
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
 
   const createGroup = useCreateGroupConversation();
+
+  // Debounce logic
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(searchQuery);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
   
   // Search users with real API
   const { data: searchData, isLoading: isSearching } = useSearchUsers({
-    query: searchQuery,
+    query: debouncedValue,
     limit: 20,
   });
   
@@ -52,7 +62,7 @@ export function NewGroupModal({ isOpen, onClose }) {
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      alert('Please select an image file');
+      toast.error(content.invalidImageType);
       return;
     }
 
@@ -78,7 +88,7 @@ export function NewGroupModal({ isOpen, onClose }) {
   // Handle form submission
   const onSubmit = (data) => {
     if (selectedUsers.length < 2) {
-      alert('Please select at least 2 members');
+      toast.error(content.selectAtLeastTwoMembers);
       return;
     }
 
@@ -154,7 +164,6 @@ export function NewGroupModal({ isOpen, onClose }) {
               {/* Group Name */}
               <div>
                 <Input
-                  label={content.groupName.value}
                   {...register('groupName', {
                     required: 'Group name is required',
                     minLength: {
