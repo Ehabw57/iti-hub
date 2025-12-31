@@ -1,15 +1,14 @@
-const fs = require("fs");
-const path = require("path");
 const Community = require("../models/Community");
 const { COMMUNITY_TAGS, MIN_COMMUNITY_TAGS, MAX_COMMUNITY_TAGS } = require("../utils/constants");
 
-function pickImageSeed() {
-  const seedDir = path.join(__dirname, "seed_images", "posts");
-  if (!fs.existsSync(seedDir)) return null;
-  const files = fs.readdirSync(seedDir).filter(f => /\.(jpe?g|png|gif)$/i.test(f));
-  if (!files.length) return null;
-  const file = files[Math.floor(Math.random() * files.length)];
-  return `/uploads/images/posts/${file}`;
+// Generate profile picture using picsum.photos (similar to seedPosts.js)
+function makeProfilePicture(communityId, index) {
+  return `https://picsum.photos/seed/community-profile-${communityId}-${index}/400/400`;
+}
+
+// Generate cover image using picsum.photos
+function makeCoverImage(communityId, index) {
+  return `https://picsum.photos/seed/community-cover-${communityId}-${index}/1200/400`;
 }
 
 function pickTags() {
@@ -75,8 +74,8 @@ module.exports = async function seedCommunities(users = []) {
       const community = {
         name,
         description,
-        profilePicture: pickImageSeed(),
-        coverImage: pickImageSeed(),
+        profilePicture: makeProfilePicture(i, Math.floor(Math.random() * 1000)),
+        coverImage: makeCoverImage(i, Math.floor(Math.random() * 1000)),
         tags,
         memberCount,
         postCount,

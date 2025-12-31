@@ -17,6 +17,7 @@ import FeedLayout from "../layout/FeedLayout";
 import MessagesList from "@pages/messages/MessagesList";
 import ConversationDetail from "@pages/messages/ConversationDetail";
 import CommunityManagement from "@pages/community/CommunityManagement";
+import UserCommunitiesController from "@pages/community/UserCommunitiesController";
 import Community from "@components/community/Community";
 import SearchPage from "@pages/SearchPage";
 import ExploreController from "@pages/explore/ExploreController";
@@ -100,6 +101,10 @@ const router = createBrowserRouter([
           {
             path: "/community/:communityId/manage",
             element: <CommunityManagement />,
+          },
+          {
+            path: "/communities",
+            element: <UserCommunitiesController />,
           },
           {
             path: "/notifications",
