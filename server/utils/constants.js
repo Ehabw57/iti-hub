@@ -206,6 +206,58 @@ const CLOUDINARY_FOLDER_MESSAGE = 'message-images';
 const CLOUDINARY_FOLDER_COMMUNITY_PROFILE = 'community-profile-pictures';
 const CLOUDINARY_FOLDER_COMMUNITY_COVER = 'community-cover-images';
 
+// ========================================
+// SEED DATA CONSTANTS
+// ========================================
+
+// Profile Pictures for seeding (from profilePictures.txt)
+const SEED_PROFILE_PICTURES = [
+  'https://i.pinimg.com/736x/ea/4d/0a/ea4d0a85e1260860d349a494e4bbdf86.jpg',
+  'https://i.pinimg.com/736x/76/62/0f/76620f79257022ecceb12da9818e93c7.jpg',
+  'https://i.pinimg.com/736x/a6/34/6d/a6346d0bfd5c9665b69d4a17c437b02d.jpg',
+  'https://i.pinimg.com/736x/3e/1f/fd/3e1ffd99b51bd00543bb50f193fa4f7e.jpg',
+  'https://i.pinimg.com/736x/c2/65/91/c265912343e2bebfb729fb5a7c65e06f.jpg',
+  'https://i.pinimg.com/736x/05/db/04/05db04fbb164e3c03dd01dbba7dd0128.jpg',
+];
+
+// Cover Images for seeding
+const SEED_COVER_IMAGES = [
+  'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1500&h=500&fit=crop',
+  'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=1500&h=500&fit=crop',
+  'https://images.unsplash.com/photo-1504639725590-34d0984388bd?w=1500&h=500&fit=crop',
+  'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=1500&h=500&fit=crop',
+  'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1500&h=500&fit=crop',
+  'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1500&h=500&fit=crop',
+  'https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=1500&h=500&fit=crop',
+  'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=1500&h=500&fit=crop'
+];
+
+// Post Images for seeding
+const SEED_POST_IMAGES = [
+  'https://images.unsplash.com/photo-1587620962725-abab7fe55159?w=800',
+  'https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=800',
+  'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800',
+  'https://images.unsplash.com/photo-1573164713988-8665fc963095?w=800',
+  'https://images.unsplash.com/photo-1551434678-e076c223a692?w=800',
+  'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=800',
+  'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=800',
+  'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800',
+  'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800',
+  'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800'
+];
+
+// Community Images for seeding
+const SEED_COMMUNITY_IMAGES = [
+  'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=500&h=500&fit=crop',
+  'https://images.unsplash.com/photo-1552664730-d307ca884978?w=500&h=500&fit=crop',
+  'https://images.unsplash.com/photo-1531498860502-7c67cf02f657?w=500&h=500&fit=crop',
+  'https://images.unsplash.com/photo-1553877522-43269d4ea984?w=500&h=500&fit=crop',
+  'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=500&h=500&fit=crop',
+  'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=500&h=500&fit=crop',
+  'https://images.unsplash.com/photo-1556761175-4b46a572b786?w=500&h=500&fit=crop',
+  'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=500&h=500&fit=crop'
+];
+
 // Public fields for posts
 const PUBLIC_POST_FIELDS = [
   '_id',
@@ -333,4 +385,10 @@ module.exports = {
   // Post fields
   PUBLIC_POST_FIELDS,
   UPDATABLE_POST_FIELDS,
+
+  // Seed data constants
+  SEED_PROFILE_PICTURES,
+  SEED_COVER_IMAGES,
+  SEED_POST_IMAGES,
+  SEED_COMMUNITY_IMAGES,
 };

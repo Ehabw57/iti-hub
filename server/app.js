@@ -17,6 +17,7 @@ const communityRoutes = require("./routes/communityRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const searchRoutes = require("./routes/searchRoutes");
 const adminRoutes = require("./routes/adminRoutes");
+const aiRoutes = require("./routes/aiRoutes");
 const { initializeSocketServer } = require("./utils/socketServer");
 const { errorHandler } = require("./middlewares/errorHandler");
 
@@ -51,6 +52,7 @@ app.use("/communities", communityRoutes);
 app.use("/notifications", notificationRoutes);
 app.use("/search", searchRoutes);
 app.use("/admin", adminRoutes);
+app.use("/ai", aiRoutes);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.get("/", (req, res) => {
   res.send(

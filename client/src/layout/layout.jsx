@@ -39,7 +39,7 @@ export default function Layout() {
         />
 
         {/* Main content area */}
-        <main className="flex-1">
+        <main className="relative flex-1">
           {/* Global notification handler - manages real-time updates across all pages */}
           {isAuthenticated && <GlobalNotificationHandler />}
           {/* Global messaging handler - manages real-time message updates across all pages */}

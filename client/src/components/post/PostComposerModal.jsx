@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react';
-import { HiXMark } from 'react-icons/hi2';
+import { HiXMark, HiSparkles } from 'react-icons/hi2';
 import { useIntlayer } from 'react-intlayer';
 import { toast } from 'react-hot-toast';
 import useCreatePost from '@hooks/mutations/useCreatePost';
 import useUpdatePost from '@hooks/mutations/useUpdatePost';
+import useGeneratePost from '@hooks/mutations/useGeneratePost';
 import  Button from "../common/Button";
 import PostTextarea from './PostTextarea';
 import ImageUploadPreview from './ImageUploadPreview';
@@ -32,6 +33,41 @@ export default function PostComposerModal({ isOpen, onClose, initialPost = null,
 
   const createPost = useCreatePost();
   const updatePost = useUpdatePost();
+  const generatePost = useGeneratePost();
+
+  // Handle AI post generation
+  const handleGenerateWithAI = () => {
+    if (!postContent || postContent.trim().length < 5) {
+      toast.error('Please write at least 5 characters to generate with AI');
+      return;
+    }
+
+    generatePost.mutate(
+      { text: postContent.trim() },
+      {
+        onSuccess: (response) => {
+          if (response.success && response.data?.content) {
+            setPostContent(response.data.content);
+            
+            // Auto-add AI generated hashtags to tags (max 5 total)
+            if (response.data.hashtags && response.data.hashtags.length > 0) {
+              const newTags = response.data.hashtags.filter(tag => !tags.includes(tag));
+              const availableSlots = 5 - tags.length;
+              if (availableSlots > 0 && newTags.length > 0) {
+                setTags([...tags, ...newTags.slice(0, availableSlots)]);
+              }
+            }
+            
+            toast.success('Post enhanced with AI!');
+          }
+        },
+        onError: (error) => {
+          const errorMessage = error?.response?.data?.message || 'Failed to generate post';
+          toast.error(errorMessage);
+        }
+      }
+    );
+  };
 
   // Initialize form with post data in edit mode
   useEffect(() => {
@@ -115,7 +151,7 @@ export default function PostComposerModal({ isOpen, onClose, initialPost = null,
   };
 
   const handleClose = () => {
-    if (createPost.isPending || updatePost.isPending) return;
+    if (createPost.isPending || updatePost.isPending || generatePost.isPending) return;
     
     // Reset form
     setPostContent('');
@@ -156,6 +192,21 @@ export default function PostComposerModal({ isOpen, onClose, initialPost = null,
               placeholder={content.writeYourPost.value}
               maxLength={5000}
             />
+
+            {/* AI Generate button */}
+            {!isEditMode && (
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={handleGenerateWithAI}
+                  disabled={generatePost.isPending || postContent.trim().length < 5}
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary-600 bg-primary-50 rounded-lg hover:bg-primary-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <HiSparkles className={`w-4 h-4 ${generatePost.isPending ? 'animate-spin' : ''}`} />
+                  {generatePost.isPending ? 'Generating...' : 'Enhance with AI'}
+                </button>
+              </div>
+            )}
 
             {/* Image upload - disabled in edit mode */}
             {!isEditMode && (

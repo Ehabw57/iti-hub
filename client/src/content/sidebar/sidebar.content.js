@@ -6,6 +6,7 @@ export default {
     // Main navigation items
     feed: t({ en: "Feed", ar: "الخلاصة" }),
     explore: t({ en: "Explore", ar: "استكشف" }),
+    ask: t({ en: "Ask Community", ar: "اسأل المجتمع" }),
     communities: t({ en: "Communities", ar: "المجتمعات" }),
     notifications: t({ en: "Notifications", ar: "الإشعارات" }),
     messages: t({ en: "Messages", ar: "الرسائل" }),
