@@ -1,0 +1,218 @@
+<div class="users-page">
+  <header class="page-header">
+    <h1 class="text-heading-2">{{ i18n.t('users.title') }}</h1>
+  </header>
+
+  <!-- Success Message -->
+  @if (successMessage()) {
+    <div class="success-message">
+      {{ successMessage() }}
+    </div>
+  }
+
+  <!-- Filters -->
+  <div class="filters card">
+    <div class="filter-row">
+      <div class="search-box">
+        <input
+          type="text"
+          class="input"
+          [placeholder]="i18n.t('common.search')"
+          [(ngModel)]="search"
+          (keyup.enter)="onSearch()"
+        />
+        <button class="btn btn-primary" (click)="onSearch()">
+          {{ i18n.t('common.search') }}
+        </button>
+      </div>
+      
+      <div class="filter-group">
+        <select class="input" [(ngModel)]="roleFilter" (change)="onFilterChange()">
+          <option value="">{{ i18n.t('users.filterByRole') }}</option>
+          <option value="user">User</option>
+          <option value="admin">Admin</option>
+        </select>
+        
+        <select class="input" [(ngModel)]="statusFilter" (change)="onFilterChange()">
+          <option value="">{{ i18n.t('users.filterByStatus') }}</option>
+          <option value="false">{{ i18n.t('users.active') }}</option>
+          <option value="true">{{ i18n.t('users.blocked') }}</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Users Table -->
+  @if (isLoading()) {
+    <div class="loading-state">
+      <span class="spinner-lg"></span>
+    </div>
+  } @else {
+    <div class="table-container card">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>{{ i18n.t('users.username') }}</th>
+            <th>{{ i18n.t('users.email') }}</th>
+            <th>{{ i18n.t('users.fullName') }}</th>
+            <th>{{ i18n.t('users.role') }}</th>
+            <th>{{ i18n.t('users.status') }}</th>
+            <th>{{ i18n.t('users.posts') }}</th>
+            <th>{{ i18n.t('users.createdAt') }}</th>
+            <th>{{ i18n.t('common.actions') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (user of users(); track user._id) {
+            <tr [class.blocked]="user.isBlocked">
+              <td>
+                <div class="user-cell">
+                  <div class="user-avatar-sm">
+                    @if (user.profilePicture) {
+                      <img [src]="user.profilePicture" [alt]="user.username" />
+                    } @else {
+                      <span>{{ user.username.charAt(0).toUpperCase() }}</span>
+                    }
+                  </div>
+                  <a 
+                    class="user-link" 
+                    (click)="viewUserProfile(user.username)"
+                    [title]="i18n.t('users.viewProfile')"
+                  >
+                    &#64;{{ user.username }}
+                  </a>
+                </div>
+              </td>
+              <td>{{ user.email }}</td>
+              <td>{{ user.fullName }}</td>
+              <td>
+                <select 
+                  class="input role-select" 
+                  [value]="user.role"
+                  (change)="changeRole(user, $any($event.target).value)"
+                  [disabled]="actionLoading() === user._id"
+                >
+                  <option value="user">User</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </td>
+              <td>
+                @if (user.isBlocked) {
+                  <span class="badge badge-error">{{ i18n.t('users.blocked') }}</span>
+                } @else {
+                  <span class="badge badge-success">{{ i18n.t('users.active') }}</span>
+                }
+              </td>
+              <td>{{ user.postsCount }}</td>
+              <td>{{ formatDate(user.createdAt) }}</td>
+              <td>
+                <div class="actions">
+                  @if (user.isBlocked) {
+                    <button 
+                      class="btn btn-sm btn-secondary"
+                      (click)="confirmUnblockUser(user)"
+                      [disabled]="actionLoading() === user._id"
+                    >
+                      {{ i18n.t('users.unblock') }}
+                    </button>
+                  } @else {
+                    <button 
+                      class="btn btn-sm btn-secondary"
+                      (click)="confirmBlockUser(user)"
+                      [disabled]="actionLoading() === user._id"
+                    >
+                      {{ i18n.t('users.block') }}
+                    </button>
+                  }
+                  <button 
+                    class="btn btn-sm btn-danger"
+                    (click)="confirmDeleteUser(user)"
+                    [disabled]="actionLoading() === user._id"
+                  >
+                    {{ i18n.t('common.delete') }}
+                  </button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="8" class="empty-cell">
+                {{ i18n.t('common.noResults') }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    @if (pagination()) {
+      <div class="pagination">
+        <span class="pagination-info text-body-2">
+          {{ i18n.t('common.showing') }} 
+          {{ ((pagination()?.currentPage || 1) - 1) * (pagination()?.itemsPerPage || 0) + 1 }}
+          - {{ Math.min((pagination()?.currentPage || 1) * (pagination()?.itemsPerPage || 0), pagination()?.totalItems || 0) }}
+          {{ i18n.t('common.of') }} 
+          {{ pagination()?.totalItems }}
+        </span>
+        
+        <div class="pagination-controls">
+          <button 
+            class="btn btn-secondary btn-sm"
+            (click)="goToPage(currentPage - 1)"
+            [disabled]="!pagination()?.hasPrevPage"
+          >
+            {{ i18n.t('common.previous') }}
+          </button>
+          
+          <span class="page-number text-body-2">
+            {{ i18n.t('common.page') }} {{ pagination()?.currentPage }} {{ i18n.t('common.of') }} {{ pagination()?.totalPages }}
+          </span>
+          
+          <button 
+            class="btn btn-secondary btn-sm"
+            (click)="goToPage(currentPage + 1)"
+            [disabled]="!pagination()?.hasNextPage"
+          >
+            {{ i18n.t('common.next') }}
+          </button>
+        </div>
+      </div>
+    }
+  }
+
+  <!-- Confirmation Modal -->
+  @if (showConfirmModal()) {
+    <div class="modal-overlay" (click)="cancelAction()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <h3 class="text-heading-5 modal-title">{{ i18n.t('common.confirm') }}</h3>
+        <p class="text-body-2 modal-message">
+          @switch (confirmAction().type) {
+            @case ('block') {
+              {{ i18n.t('users.confirmBlock') }}
+            }
+            @case ('unblock') {
+              {{ i18n.t('users.confirmUnblock') }}
+            }
+            @case ('delete') {
+              {{ i18n.t('users.confirmDelete') }}
+            }
+          }
+        </p>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" (click)="cancelAction()">
+            {{ i18n.t('common.cancel') }}
+          </button>
+          <button 
+            class="btn"
+            [class.btn-danger]="confirmAction().type === 'delete'"
+            [class.btn-primary]="confirmAction().type !== 'delete'"
+            (click)="executeAction()"
+          >
+            {{ i18n.t('common.confirm') }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

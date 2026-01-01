@@ -4,6 +4,8 @@ import api from '@lib/api';
 /**
  * @fileoverview Hook for searching users
  * Uses the /search/users endpoint with optional authentication
+ * This is a standalone hook for components that only need user search
+ * For comprehensive search across all types, use useSearch from './useSearch'
  */
 
 /**

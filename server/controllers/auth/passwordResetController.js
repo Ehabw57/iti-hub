@@ -3,6 +3,9 @@ const validator = require("validator");
 const { asyncHandler } = require('../../middlewares/errorHandler');
 const { ValidationError, AuthenticationError } = require('../../utils/errors');
 const { sendSuccess } = require('../../utils/responseHelpers');
+const sendEmail = require('../../utils/sendEmail');
+const { getPasswordResetTemplate } = require('../../utils/emailTemplates');
+
 
 /**
  * @route   POST /auth/password-reset/request
@@ -34,9 +37,14 @@ exports.requestPasswordReset = asyncHandler(async (req, res) => {
   // Generate password reset token
   const plainToken = await user.generatePasswordResetToken();
 
-  // MVP: Log token to console (in production, send via email)
-  console.log(`Password reset token for ${email}: ${plainToken}`);
-  console.log(`Reset link: http://localhost:5173/password-reset/confirm?token=${plainToken}`);
+  // Create reset link and send email
+  const resetLink = `http://localhost:5173/password-reset/confirm?token=${plainToken}`;
+  
+  await sendEmail({
+    to: user.email,
+    subject: 'Reset Your Password - itiHub',
+    html: getPasswordResetTemplate(resetLink, user.fullName)
+  });
 
   return sendSuccess(
     res,

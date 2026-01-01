@@ -4,6 +4,8 @@ const jwt = require("jsonwebtoken");
 const { asyncHandler } = require('../../middlewares/errorHandler');
 const { ValidationError, ConflictError } = require('../../utils/errors');
 const { sendCreated } = require('../../utils/responseHelpers');
+const sendEmail = require('../../utils/sendEmail');
+const { getEmailVerificationTemplate } = require('../../utils/emailTemplates');
 
 /**
  * @route   POST /auth/register
@@ -90,7 +92,17 @@ exports.register = asyncHandler(async (req, res) => {
     profilePicture: 'https://i.pinimg.com/736x/b3/3d/80/b33d80ebe729d3af6330ed2ee0f424fa.jpg'
   });
 
+  const verificationToken = newUser.generateEmailVerificationToken();
+
   await newUser.save();
+
+  const verifyLink = `http://localhost:5173/verify-email?token=${verificationToken}`;
+
+  await sendEmail({
+    to: newUser.email,
+    subject: 'Verify Your Email - itiHub',
+    html: getEmailVerificationTemplate(verifyLink, newUser.fullName)
+  });
 
   // Generate JWT token
   const token = jwt.sign(

@@ -101,6 +101,10 @@ export default {
     viewPhoto: t({ en: "View photo", ar: "عرض الصورة" }),
     downloadPhoto: t({ en: "Download", ar: "تحميل" }),
 
+    // Validation messages
+    invalidImageType: t({ en: "Please select an image file", ar: "يرجى اختيار ملف صورة" }),
+    imageTooLarge: t({ en: "Image size should be less than 10MB", ar: "يجب أن يكون حجم الصورة أقل من 10 ميجابايت" }),
+
     // Other
     you: t({ en: "You", ar: "أنت" }),
     unknownUser: t({ en: "Unknown user", ar: "مستخدم غير معروف" }),

@@ -21,7 +21,14 @@ const {invalidateUserFeeds} = require('../../utils/feedCache');
  * @access Private
  */
 const createPost = asyncHandler(async (req, res) => {
-  const { content, tags, community } = req.body;
+  let { content, tags, community } = req.body;
+  
+  // Normalize tags: ensure it's always an array (multer sends single values as string)
+  if (tags && !Array.isArray(tags)) {
+    tags = [tags];
+  }
+  
+  console.log("Creating post with tags:", tags);
   const userId = req.user._id;
   let imageUrls = [];
 

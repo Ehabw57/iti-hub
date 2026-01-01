@@ -2,9 +2,12 @@ import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaCamera, FaUserPlus, FaUserMinus, FaShieldAlt } from 'react-icons/fa';
 import { FiSettings } from 'react-icons/fi';
+import { HiPencil } from 'react-icons/hi2';
 import { useIntlayer } from 'react-intlayer';
 import communityContent from '@content/community/community.content';
 import useRequireAuth from '@hooks/useRequireAuth';
+import Button from '@components/common/Button';
+import PostComposerModal from '@components/post/PostComposerModal';
 
 /**
  * CommunityHeader Component - Part 1
@@ -21,6 +24,7 @@ const CommunityHeader = ({
   const navigate = useNavigate();
   const { requireAuth } = useRequireAuth();
   const [showSettings, setShowSettings] = useState(false);
+  const [showComposer, setShowComposer] = useState(false);
   const profileInputRef = useRef(null);
   const coverInputRef = useRef(null);
 
@@ -46,6 +50,11 @@ const CommunityHeader = ({
     requireAuth(() => {
       onJoinLeave();
     });
+  };
+
+  // Handle create post with auth check
+  const handleCreatePost = () => {
+    requireAuth(() => setShowComposer(true));
   };
 
   return (
@@ -145,6 +154,18 @@ const CommunityHeader = ({
 
             {/* Action Buttons */}
             <div className="flex items-center gap-3">
+              {/* Create Post Button - Available for all joined members */}
+              {isJoined && (
+                <Button
+                  onClick={handleCreatePost}
+                  variant="primary"
+                  className="flex items-center gap-2"
+                >
+                  <HiPencil size={18} />
+                  <span>{content.createPost}</span>
+                </Button>
+              )}
+
               {/* Join/Leave Button */}
               {!isOwner && (
                 <button
@@ -192,6 +213,13 @@ const CommunityHeader = ({
           </div>
         </div>
       </div>
+
+      {/* Post Composer Modal */}
+      <PostComposerModal
+        isOpen={showComposer}
+        onClose={() => setShowComposer(false)}
+        initialCommunityId={community._id}
+      />
     </div>
   );
 };

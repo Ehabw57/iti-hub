@@ -18,6 +18,7 @@ import useDeleteComment from '@hooks/mutations/useDeleteComment';
 import useToggleCommentLike from '@hooks/mutations/useToggleCommentLike';
 import CommentForm from './CommentForm';
 import  commentContent  from '@/content/comment/comment.content';
+import ConfirmDialog from '@components/common/ConfirmDialog';
 
 dayjs.extend(relativeTime);
 
@@ -46,6 +47,7 @@ export default function CommentItem({
   const [showReplies, setShowReplies] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(comment.content);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   
   const createComment = useCreateComment();
   const updateComment = useUpdateComment();
@@ -168,19 +170,21 @@ export default function CommentItem({
   };
 
   const handleDelete = () => {
-    if (window.confirm(`${content.confirmDeleteTitle.value}\n${content.confirmDeleteBody.value}`)) {
-      deleteComment.mutate(
-        { commentId: comment._id },
-        {
-          onSuccess: () => {
-            toast.success(content.commentDeleted || 'Comment deleted');
-          },
-          onError: () => {
-            toast.error(content.deleteFailed || 'Failed to delete comment');
-          },
-        }
-      );
-    }
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = () => {
+    deleteComment.mutate(
+      { commentId: comment._id },
+      {
+        onSuccess: () => {
+          toast.success(content.commentDeleted || 'Comment deleted');
+        },
+        onError: () => {
+          toast.error(content.deleteFailed || 'Failed to delete comment');
+        },
+      }
+    );
   };
 
   return (
@@ -369,6 +373,16 @@ export default function CommentItem({
           </button>
         )}
       </div>
+
+      {/* Delete Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={confirmDelete}
+        title={content.confirmDeleteTitle}
+        message={content.confirmDeleteBody}
+        variant="danger"
+      />
     </div>
   );
 }

@@ -47,19 +47,28 @@ export const useCommunityFeed = (communityId) => {
 };
 
 /**
- * Hook for fetching all communities list
+ * Hook for fetching all communities list with infinite scroll
  * @param {object} filters - Filter options (search, tag, sort, etc.)
- * @returns {object} React Query query object
+ * @returns {object} React Query infinite query object
  */
 export const useCommunitiesList = (filters = {}) => {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: ['communities', 'list', filters],
-    queryFn: async () => {
+    queryFn: async ({ pageParam = 1 }) => {
       const response = await api.get('/communities', {
-        params: filters
+        params: {
+          ...filters,
+          page: pageParam,
+          limit: 12
+        }
       });
       return response.data;
     },
+    getNextPageParam: (lastPage) => {
+      const { pagination } = lastPage.data;
+      return pagination?.hasNextPage ? pagination.page + 1 : undefined;
+    },
+    initialPageParam: 1,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };

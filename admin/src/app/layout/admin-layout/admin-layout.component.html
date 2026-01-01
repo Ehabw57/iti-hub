@@ -1,0 +1,74 @@
+<div class="admin-layout" [attr.dir]="i18n.dir()">
+  <!-- Sidebar -->
+  <aside class="sidebar" [class.collapsed]="sidebarCollapsed">
+    <div class="sidebar-header">
+      <div class="logo">
+        @if (!sidebarCollapsed) {
+          <span class="logo-text">ITI Hub Admin</span>
+        } @else {
+          <span class="logo-icon">ITI</span>
+        }
+      </div>
+    </div>
+    
+    <nav class="sidebar-nav">
+      @for (item of navItems; track item.path) {
+        <a 
+          [routerLink]="item.path" 
+          routerLinkActive="active"
+          class="nav-item"
+          [title]="i18n.t(item.labelKey)"
+        >
+          <span class="nav-icon">
+            <lucide-icon [img]="item.iconComponent" [size]="20"></lucide-icon>
+          </span>
+          @if (!sidebarCollapsed) {
+            <span class="nav-label">{{ i18n.t(item.labelKey) }}</span>
+          }
+        </a>
+      }
+    </nav>
+    
+    <div class="sidebar-footer">
+      <button class="nav-item logout-btn" (click)="logout()">
+        <span class="nav-icon">
+          <lucide-icon [img]="LogOutIcon" [size]="20"></lucide-icon>
+        </span>
+        @if (!sidebarCollapsed) {
+          <span class="nav-label">{{ i18n.t('nav.logout') }}</span>
+        }
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Header -->
+
+    <header class="header">
+      <button class="toggle-btn" (click)="toggleSidebar()">
+        <lucide-icon [img]="MenuIcon" [size]="24"></lucide-icon>
+      </button>
+        <!-- User Info -->
+        @if (authService.user()) {
+          <div class="user-info">
+            <span class="user-name">{{ authService.user()?.fullName }}</span>
+            <span class="user-role badge badge-primary">{{ authService.user()?.role }}</span>
+          </div>
+        }
+      
+      <div class="header-actions">
+        <!-- Language Toggle -->
+        <button class="lang-toggle" (click)="i18n.toggleLanguage()">
+          {{ i18n.currentLang() === 'en' ? 'العربية' : 'English' }}
+        </button>
+        
+      </div>
+    </header>
+
+    <!-- Page Content -->
+    <main class="page-content">
+      <router-outlet />
+    </main>
+  </div>
+</div>

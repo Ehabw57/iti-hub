@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@lib/api';
+import { useAuthStore } from '@store/auth';
 
 /**
  * Hook for creating a new post
@@ -8,6 +9,7 @@ import api from '@lib/api';
  */
 export const useCreatePost = () => {
   const queryClient = useQueryClient();
+  const currentUser = useAuthStore((state) => state.user);
 
   return useMutation({
     mutationFn: async (postData) => {
@@ -45,9 +47,23 @@ export const useCreatePost = () => {
 
       return response.data;
     },
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
       // Invalidate all feed queries to show new post
       queryClient.invalidateQueries({ queryKey: ['feed'] });
+      
+      // If post was created in a community, invalidate community feed
+      if (variables.communityId) {
+        queryClient.invalidateQueries({ 
+          queryKey: ['community', variables.communityId, 'feed'] 
+        });
+      }
+      
+      // Invalidate current user's posts to show new post on their profile
+      if (currentUser?._id) {
+        queryClient.invalidateQueries({ 
+          queryKey: ['userPosts', currentUser._id] 
+        });
+      }
     },
   });
 };

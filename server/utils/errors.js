@@ -23,8 +23,14 @@ class APIError extends Error {
  * Used for input validation failures
  */
 class ValidationError extends APIError {
-  constructor(message, details = null) {
-    super(message, 400, 'VALIDATION_ERROR', details);
+  constructor(message, codeOrDetails = null) {
+    // If second parameter is a string, treat it as a custom code
+    // If it's an object/array, treat it as details (backward compatibility)
+    const isCustomCode = typeof codeOrDetails === 'string';
+    const code = isCustomCode ? codeOrDetails : 'VALIDATION_ERROR';
+    const details = isCustomCode ? null : codeOrDetails;
+    
+    super(message, 400, code, details);
   }
 }
 

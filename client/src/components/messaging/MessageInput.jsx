@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useIntlayer } from 'react-intlayer';
+import { toast } from 'react-hot-toast';
 import { HiOutlinePaperAirplane, HiOutlinePhoto, HiOutlineXMark } from 'react-icons/hi2';
 import Button from '@/components/common/Button';
 
@@ -59,13 +60,13 @@ export function MessageInput({
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      alert('Please select an image file');
+      toast.error(content.invalidImageType);
       return;
     }
 
     // Validate file size (10MB max)
     if (file.size > 10 * 1024 * 1024) {
-      alert('Image size should be less than 10MB');
+      toast.error(content.imageTooLarge);
       return;
     }
 

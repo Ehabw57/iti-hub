@@ -26,7 +26,7 @@ const CommunityFeed = ({ communityId }) => {
   const posts = data?.pages?.flatMap(page => page.posts || []) || [];
   
   // Debug: Log data structure
-  console.log('Community Feed Data:', { data, posts: posts.length });
+  // console.log('Community Feed Data:', { data, posts: posts.length });
 
   // Infinite scroll with Intersection Observer
   const { observerTarget } = useIntersectionObserver({

@@ -1,0 +1,117 @@
+<div class="communities-page">
+  <header class="page-header">
+    <h1 class="text-heading-2">{{ i18n.t('communities.title') }}</h1>
+  </header>
+
+  @if (successMessage()) {
+    <div class="success-message">{{ successMessage() }}</div>
+  }
+
+  <div class="filters card">
+    <div class="filter-row">
+      <div class="search-box">
+        <input type="text" class="input" [placeholder]="i18n.t('common.search')" [(ngModel)]="search" (keyup.enter)="onSearch()" />
+        <button class="btn btn-primary" (click)="onSearch()">{{ i18n.t('common.search') }}</button>
+      </div>
+      <div class="filter-group">
+        <input type="text" class="input" [placeholder]="i18n.t('communities.filterByOwner')" [(ngModel)]="ownerFilter" (keyup.enter)="onSearch()" />
+      </div>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div class="loading-state"><span class="spinner-lg"></span></div>
+  } @else {
+    <div class="table-container card">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>{{ i18n.t('communities.name') }}</th>
+            <th>{{ i18n.t('communities.owner') }}</th>
+            <th>{{ i18n.t('communities.members') }}</th>
+            <th>{{ i18n.t('communities.createdAt') }}</th>
+            <th>{{ i18n.t('common.actions') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (community of communities(); track community._id) {
+            <tr>
+              <td>
+                <div class="community-cell">
+                  <span class="community-icon">🏘️</span>
+                  <a 
+                    class="community-link" 
+                    (click)="viewCommunity(community._id)"
+                    [title]="i18n.t('communities.viewCommunity')"
+                  >
+                    {{ community.name }}
+                  </a>
+                </div>
+              </td>
+              <td>
+                @if (community.owners.length > 0) {
+                  <div class="author-cell">
+                    <div class="avatar-sm">
+                      @if (community.owners[0].profilePicture) {
+                        <img [src]="community.owners[0].profilePicture" [alt]="community.owners[0].username" />
+                      } @else {
+                        <span>{{ community.owners[0].username.charAt(0).toUpperCase() }}</span>
+                      }
+                    </div>
+                    <a 
+                      class="user-link" 
+                      (click)="viewUserProfile(community.owners[0].username)"
+                      [title]="i18n.t('users.viewProfile')"
+                    >
+                      &#64;{{ community.owners[0].username }}
+                    </a>
+                  </div>
+                } @else {
+                  <span>-</span>
+                }
+              </td>
+              <td>{{ community.memberCount }}</td>
+              <td>{{ formatDate(community.createdAt) }}</td>
+              <td>
+                <button class="btn btn-sm btn-danger" (click)="confirmDelete(community)" [disabled]="actionLoading() === community._id">
+                  {{ i18n.t('common.delete') }}
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="5" class="empty-cell">{{ i18n.t('common.noResults') }}</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (pagination()) {
+      <div class="pagination">
+        <span class="pagination-info text-body-2">
+          {{ i18n.t('common.showing') }} 
+          {{ ((pagination()?.currentPage || 1) - 1) * (pagination()?.itemsPerPage || 0) + 1 }}
+          - {{ Math.min((pagination()?.currentPage || 1) * (pagination()?.itemsPerPage || 0), pagination()?.totalItems || 0) }}
+          {{ i18n.t('common.of') }} {{ pagination()?.totalItems }}
+        </span>
+        <div class="pagination-controls">
+          <button class="btn btn-secondary btn-sm" (click)="goToPage(currentPage - 1)" [disabled]="!pagination()?.hasPrevPage">{{ i18n.t('common.previous') }}</button>
+          <span class="page-number text-body-2">{{ i18n.t('common.page') }} {{ pagination()?.currentPage }} {{ i18n.t('common.of') }} {{ pagination()?.totalPages }}</span>
+          <button class="btn btn-secondary btn-sm" (click)="goToPage(currentPage + 1)" [disabled]="!pagination()?.hasNextPage">{{ i18n.t('common.next') }}</button>
+        </div>
+      </div>
+    }
+  }
+
+  @if (showConfirmModal()) {
+    <div class="modal-overlay" (click)="cancelDelete()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <h3 class="text-heading-5 modal-title">{{ i18n.t('communities.deleteCommunity') }}</h3>
+        <p class="text-body-2 modal-message">{{ i18n.t('communities.confirmDelete') }}</p>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" (click)="cancelDelete()">{{ i18n.t('common.cancel') }}</button>
+          <button class="btn btn-danger" (click)="executeDelete()">{{ i18n.t('common.delete') }}</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

@@ -22,7 +22,7 @@ export default function FeedHomeController() {
     refetch,
     isFetchingNextPage 
   } = useFeedHome();
-  console.log(data);
+  // console.log(data);
 
   // Infinite scroll
   const { observerTarget } = useIntersectionObserver({

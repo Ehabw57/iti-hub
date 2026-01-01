@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { HiXMark } from 'react-icons/hi2';
 import { useIntlayer } from 'react-intlayer';
+import { toast } from 'react-hot-toast';
 
 /**
  * Tag selector component
@@ -26,7 +27,7 @@ export default function TagSelector({ tags = [], onChange, maxTags = 5 }) {
     if (!tag) return;
     
     if (tags.length >= maxTags) {
-      alert(content.tooManyTags);
+      toast.error(content.tooManyTags);
       return;
     }
     

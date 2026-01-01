@@ -1,11 +1,14 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Layout from "@/layout/layout";
+import AuthLayout from "@/layout/AuthLayout";
 import ProtectedRoute from "@components/routes/ProtectedRoute";
 import PublicRoute from "@components/routes/PublicRoute";
 import AuthLoginController from "@pages/auth/AuthLoginController";
 import RegisterController from "@pages/auth/RegisterController";
 import PasswordResetRequestController from "@pages/auth/PasswordResetRequestController";
 import PasswordResetConfirmController from "@pages/auth/PasswordResetConfirmController";
+import EmailVerifyPage from "@pages/auth/EmailVerifyPage";
+import ResendVerificationPage from "@pages/auth/ResendVerificationPage";
 import FeedHomeController from "@pages/feed/FeedHomeController";
 import FeedFollowingController from "@pages/feed/FeedFollowingController";
 import FeedTrendingController from "@pages/feed/FeedTrendingController";
@@ -17,30 +20,54 @@ import FeedLayout from "../layout/FeedLayout";
 import MessagesList from "@pages/messages/MessagesList";
 import ConversationDetail from "@pages/messages/ConversationDetail";
 import CommunityManagement from "@pages/community/CommunityManagement";
+import UserCommunitiesController from "@pages/community/UserCommunitiesController";
 import Community from "@components/community/Community";
+import SearchPage from "@pages/SearchPage";
+import ExploreController from "@pages/explore/ExploreController";
 
 // Placeholder components for routes not yet implemented
 const NotFoundPage = () => <div>404 - Page Not Found</div>;
 
 const router = createBrowserRouter([
   {
-    element: <PublicRoute />,
+    element: <AuthLayout />,
     children: [
       {
-        path: "/login",
-        element: <AuthLoginController />,
+        path: "/verify-email",
+        element: <EmailVerifyPage />,
       },
       {
-        path: "/register",
-        element: <RegisterController />,
+        path: "/resend-verification",
+        element: <ResendVerificationPage />,
       },
       {
-        path: "/password-reset/request",
-        element: <PasswordResetRequestController />,
-      },
-      {
-        path: "/password-reset/confirm",
-        element: <PasswordResetConfirmController />,
+        element: <PublicRoute />,
+        children: [
+          {
+            path: "/login",
+            element: <AuthLoginController />,
+          },
+          {
+            path: "/register",
+            element: <RegisterController />,
+          },
+          {
+            path: "/password-reset/request",
+            element: <PasswordResetRequestController />,
+          },
+          {
+            path: "/password-reset/confirm",
+            element: <PasswordResetConfirmController />,
+          },
+          {
+            path: "/verify-email",
+            element: <EmailVerifyPage />,
+          },
+          {
+            path: "/resend-verification",
+            element: <ResendVerificationPage />,
+          },
+        ],
       },
     ],
   },
@@ -80,6 +107,14 @@ const router = createBrowserRouter([
         element: <ProfileController />,
       },
       {
+        path: "/search",
+        element: <SearchPage />,
+      },
+      {
+        path: "/explore",
+        element: <ExploreController />,
+      },
+      {
         path: "/community/:communityId",
         element: <Community />,
       },
@@ -90,6 +125,10 @@ const router = createBrowserRouter([
           {
             path: "/community/:communityId/manage",
             element: <CommunityManagement />,
+          },
+          {
+            path: "/communities",
+            element: <UserCommunitiesController />,
           },
           {
             path: "/notifications",
