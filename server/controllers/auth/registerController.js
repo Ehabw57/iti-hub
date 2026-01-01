@@ -5,6 +5,7 @@ const { asyncHandler } = require('../../middlewares/errorHandler');
 const { ValidationError, ConflictError } = require('../../utils/errors');
 const { sendCreated } = require('../../utils/responseHelpers');
 const sendEmail = require('../../utils/sendEmail');
+const {SEED_PROFILE_PICTURES} = require('../../utils/constants')
 const { getEmailVerificationTemplate } = require('../../utils/emailTemplates');
 
 /**
@@ -89,7 +90,8 @@ exports.register = asyncHandler(async (req, res) => {
     username: username.toLowerCase(),
     password,
     fullName,
-    profilePicture: 'https://i.pinimg.com/736x/b3/3d/80/b33d80ebe729d3af6330ed2ee0f424fa.jpg'
+    //random profile picture from seed profile pictures
+    profilePicture: SEED_PROFILE_PICTURES[Math.floor(Math.random() * SEED_PROFILE_PICTURES.length)],
   });
 
   const verificationToken = newUser.generateEmailVerificationToken();

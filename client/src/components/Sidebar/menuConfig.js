@@ -8,7 +8,8 @@ import {
   HiBookmark,
   HiArrowRightOnRectangle,
   HiPlus,
-  HiUsers
+  HiUsers,
+  HiSparkles
 } from 'react-icons/hi2';
 
 /**
@@ -52,6 +53,14 @@ export const menuItems = [
     labelKey: 'explore',
     path: '/explore',
     icon: HiMagnifyingGlass,
+    isPublic: true,
+    type: 'link',
+  },
+  {
+    id: 'ask',
+    labelKey: 'ask',
+    path: '/ask',
+    icon: HiSparkles,
     isPublic: true,
     type: 'link',
   },

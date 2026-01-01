@@ -24,6 +24,7 @@ import UserCommunitiesController from "@pages/community/UserCommunitiesControlle
 import Community from "@components/community/Community";
 import SearchPage from "@pages/SearchPage";
 import ExploreController from "@pages/explore/ExploreController";
+import AskCommunityController from "@pages/ask/AskCommunityController";
 
 // Placeholder components for routes not yet implemented
 const NotFoundPage = () => <div>404 - Page Not Found</div>;
@@ -113,6 +114,10 @@ const router = createBrowserRouter([
       {
         path: "/explore",
         element: <ExploreController />,
+      },
+      {
+        path: "/ask",
+        element: <AskCommunityController />,
       },
       {
         path: "/community/:communityId",

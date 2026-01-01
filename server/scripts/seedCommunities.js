@@ -1,98 +1,93 @@
 const Community = require("../models/Community");
-const { COMMUNITY_TAGS, MIN_COMMUNITY_TAGS, MAX_COMMUNITY_TAGS } = require("../utils/constants");
+const { SEED_COMMUNITIES } = require("./data/seedData");
+const { getRandomDate, weightedRandom, getRandomCommunityImage } = require("./utils/seedHelpers");
 
-// Generate profile picture using picsum.photos (similar to seedPosts.js)
-function makeProfilePicture(communityId, index) {
-  return `https://picsum.photos/seed/community-profile-${communityId}-${index}/400/400`;
-}
-
-// Generate cover image using picsum.photos
-function makeCoverImage(communityId, index) {
-  return `https://picsum.photos/seed/community-cover-${communityId}-${index}/1200/400`;
-}
-
-function pickTags() {
-  const count = Math.min(
-    Math.max(MIN_COMMUNITY_TAGS, Math.floor(Math.random() * (MAX_COMMUNITY_TAGS + 1))),
-    MAX_COMMUNITY_TAGS
-  );
-  const shuffled = COMMUNITY_TAGS.slice().sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, count);
-}
-
-function pickRandomUserIds(users, count, excludeIds = new Set()) {
-  const pool = users
-    .map(u => u._id)
-    .filter(id => !excludeIds.has(String(id)));
-  const picked = new Set();
-  while (picked.size < Math.min(count, pool.length)) {
-    const candidate = pool[Math.floor(Math.random() * pool.length)];
-    picked.add(String(candidate));
-  }
-  return Array.from(picked).map(idStr => users.find(u => String(u._id) === idStr)._id);
-}
-
+/**
+ * Seed realistic communities with proper images and varied membership
+ * @param {Array} users - Array of user documents
+ * @returns {Promise<Array>} - Created communities
+ */
 module.exports = async function seedCommunities(users = []) {
   try {
-    console.log("🔹 Seeding communities...");
+    console.log("🏘️  Seeding communities...");
 
     await Community.deleteMany();
 
-    if (!Array.isArray(users)) users = [];
-
-    const total = 24;
-    const topics = COMMUNITY_TAGS.length ? COMMUNITY_TAGS.slice() : [
-      "general","engineering","design","devops","backend","frontend","mobile","ai","data","security"
-    ];
+    if (!Array.isArray(users) || users.length === 0) {
+      console.log("⚠️  No users provided, creating minimal communities");
+    }
 
     const communities = [];
+    const now = new Date();
 
-    for (let i = 0; i < total; i++) {
-      const topic = topics[i % topics.length];
-      const name = `${topic.charAt(0).toUpperCase() + topic.slice(1)} Community ${i + 1}`;
-      const description = `A community about ${topic} — community number ${i + 1}.`;
-
-      const ownersCount = Math.min(3, Math.max(1, Math.floor(Math.random() * 3) + 1));
-      const owners = users.length ? pickRandomUserIds(users, ownersCount) : [];
-
-      const moderatorsCount = users.length ? Math.floor(Math.random() * 5) : 0;
-      const exclude = new Set(owners.map(o => String(o)));
-      const moderators = users.length ? pickRandomUserIds(users, moderatorsCount, exclude) : [];
-
-      let memberCount = 0;
-      if (users.length) {
-        const minMembers = Math.max(owners.length + moderators.length, 1);
-        const maxMembers = Math.min(users.length, Math.floor(Math.random() * 20) + minMembers);
-        memberCount = Math.max(minMembers, maxMembers);
-      } else {
-        memberCount = Math.floor(Math.random() * 50) + 1;
+    for (let i = 0; i < SEED_COMMUNITIES.length; i++) {
+      const communityData = SEED_COMMUNITIES[i];
+      
+      // Community creation time (older communities = more established)
+      const createdAt = getRandomDate(90, 365); // 3-12 months ago
+      
+      // Select owners (1-2 from first 10 users - more active users)
+      const ownerPool = users.slice(0, Math.min(10, users.length));
+      const ownersCount = weightedRandom([
+        { value: 1, weight: 0.7 },
+        { value: 2, weight: 0.3 },
+      ]);
+      const ownerIndices = new Set();
+      while (ownerIndices.size < Math.min(ownersCount, ownerPool.length)) {
+        ownerIndices.add(Math.floor(Math.random() * ownerPool.length));
       }
+      const owners = Array.from(ownerIndices).map(idx => ownerPool[idx]._id);
 
-      const postCount = Math.floor(Math.random() * 100);
-      const tags = pickTags();
+      // Select moderators (0-3 from users, excluding owners)
+      const modCandidates = users.filter(u => !owners.some(o => o.equals(u._id)));
+      const modsCount = weightedRandom([
+        { value: 0, weight: 0.3 },
+        { value: 1, weight: 0.35 },
+        { value: 2, weight: 0.25 },
+        { value: 3, weight: 0.1 },
+      ]);
+      const modIndices = new Set();
+      while (modIndices.size < Math.min(modsCount, modCandidates.length)) {
+        modIndices.add(Math.floor(Math.random() * modCandidates.length));
+      }
+      const moderators = Array.from(modIndices).map(idx => modCandidates[idx]._id);
+
+      // Member count based on community "age" and popularity
+      const ageInDays = (now - createdAt) / (1000 * 60 * 60 * 24);
+      const baseMemberCount = Math.floor(ageInDays / 5) + 10; // Older = more members
+      const popularityMultiplier = weightedRandom([
+        { value: 0.5, weight: 0.2 },   // 20% - low engagement
+        { value: 1, weight: 0.4 },      // 40% - average
+        { value: 1.5, weight: 0.25 },   // 25% - popular
+        { value: 2, weight: 0.15 },     // 15% - very popular
+      ]);
+      const memberCount = Math.min(
+        Math.floor(baseMemberCount * popularityMultiplier),
+        users.length
+      );
+
+      // Post count correlates with member count and age
+      const postCount = Math.floor(memberCount * 0.8 * Math.random());
 
       const community = {
-        name,
-        description,
-        profilePicture: makeProfilePicture(i, Math.floor(Math.random() * 1000)),
-        coverImage: makeCoverImage(i, Math.floor(Math.random() * 1000)),
-        tags,
-        memberCount,
+        name: communityData.name,
+        description: communityData.description,
+        profilePicture: getRandomCommunityImage(),
+        coverImage: getRandomCommunityImage(), // Different image for cover
+        tags: communityData.tags,
+        memberCount: Math.max(owners.length + moderators.length, memberCount),
         postCount,
-        owners: owners.length ? owners : (users[0] ? [users[0]._id] : []),
-        moderators
+        owners,
+        moderators,
+        createdAt,
+        updatedAt: createdAt,
       };
-
-      if (!community.owners || community.owners.length === 0) {
-        if (users[0]) community.owners = [users[0]._id];
-        else community.owners = [];
-      }
 
       communities.push(community);
     }
 
     const created = await Community.insertMany(communities);
-    console.log(`✅ Seeded ${created.length} communities`);
+    console.log(`✅ Communities seeded: ${created.length}`);
     return created;
   } catch (err) {
     console.error("❌ Error seeding communities:", err);

@@ -9,43 +9,65 @@ const seedPostLikes = require("./seedPostLikes");
 const seedComments = require("./seedComments");
 const seedCommentLikes = require("./seedCommentLike");
 const seedNotifications = require("./seedNotifications");
-
-// add import for communities seeder
 const seedCommunities = require("./seedCommunities");
 const seedCommunityMembers = require("./seedCommunityMembers");
+const seedMessages = require("./seedMessages");
 
 async function seed() {
   try {
-    console.log("🚀 Starting database seeding...");
+    console.log("🚀 Starting database seeding...\n");
+    const startTime = Date.now();
 
-    // 1️⃣ connect to DB
+    // 1️⃣ Connect to DB
     await mongoose.connect(process.env.DB_URI || "mongodb://localhost:27017/iti-hub");
-    console.log("✅ MongoDB connected");
+    console.log("✅ MongoDB connected\n");
 
-    // 2️⃣ seed users
+    // 2️⃣ Seed users
     const users = await seedUsers();
+    console.log("");
 
-    // 3️⃣ seed connections (follows and blocks)
-    await seedConnections(users);
+    // 3️⃣ Seed connections (follows and blocks)
+    const connections = await seedConnections(users);
+    console.log("");
 
-    // 3.1️⃣ seed communities (profiles & covers similar to post images)
+    // 4️⃣ Seed communities
     const communities = await seedCommunities(users);
+    console.log("");
 
-    // 3.2️⃣ seed community members (ensure each user joins at least 9 communities)
+    // 5️⃣ Seed community members
     await seedCommunityMembers(users, communities);
+    console.log("");
 
-    // ⏭️ الخطوات الجاية (هنفعلها واحدة واحدة)
+    // 6️⃣ Seed posts
     const posts = await seedPosts(users);
-    const comments = await seedComments(posts, users); 
-    await seedCommentLikes(users, comments);
-    await seedPostLikes(posts, users);
-    await seedNotifications(users, posts, comments);
+    console.log("");
 
-    console.log("🎉 Database seeding completed successfully");
+    // 7️⃣ Seed comments
+    const comments = await seedComments(posts, users);
+    console.log("");
+
+    // 8️⃣ Seed likes
+    const postLikes = await seedPostLikes(posts, users);
+    console.log("");
+
+    const commentLikes = await seedCommentLikes(users, comments);
+    console.log("");
+
+    // 9️⃣ Seed messages (between connected users)
+    await seedMessages(users, connections);
+    console.log("");
+
+    // 🔟 Seed notifications (based on actual data)
+    await seedNotifications(users, posts, comments, postLikes, commentLikes, connections);
+    console.log("");
+
+    const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+    console.log("═".repeat(50));
+    console.log(`🎉 Database seeding completed in ${duration}s`);
+    console.log("═".repeat(50));
   } catch (error) {
     console.error("❌ Seeding failed:", error);
   } finally {
-    // 3️⃣ close connection
     await mongoose.disconnect();
     console.log("🔌 MongoDB disconnected");
     process.exit();

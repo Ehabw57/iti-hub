@@ -41,7 +41,6 @@ export default function FeedTrendingController() {
   if (isLoading) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-6">
-        <TimeframeSelector selected={timeframe} onChange={setTimeframe} />
         <FeedPostSkeleton />
         <FeedPostSkeleton />
         <FeedPostSkeleton />
@@ -52,7 +51,6 @@ export default function FeedTrendingController() {
   if (isError) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-6">
-        <TimeframeSelector selected={timeframe} onChange={setTimeframe} />
         <ErrorDisplay 
           message={error?.response?.data?.error?.message || content.errorLoadingFeed}
           onRetry={refetch}
@@ -63,7 +61,6 @@ export default function FeedTrendingController() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 flex flex-col gap-3">
-      <TimeframeSelector selected={timeframe} onChange={setTimeframe} />
       
       {posts.length === 0 ? (
         <EmptyFeed 
