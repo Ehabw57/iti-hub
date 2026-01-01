@@ -66,8 +66,8 @@ module.exports = async function seedCommunities(users = []) {
         users.length
       );
 
-      // Post count correlates with member count and age
-      const postCount = Math.floor(memberCount * 0.8 * Math.random());
+      // Post count will be updated by seedPosts after posts are created
+      const postCount = 0;
 
       const community = {
         name: communityData.name,

@@ -5,6 +5,7 @@
 
 const Post = require("../models/Post");
 const User = require("../models/User");
+const Community = require("../models/Community");
 const { SEED_POSTS } = require("./data/seedData");
 const {
   getRandomItem,
@@ -43,6 +44,9 @@ async function seedPosts(users, communities = []) {
   // Track posts per user for counting
   const userPostCounts = new Map();
   
+  // Track posts per community for counting
+  const communityPostCounts = new Map();
+  
   // 1. Assign posts to power users (index 0-5, excluding admin at 0)
   console.log("   📊 Creating posts for power users...");
   for (let i = 1; i <= 5 && i < users.length; i++) {
@@ -71,6 +75,12 @@ async function seedPosts(users, communities = []) {
         createdAt,
         updatedAt: createdAt
       });
+      
+      // Track community post count
+      if (community) {
+        const communityId = community.toString();
+        communityPostCounts.set(communityId, (communityPostCounts.get(communityId) || 0) + 1);
+      }
       
       posts.push(post);
     }
@@ -106,6 +116,12 @@ async function seedPosts(users, communities = []) {
         updatedAt: createdAt
       });
       
+      // Track community post count
+      if (community) {
+        const communityId = community.toString();
+        communityPostCounts.set(communityId, (communityPostCounts.get(communityId) || 0) + 1);
+      }
+      
       posts.push(post);
     }
     
@@ -139,6 +155,12 @@ async function seedPosts(users, communities = []) {
         createdAt,
         updatedAt: createdAt
       });
+      
+      // Track community post count
+      if (community) {
+        const communityId = community.toString();
+        communityPostCounts.set(communityId, (communityPostCounts.get(communityId) || 0) + 1);
+      }
       
       posts.push(post);
     }
@@ -185,7 +207,14 @@ async function seedPosts(users, communities = []) {
     await User.findByIdAndUpdate(userId, { postsCount: count });
   }
   
+  // 6. Update community post counts
+  console.log("   🏘️  Updating community post counts...");
+  for (const [communityId, count] of communityPostCounts) {
+    await Community.findByIdAndUpdate(communityId, { postCount: count });
+  }
+  
   console.log(`✅ Posts seeded: ${posts.length} total (including ${repostCount} reposts)`);
+  console.log(`   📊 Posts assigned to communities: ${Array.from(communityPostCounts.values()).reduce((a, b) => a + b, 0)}`);
   
   return posts;
 }
