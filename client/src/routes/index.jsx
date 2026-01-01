@@ -7,6 +7,8 @@ import AuthLoginController from "@pages/auth/AuthLoginController";
 import RegisterController from "@pages/auth/RegisterController";
 import PasswordResetRequestController from "@pages/auth/PasswordResetRequestController";
 import PasswordResetConfirmController from "@pages/auth/PasswordResetConfirmController";
+import EmailVerifyPage from "@pages/auth/EmailVerifyPage";
+import ResendVerificationPage from "@pages/auth/ResendVerificationPage";
 import FeedHomeController from "@pages/feed/FeedHomeController";
 import FeedFollowingController from "@pages/feed/FeedFollowingController";
 import FeedTrendingController from "@pages/feed/FeedTrendingController";
@@ -28,10 +30,18 @@ const NotFoundPage = () => <div>404 - Page Not Found</div>;
 
 const router = createBrowserRouter([
   {
-    element: <PublicRoute />,
+    element: <AuthLayout />,
     children: [
       {
-        element: <AuthLayout />,
+        path: "/verify-email",
+        element: <EmailVerifyPage />,
+      },
+      {
+        path: "/resend-verification",
+        element: <ResendVerificationPage />,
+      },
+      {
+        element: <PublicRoute />,
         children: [
           {
             path: "/login",
@@ -48,6 +58,14 @@ const router = createBrowserRouter([
           {
             path: "/password-reset/confirm",
             element: <PasswordResetConfirmController />,
+          },
+          {
+            path: "/verify-email",
+            element: <EmailVerifyPage />,
+          },
+          {
+            path: "/resend-verification",
+            element: <ResendVerificationPage />,
           },
         ],
       },

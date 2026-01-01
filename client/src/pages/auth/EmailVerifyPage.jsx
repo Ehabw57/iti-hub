@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useSearchParams, Link, useNavigate } from "react-router-dom";
 import { useIntlayer } from "react-intlayer";
 import { Card, Button, ErrorDisplay } from "@components/common";
@@ -12,16 +12,27 @@ export default function EmailVerifyPage() {
 
   const token = searchParams.get("token");
   const verifyEmailMutation = useVerifyEmail();
+  
+  // Track if verification was attempted to prevent infinite loop
+  const hasAttemptedVerification = useRef(false);
 
   const [status, setStatus] = useState("loading");
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    // Prevent multiple verification attempts
+    if (hasAttemptedVerification.current) {
+      return;
+    }
+
     if (!token) {
       setStatus("error");
       setError(t.errorInvalidToken);
       return;
     }
+
+    // Mark as attempted
+    hasAttemptedVerification.current = true;
 
     verifyEmailMutation.mutate(
       { token },
@@ -35,17 +46,18 @@ export default function EmailVerifyPage() {
 
           if (code === "EMAIL_ALREADY_VERIFIED") {
             setError(t.errorAlreadyVerified);
-          } else if (code === "INVALID_VERIFICATION_TOKEN") {
+          } else if (code === "INVALID_VERIFICATION_TOKEN" || code === "TOKEN_EXPIRED") {
             setError(t.errorInvalidToken);
           } else {
-            setError(t.networkError);
+            setError(err.response?.data?.error?.message || t.networkError);
           }
 
           setStatus("error");
         },
       }
     );
-  }, [token, navigate, t, verifyEmailMutation]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]); // Only re-run if token changes
 
   return (
     <Card className="w-full max-w-md mx-auto">
@@ -72,11 +84,18 @@ export default function EmailVerifyPage() {
         {status === "error" && (
           <>
             <ErrorDisplay error={{ message: error }} />
-            <Link to="/login">
-              <Button variant="secondary" className="w-full">
-                {t.backToLogin}
-              </Button>
-            </Link>
+            <div className="space-y-3">
+              <Link to="/resend-verification" className="block">
+                <Button variant="primary" className="w-full">
+                  {t.resendLink}
+                </Button>
+              </Link>
+              <Link to="/login">
+                <Button variant="secondary" className="w-full">
+                  {t.backToLogin}
+                </Button>
+              </Link>
+            </div>
           </>
         )}
       </div>
