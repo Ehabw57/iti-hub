@@ -38,8 +38,8 @@ async function seed() {
     await seedCommunityMembers(users, communities);
     console.log("");
 
-    // 6️⃣ Seed posts
-    const posts = await seedPosts(users);
+    // 6️⃣ Seed posts (pass communities so posts can be assigned to them)
+    const posts = await seedPosts(users, communities);
     console.log("");
 
     // 7️⃣ Seed comments
