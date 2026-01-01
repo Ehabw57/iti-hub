@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const { asyncHandler } = require('../../middlewares/errorHandler');
 const { ValidationError, ConflictError } = require('../../utils/errors');
 const { sendCreated } = require('../../utils/responseHelpers');
+const sendEmail = require('../../utils/sendEmail');
 
 /**
  * @route   POST /auth/register
@@ -90,7 +91,22 @@ exports.register = asyncHandler(async (req, res) => {
     profilePicture: 'https://i.pinimg.com/736x/b3/3d/80/b33d80ebe729d3af6330ed2ee0f424fa.jpg'
   });
 
+  const verificationToken = newUser.generateEmailVerificationToken();
+
   await newUser.save();
+
+  const verifyLink = `http://localhost:5173/verify-email?token=${verificationToken}`;
+
+await sendEmail({
+  to: newUser.email,
+  subject: 'Verify your email',
+  html: `
+    <h2>Welcome 👋</h2>
+    <p>Please verify your email by clicking the link below:</p>
+    <a href="${verifyLink}">Verify Email</a>
+    <p>This link will expire in 24 hours.</p>
+  `
+});
 
   // Generate JWT token
   const token = jwt.sign(

@@ -13,6 +13,7 @@
 const { register } = require('./registerController');
 const { login } = require('./loginController');
 const { requestPasswordReset, confirmPasswordReset } = require('./passwordResetController');
+const { verifyEmail } = require('./emailVerificationController');
 
 module.exports = {
   // Registration
@@ -23,5 +24,6 @@ module.exports = {
   
   // Password Reset
   requestPasswordReset,
-  confirmPasswordReset
+  confirmPasswordReset,
+  verifyEmail
 };
