@@ -16,6 +16,7 @@ export default defineConfig({
       "@store": path.resolve(__dirname, "./src/store"),
       "@content": path.resolve(__dirname, "./src/content"),
       "@layout": path.resolve(__dirname, "./src/layout"),
+      "@intlayer": path.resolve(__dirname, ".intlayer"),
     },
   },
   test: {

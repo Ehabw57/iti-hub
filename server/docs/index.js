@@ -1,15 +1,22 @@
 const YAML = require("yamljs");
+const path = require("path");
 
-const authDoc = YAML.load("./docs/auth.yaml");
-const userDoc = YAML.load("./docs/user.yaml");
-const connectionDoc = YAML.load("./docs/connection.yaml");
-const postDoc = YAML.load("./docs/post.yaml");
-const commentDoc = YAML.load("./docs/comment.yaml");
-const feedDoc = YAML.load("./docs/feed.yaml");
-const communityDoc = YAML.load("./docs/community.yaml");
-const conversationDoc = YAML.load("./docs/conversation.yaml");
-const notificationDoc = YAML.load("./docs/notification.yaml");
-const searchDoc = YAML.load("./docs/search.yaml");
+const load = (file) =>
+  YAML.load(path.join(__dirname, file));
+
+const authDoc = load("auth.yaml");
+const userDoc = load("user.yaml");
+const connectionDoc = load("connection.yaml");
+const postDoc = load("post.yaml");
+const commentDoc = load("comment.yaml");
+const feedDoc = load("feed.yaml");
+const communityDoc = load("community.yaml");
+const conversationDoc = load("conversation.yaml");
+const notificationDoc = load("notification.yaml");
+const searchDoc = load("search.yaml");
+const adminDoc = load("admin.yaml");
+const aiDoc = load("ai.yaml");
+
 
 const base = {
   openapi: "3.0.0",
@@ -61,6 +68,14 @@ const base = {
     {
       name: "Search",
       description: "Search for users, posts, and communities with filtering and pagination"
+    },
+    {
+      name: "Admin",
+      description: "Administrative operations for platform management (requires admin role)"
+    },
+    {
+      name: "AI",
+      description: "AI-powered features for content generation and Q&A"
     }
   ],
   paths: {}
@@ -79,7 +94,9 @@ const swaggerDocument = {
     ...communityDoc.paths,
     ...conversationDoc.paths,
     ...notificationDoc.paths,
-    ...searchDoc.paths
+    ...searchDoc.paths,
+    ...adminDoc.paths,
+    ...aiDoc.paths
   },
   components: {
     schemas: {
@@ -93,7 +110,9 @@ const swaggerDocument = {
       ...(communityDoc.components?.schemas || {}),
       ...(conversationDoc.components?.schemas || {}),
       ...(notificationDoc.components?.schemas || {}),
-      ...(searchDoc.components?.schemas || {})
+      ...(searchDoc.components?.schemas || {}),
+      ...(adminDoc.components?.schemas || {}),
+      ...(aiDoc.components?.schemas || {})
     },
     securitySchemes: {
       ...(base.components?.securitySchemes || {}),
@@ -106,7 +125,9 @@ const swaggerDocument = {
       ...(communityDoc.components?.securitySchemes || {}),
       ...(conversationDoc.components?.securitySchemes || {}),
       ...(notificationDoc.components?.securitySchemes || {}),
-      ...(searchDoc.components?.securitySchemes || {})
+      ...(searchDoc.components?.securitySchemes || {}),
+      ...(adminDoc.components?.securitySchemes || {}),
+      ...(aiDoc.components?.securitySchemes || {})
     },
     responses: {
       ...(base.components?.responses || {}),
@@ -119,7 +140,9 @@ const swaggerDocument = {
       ...(communityDoc.components?.responses || {}),
       ...(conversationDoc.components?.responses || {}),
       ...(notificationDoc.components?.responses || {}),
-      ...(searchDoc.components?.responses || {})
+      ...(searchDoc.components?.responses || {}),
+      ...(adminDoc.components?.responses || {}),
+      ...(aiDoc.components?.responses || {})
     }
   },
   tags: [
@@ -133,7 +156,9 @@ const swaggerDocument = {
     ...(communityDoc.tags || []),
     ...(conversationDoc.tags || []),
     ...(notificationDoc.tags || []),
-    ...(searchDoc.tags || [])
+    ...(searchDoc.tags || []),
+    ...(adminDoc.tags || []),
+    ...(aiDoc.tags || [])
   ]
 };
 module.exports = swaggerDocument;
