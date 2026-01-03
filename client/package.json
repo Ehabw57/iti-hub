@@ -6,7 +6,7 @@
   "scripts": {
     "build:dic": "intlayer build",
     "dev": "vite",
-    "build": "vite build",
+    "build": "npm run build:dic && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest",
