@@ -3,8 +3,6 @@ const http = require("http");
 const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
-const swaggerUi = require("swagger-ui-express");
-const swaggerDocument = require("./docs/index");
 
 const authRoute = require("./routes/authRoutes");
 const commentRoute = require("./routes/commentRoutes");
@@ -32,12 +30,21 @@ initializeSocketServer(server);
 const PORT = process.env.PORT || 3030;
 const DBURL = process.env.DB_URL || "mongodb://127.0.0.1:27017/iti-hub";
 
-const delayResponse = (ms) => {
-  return (req, res, next) => {
-    setTimeout(next, ms);
-  }
-};
-app.use(delayResponse(300)); 
+if (process.env.NODE_ENV === "dev") {
+
+  const swaggerUi = require("swagger-ui-express");
+  const swaggerDocument = require("./docs");
+
+  const delayResponse = (ms) => {
+    return (req, res, next) => {
+      setTimeout(next, ms);
+    }
+  };
+
+  app.use(delayResponse(300));
+  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+  console.log(`Docs at http://localhost:${PORT}/api-docs`);
+}
 
 app.use(express.json());
 app.use(cors());
@@ -53,7 +60,6 @@ app.use("/notifications", notificationRoutes);
 app.use("/search", searchRoutes);
 app.use("/admin", adminRoutes);
 app.use("/ai", aiRoutes);
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.get("/", (req, res) => {
   res.send(
     "Hi if you are see this message!, that means that the server is running :)"
@@ -85,7 +91,6 @@ if (process.env.NODE_ENV !== "test") {
       console.log("Connected to DB", DBURL);
       server.listen(PORT, () => {
         console.log(`Server is running on http://localhost:${PORT}`);
-        console.log(`Docs at http://localhost:${PORT}/api-docs`);
       });
     })
     .catch((err) => {
