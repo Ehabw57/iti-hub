@@ -6,6 +6,7 @@ import authProviderContent from '@/content/auth/provider.content';
 
 export default function AuthProvider({ children }) {
   const content = useIntlayer(authProviderContent.key);
+  console.log('AuthProvider content:', content);
   const [isVerifying, setIsVerifying] = useState(true);
 
   const {
@@ -57,8 +58,11 @@ export default function AuthProvider({ children }) {
       <div className="fixed inset-0 flex items-center justify-center bg-neutral-50 z-50">
         <div className="text-center">
           <div className="mb-4">
-            <div className="w-18 h-18 mx-auto bg-primary-600 rounded-full flex items-center justify-center animate-pulse">
-              <span className="text-sm font-bold text-white">ITI HUB</span>
+            <div className="w-18 h-18 mx-auto animate-pulse">
+              <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+                <circle cx="16" cy="16" r="16" fill="#ef4444" />
+                <text x="16" y="21" textAnchor="middle" fontSize="14" fontWeight="bold" fill="#fff" fontFamily="Inter, sans-serif">iti</text>
+              </svg>
             </div>
           </div>
 
