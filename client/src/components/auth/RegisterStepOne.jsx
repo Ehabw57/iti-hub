@@ -1,9 +1,12 @@
 import { useIntlayer } from "react-intlayer";
 import { Input, Button } from "@components/common";
+import GoogleSignInButton from "@components/auth/GoogleSignInButton";
 import registerContent from "@/content/auth/register.content";
+import googleAuthContent from "@/content/auth/google-auth.content";
 
-export default function RegisterStepOne({ email, errors, onChange, onNext, checking }) {
+export default function RegisterStepOne({ email, errors, onChange, onNext, checking, onGoogleSuccess }) {
   const t = useIntlayer(registerContent.key);
+  const g = useIntlayer(googleAuthContent.key);
 
   const handleInputChange = (e) => {
     onChange({ [e.target.name]: e.target.value });
@@ -43,6 +46,15 @@ export default function RegisterStepOne({ email, errors, onChange, onNext, check
       >
         {t.nextButton}
       </Button>
+
+      {/* Divider + Google Sign-In — signing in with Google skips the wizard */}
+      <div className="flex items-center gap-3">
+        <div className="h-px flex-1 bg-neutral-200" />
+        <span className="text-xs text-neutral-500">{g.orContinueWith}</span>
+        <div className="h-px flex-1 bg-neutral-200" />
+      </div>
+
+      <GoogleSignInButton onSuccess={onGoogleSuccess} disabled={checking} />
     </form>
   );
 }

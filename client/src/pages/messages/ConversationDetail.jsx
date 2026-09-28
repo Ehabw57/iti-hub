@@ -17,6 +17,7 @@ import ConversationHeader from '@components/messaging/ConversationHeader';
 import MessageList from '@components/messaging/MessageList';
 import MessageInput from '@components/messaging/MessageInput';
 import TypingIndicator from '@components/messaging/TypingIndicator';
+import GroupSettingsModal from '@components/messaging/GroupSettingsModal';
 import Loading from '@components/common/Loading';
 import ErrorDisplay from '@components/common/ErrorDisplay';
 
@@ -125,7 +126,7 @@ export function ConversationDetail() {
   // Loading state
   if (conversationLoading || (messagesLoading && messages.length === 0)) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center h-full">
         <Loading text={content.loadingMessages.value} />
       </div>
     );
@@ -134,7 +135,7 @@ export function ConversationDetail() {
   // Error state
   if (conversationError || messagesError) {
     return (
-      <div className="flex items-center justify-center h-screen p-4">
+      <div className="flex items-center justify-center h-full p-4">
         <ErrorDisplay
           error={{
             message: conversationError
@@ -151,7 +152,7 @@ export function ConversationDetail() {
   // No conversation found
   if (!conversation) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center h-full">
         <div className="text-center">
           <p className="text-heading-6 text-neutral-900 mb-4">
             Conversation not found
@@ -168,7 +169,7 @@ export function ConversationDetail() {
   }
 
   return (
-    <div className=" flex flex-col h-full bg-white">
+    <div className=" flex flex-col h-full min-w-0 bg-neutral-100">
       {/* Header */}
       <ConversationHeader
         conversation={conversation}
@@ -209,9 +210,14 @@ export function ConversationDetail() {
         disabled={sendMessage.isPending}
       />
 
-      {/* Group Management Modal (TODO: Implement) */}
-      {showGroupManagement && (
-        <div>Group Management Modal</div>
+      {/* Group Settings panel (info button opens it for groups) */}
+      {showGroupManagement && isGroup && (
+        <GroupSettingsModal
+          isOpen={showGroupManagement}
+          onClose={() => setShowGroupManagement(false)}
+          conversation={conversation}
+          currentUserId={currentUser?._id}
+        />
       )}
     </div>
   );

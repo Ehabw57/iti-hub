@@ -34,7 +34,8 @@ const {
 const adminRouter = express.Router();
 
 // Apply auth middleware to all admin routes
-adminRouter.use(checkAuth, authorize('admin'));
+// Legacy "admin" and new "super_admin" both have platform admin access.
+adminRouter.use(checkAuth, authorize('admin', 'super_admin'));
 
 // =============================================================================
 // STATISTICS ROUTES

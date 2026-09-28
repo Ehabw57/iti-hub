@@ -16,6 +16,7 @@ const SENSITIVE_USER_FIELDS = [
   'password',
   'resetPasswordToken',
   'resetPasswordExpires',
+  'googleId',
   'isBlocked',
   'blockReason'
 ];
@@ -58,7 +59,23 @@ const NOTIFICATION_TYPES = {
   REPLY: 'reply',
   COMMENT_LIKE: 'comment_like',
   REPOST: 'repost',
-  FOLLOW: 'follow'
+  FOLLOW: 'follow',
+  // Track enrollment request flow: managers are notified of new requests and
+  // the requester is notified of the approve/reject decision (target = Track).
+  ENROLLMENT_REQUEST: 'enrollment_request',
+  ENROLLMENT_APPROVED: 'enrollment_approved',
+  ENROLLMENT_REJECTED: 'enrollment_rejected',
+  // Community-group join-request flow: group admins are notified of new
+  // requests and the requester is notified of the decision (target = CommunityGroup).
+  GROUP_JOIN_REQUEST: 'group_join_request',
+  GROUP_JOIN_APPROVED: 'group_join_approved',
+  GROUP_JOIN_REJECTED: 'group_join_rejected',
+  // Legacy-community join-request flow (Round 3 work order §4): community
+  // owners/moderators are notified of new requests and the requester is
+  // notified of the decision (target = Community).
+  COMMUNITY_JOIN_REQUEST: 'community_join_request',
+  COMMUNITY_JOIN_APPROVED: 'community_join_approved',
+  COMMUNITY_JOIN_REJECTED: 'community_join_rejected'
 };
 
 // Groupable notification types (for aggregation)
@@ -72,7 +89,13 @@ const GROUPABLE_NOTIFICATION_TYPES = [
 // Non-groupable notification types (individual notifications)
 const NON_GROUPABLE_NOTIFICATION_TYPES = [
   NOTIFICATION_TYPES.REPOST,
-  NOTIFICATION_TYPES.FOLLOW
+  NOTIFICATION_TYPES.FOLLOW,
+  NOTIFICATION_TYPES.ENROLLMENT_REQUEST,
+  NOTIFICATION_TYPES.ENROLLMENT_APPROVED,
+  NOTIFICATION_TYPES.ENROLLMENT_REJECTED,
+  NOTIFICATION_TYPES.GROUP_JOIN_REQUEST,
+  NOTIFICATION_TYPES.GROUP_JOIN_APPROVED,
+  NOTIFICATION_TYPES.GROUP_JOIN_REJECTED
 ];
 
 // Messaging Validation
@@ -98,10 +121,10 @@ const CONVERSATION_TYPES = {
 
 // Community Validation
 const COMMUNITY_TAGS = [
-  'technology',
+  'Technology',
   'Education',
   'Science',
-  'arts',
+  'Arts',
   'Sports',
   'Gaming',
   'Music',
@@ -205,6 +228,7 @@ const CLOUDINARY_FOLDER_POST = 'post-images';
 const CLOUDINARY_FOLDER_MESSAGE = 'message-images';
 const CLOUDINARY_FOLDER_COMMUNITY_PROFILE = 'community-profile-pictures';
 const CLOUDINARY_FOLDER_COMMUNITY_COVER = 'community-cover-images';
+const CLOUDINARY_FOLDER_BRANCH_IMAGES = 'branch-images';
 
 // ========================================
 // SEED DATA CONSTANTS
@@ -381,6 +405,7 @@ module.exports = {
   CLOUDINARY_FOLDER_MESSAGE,
   CLOUDINARY_FOLDER_COMMUNITY_PROFILE,
   CLOUDINARY_FOLDER_COMMUNITY_COVER,
+  CLOUDINARY_FOLDER_BRANCH_IMAGES,
 
   // Post fields
   PUBLIC_POST_FIELDS,

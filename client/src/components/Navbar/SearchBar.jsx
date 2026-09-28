@@ -65,26 +65,29 @@ export default function SearchBar() {
 
   return (
     <div className="md:relative h-11 flex items-center w-full lg:w-auto justify-end">
-      {/* Search input */}
+      {/* Search input — pill style */}
       <div
         ref={inputRef}
         className={clsx(
-          "flex items-center md:relative",
-          searchOpen ? "w-full" : "w-0 overflow-hidden lg:w-80 lg:overflow-visible"
+          "flex items-center relative",
+          searchOpen ? "w-full" : "w-0 overflow-hidden lg:w-96 lg:overflow-visible"
         )}
       >
-        <input
-          ref={inputElementRef}
-          type="text"
-          className="text-body-2 px-3 py-2 h-7 rounded-lg bg-neutral-50 border border-neutral-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 w-full"
-          placeholder={content.searchPlaceholder.value}
-          value={searchValue}
-          onChange={handleInputChange}
-          onKeyDown={handleKeyDown}
-          onFocus={() => setShowDropdown(searchValue.trim().length > 0)}
-          aria-label={content.searchPlaceholder}
-          tabIndex={0}
-        />
+        <div className="relative w-full">
+          <HiMagnifyingGlass className="w-5 h-5 text-neutral-500 absolute ltr:left-4 rtl:right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <input
+            ref={inputElementRef}
+            type="text"
+            className="text-body-2 ps-12 pe-4 h-11 rounded-full bg-surface border border-transparent text-neutral-700 placeholder:text-neutral-500 focus:outline-none focus:border-primary-400 focus:bg-surface-lowest focus-visible:ring-2 focus-visible:ring-primary-100 w-full transition-colors"
+            placeholder={content.searchPlaceholder.value}
+            value={searchValue}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+            onFocus={() => setShowDropdown(searchValue.trim().length > 0)}
+            aria-label={content.searchPlaceholder}
+            tabIndex={0}
+          />
+        </div>
         {/* Collapse button (mobile only) */}
         <button
           type="button"
@@ -99,7 +102,7 @@ export default function SearchBar() {
 
         {/* Quick results dropdown */}
         {showDropdown && searchValue.trim().length > 0 && (
-          <div className="absolute w-screen md:w-81 lg:w-74 top-full rtl:right-1 ltr:left-0  mt-2 bg-white rounded-lg border border-neutral-200 shadow-sm z-10 max-h-96 overflow-y-auto ">
+          <div className="absolute w-screen md:w-96 top-full rtl:right-auto ltr:left-0 mt-2 bg-surface-lowest rounded-xl border border-outline shadow-elevation-2 z-10 max-h-96 overflow-y-auto no-scrollbar">
             {fastLoading ? (
               <div className="flex items-center justify-center p-4 text-neutral-500 gap-2">
                 <ImSpinner2 className="animate-spin w-5 h-5 text-primary-500" />

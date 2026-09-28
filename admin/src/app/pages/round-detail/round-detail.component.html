@@ -1,0 +1,217 @@
+<div class="round-detail-page">
+  <header class="page-header">
+    <div class="header-titles">
+      <a class="back-link" [routerLink]="['/branches', branchId]">← {{ i18n.t('structure.backToRounds') }}</a>
+      <h1 class="text-heading-2">
+        @if (branch(); as b) {
+          {{ b.name }} /
+        }
+        @if (round(); as r) {
+          {{ r.name }}
+        }
+      </h1>
+      @if (round(); as r) {
+        <span class="badge" [class.badge-active]="r.isActive" [class.badge-inactive]="!r.isActive">
+          {{ r.isActive ? i18n.t('structure.active') : i18n.t('structure.inactive') }}
+        </span>
+      }
+    </div>
+    <button class="btn btn-primary" (click)="openCreateModal()">
+      {{ i18n.t('structure.addTrack') }}
+    </button>
+  </header>
+
+  @if (successMessage()) {
+    <div class="success-message">{{ successMessage() }}</div>
+  }
+  @if (errorMessage()) {
+    <div class="error-message">{{ errorMessage() }}</div>
+  }
+
+  @if (isLoading()) {
+    <div class="loading-state"><span class="spinner-lg"></span></div>
+  } @else {
+    <div class="table-container card">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>{{ i18n.t('structure.trackName') }}</th>
+            <th>{{ i18n.t('structure.instructors') }}</th>
+            <th>{{ i18n.t('structure.students') }}</th>
+            <th>{{ i18n.t('common.actions') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (track of tracks(); track track._id) {
+            <tr>
+              <td>
+                <div class="track-name">{{ track.name }}</div>
+                @if (track.category) {
+                  <span class="track-category {{ categoryClass(track.category) }}">
+                    {{ categoryLabel(track.category) }}
+                  </span>
+                }
+                @if (track.description) {
+                  <div class="track-desc">{{ track.description }}</div>
+                }
+              </td>
+              <td>{{ instructorNames(track) }}</td>
+              <td>{{ track.studentCount ?? 0 }}</td>
+              <td>
+                <div class="actions">
+                  <button class="btn btn-sm btn-primary" (click)="openMembersModal(track)">
+                    {{ i18n.t('structure.members') }}
+                  </button>
+                  <button
+                    class="btn btn-sm btn-secondary"
+                    (click)="openEditModal(track)"
+                    [disabled]="actionLoading() === track._id"
+                  >
+                    {{ i18n.t('common.edit') }}
+                  </button>
+                  <button
+                    class="btn btn-sm btn-danger"
+                    (click)="confirmDelete(track)"
+                    [disabled]="actionLoading() === track._id"
+                  >
+                    {{ i18n.t('common.delete') }}
+                  </button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="4" class="empty-cell">{{ i18n.t('common.noResults') }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  <!-- Create / Edit Track Modal -->
+  @if (showFormModal()) {
+    <div class="modal-overlay" (click)="closeFormModal()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <h3 class="text-heading-5 modal-title">
+          {{ editingTrack() ? i18n.t('structure.editTrack') : i18n.t('structure.addTrack') }}
+        </h3>
+
+        <label class="field-label">{{ i18n.t('structure.trackName') }}</label>
+        <input type="text" class="input" [(ngModel)]="formName" />
+
+        <label class="field-label">{{ i18n.t('structure.category') }}</label>
+        <select class="input" [(ngModel)]="formCategory">
+          @for (cat of trackCategories; track cat) {
+            <option [value]="cat">{{ categoryLabel(cat) }}</option>
+          }
+        </select>
+
+        <label class="field-label">{{ i18n.t('structure.description') }}</label>
+        <textarea class="input" rows="3" [(ngModel)]="formDescription"></textarea>
+
+        <div class="modal-actions">
+          <button class="btn btn-secondary" (click)="closeFormModal()">{{ i18n.t('common.cancel') }}</button>
+          <button class="btn btn-primary" (click)="submitForm()" [disabled]="!formName.trim()">
+            {{ i18n.t('common.save') }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Delete Confirmation Modal -->
+  @if (showConfirmModal()) {
+    <div class="modal-overlay" (click)="cancelDelete()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <h3 class="text-heading-5 modal-title">{{ i18n.t('common.confirm') }}</h3>
+        <p class="text-body-2 modal-message">{{ i18n.t('structure.confirmDeleteTrack') }}</p>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" (click)="cancelDelete()">{{ i18n.t('common.cancel') }}</button>
+          <button class="btn btn-danger" (click)="executeDelete()">{{ i18n.t('common.confirm') }}</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Members Modal -->
+  @if (showMembersModal()) {
+    <div class="modal-overlay" (click)="closeMembersModal()">
+      <div class="modal modal-wide" (click)="$event.stopPropagation()">
+        <h3 class="text-heading-5 modal-title">
+          {{ i18n.t('structure.members') }} — {{ membersTrack()?.name }}
+        </h3>
+
+        @if (membersLoading()) {
+          <div class="loading-state"><span class="spinner-lg"></span></div>
+        } @else {
+          <div class="members-columns">
+            <div class="members-col">
+              <h4 class="text-heading-6">{{ i18n.t('structure.instructors') }} ({{ instructors().length }})</h4>
+              @for (u of instructors(); track u._id) {
+                <div class="member-row">
+                  <span>{{ u.fullName }} <span class="member-username">&#64;{{ u.username }}</span></span>
+                  <button class="btn btn-sm btn-danger" (click)="removeMember(u, 'instructor')">
+                    {{ i18n.t('structure.removeMember') }}
+                  </button>
+                </div>
+              } @empty {
+                <p class="empty-members">{{ i18n.t('structure.noMembers') }}</p>
+              }
+            </div>
+            <div class="members-col">
+              <h4 class="text-heading-6">{{ i18n.t('structure.students') }} ({{ students().length }})</h4>
+              @for (u of students(); track u._id) {
+                <div class="member-row">
+                  <span>{{ u.fullName }} <span class="member-username">&#64;{{ u.username }}</span></span>
+                  <button class="btn btn-sm btn-danger" (click)="removeMember(u, 'student')">
+                    {{ i18n.t('structure.removeMember') }}
+                  </button>
+                </div>
+              } @empty {
+                <p class="empty-members">{{ i18n.t('structure.noMembers') }}</p>
+              }
+            </div>
+          </div>
+
+          <div class="member-search">
+            <h4 class="text-heading-6">{{ i18n.t('structure.assignMember') }}</h4>
+            <div class="member-search-row">
+              <select class="input role-select" [(ngModel)]="memberSearchRole">
+                <option value="instructor">{{ i18n.t('structure.instructors') }}</option>
+                <option value="student">{{ i18n.t('structure.students') }}</option>
+              </select>
+              <input
+                type="text"
+                class="input"
+                [placeholder]="i18n.t('structure.searchUsers')"
+                [(ngModel)]="memberSearchQuery"
+                (keyup.enter)="searchUsers()"
+              />
+              <button class="btn btn-secondary" (click)="searchUsers()" [disabled]="searching()">
+                {{ i18n.t('common.search') }}
+              </button>
+            </div>
+
+            @for (u of searchResults(); track u._id) {
+              <div class="member-row search-result">
+                <span>{{ u.fullName }} <span class="member-username">&#64;{{ u.username }}</span></span>
+                <button class="btn btn-sm btn-primary" (click)="assignUser(u)">
+                  {{ i18n.t('structure.assignMember') }}
+                </button>
+              </div>
+            } @empty {
+              @if (hasSearched()) {
+                <p class="empty-members">{{ i18n.t('structure.noSearchResults') }}</p>
+              }
+            }
+          </div>
+        }
+
+        <div class="modal-actions">
+          <button class="btn btn-secondary" (click)="closeMembersModal()">{{ i18n.t('common.back') }}</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

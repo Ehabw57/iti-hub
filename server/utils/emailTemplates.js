@@ -70,15 +70,7 @@ const createEmailTemplate = ({
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td align="center">
-                    <!-- SVG Logo -->
-                    <svg width="48" height="48" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: block; margin: 0 auto;">
-                      <circle cx="16" cy="16" r="16" fill="#2563eb"/>
-                      <text x="16" y="21" text-anchor="middle" font-size="14" font-weight="bold" fill="#ffffff" font-family="Inter, -apple-system, BlinkMacSystemFont, sans-serif">iti</text>
-                    </svg>
-                    <!-- Brand name -->
-                    <div style="margin-top: 12px; font-size: 24px; font-weight: 700; color: #1e40af; letter-spacing: -0.5px;">
-                      itiHub
-                    </div>
+                    <img src="cid:iti-hub-logo" alt="ITI Hub" width="180" height="180" style="display:block; margin:0 auto; border:0;" />
                   </td>
                 </tr>
               </table>
@@ -226,7 +218,7 @@ const getPasswordResetConfirmationTemplate = (userName = '') => {
       <p style="margin: 0;"><strong>If you didn't make this change, please contact our support team immediately.</strong></p>
     `,
     buttonText: 'Go to Login',
-    buttonUrl: 'http://localhost:5173/login'
+    buttonUrl: `${process.env.FRONTEND_BASE_URL || 'http://localhost:5173'}/login`
   });
 };
 

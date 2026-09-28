@@ -29,8 +29,12 @@
       <div class="filter-group">
         <select class="input" [(ngModel)]="roleFilter" (change)="onFilterChange()">
           <option value="">{{ i18n.t('users.filterByRole') }}</option>
-          <option value="user">User</option>
-          <option value="admin">Admin</option>
+          <option value="student">{{ i18n.t('users.role_student') }}</option>
+          <option value="instructor">{{ i18n.t('users.role_instructor') }}</option>
+          <option value="branch_admin">{{ i18n.t('users.role_branch_admin') }}</option>
+          <option value="super_admin">{{ i18n.t('users.role_super_admin') }}</option>
+          <option value="user">{{ i18n.t('users.role_user_legacy') }}</option>
+          <option value="admin">{{ i18n.t('users.role_admin_legacy') }}</option>
         </select>
         
         <select class="input" [(ngModel)]="statusFilter" (change)="onFilterChange()">
@@ -86,15 +90,69 @@
               <td>{{ user.email }}</td>
               <td>{{ user.fullName }}</td>
               <td>
-                <select 
-                  class="input role-select" 
-                  [value]="user.role"
-                  (change)="changeRole(user, $any($event.target).value)"
-                  [disabled]="actionLoading() === user._id"
-                >
-                  <option value="user">User</option>
-                  <option value="admin">Admin</option>
-                </select>
+                <!-- Role display + inline assignment editor (role-fix doc) -->
+                @if (roleEditingUserId() === user._id) {
+                  <div class="role-editor">
+                    <select
+                      class="input role-select"
+                      [(ngModel)]="roleDraft"
+                      [disabled]="actionLoading() === user._id"
+                    >
+                      @for (role of allowedRoleOptions; track role) {
+                        <option [value]="role">{{ i18n.t('users.role_' + role) }}</option>
+                      }
+                    </select>
+
+                    @if (roleRequiresBranch(roleDraft())) {
+                      <select
+                        class="input branch-select"
+                        [(ngModel)]="branchDraft"
+                        [disabled]="actionLoading() === user._id"
+                      >
+                        <option value="">{{ i18n.t('users.selectBranch') }}</option>
+                        @for (branch of branches(); track branch._id) {
+                          <option [value]="branch._id">{{ branch.name }}</option>
+                        }
+                      </select>
+                    } @else if (roleDraft() === 'instructor') {
+                      <p class="role-hint">{{ i18n.t('users.instructorHint') }}</p>
+                    }
+
+                    @if (roleError() && roleEditingUserId() === user._id) {
+                      <p class="role-error">{{ roleError() }}</p>
+                    }
+
+                    <div class="role-editor-actions">
+                      <button
+                        class="btn btn-sm btn-primary"
+                        (click)="saveRole(user)"
+                        [disabled]="actionLoading() === user._id"
+                      >
+                        {{ i18n.t('common.save') }}
+                      </button>
+                      <button
+                        class="btn btn-sm btn-secondary"
+                        (click)="cancelRoleEdit()"
+                        [disabled]="actionLoading() === user._id"
+                      >
+                        {{ i18n.t('common.cancel') }}
+                      </button>
+                    </div>
+                  </div>
+                } @else {
+                  <div class="role-cell">
+                    <span class="role-badge" [class.role-badge-admin]="superAdminOnlyRoles.includes(displayRole(user.role))">
+                      {{ roleLabel(user.role) }}
+                    </span>
+                    <button
+                      class="btn btn-sm btn-secondary"
+                      (click)="openRoleEditor(user)"
+                      [disabled]="actionLoading() === user._id"
+                    >
+                      {{ i18n.t('users.changeRole') }}
+                    </button>
+                  </div>
+                }
               </td>
               <td>
                 @if (user.isBlocked) {

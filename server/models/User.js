@@ -27,6 +27,14 @@ const UserSchema = new mongoose.Schema(
       required: true,
       select: false, // Don't return password by default
     },
+    // Google Sign-In — Google account subject identifier ("sub" claim).
+    // Set when a user signs in with Google; null for password-only accounts.
+    googleId: {
+      type: String,
+      default: null,
+      select: false,
+      index: true,
+    },
     fullName: {
       type: String,
       required: true,
@@ -59,9 +67,20 @@ const UserSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["user", "admin"],
+      enum: ["user", "admin", "super_admin", "branch_admin", "instructor", "student"],
       default: "user",
     },
+    // Branch assignment (for branch_admin / instructor / student)
+    branchId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Branch",
+      default: null,
+    },
+    // Tracks the user belongs to (as instructor or student)
+    trackIds: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Track",
+    }],
     isBlocked: {
       type: Boolean,
       default: false,
@@ -111,6 +130,15 @@ const UserSchema = new mongoose.Schema(
 
     emailVerificationExpires: {
       type: Date,
+    },
+
+    // Notification preferences for the Settings page
+    notificationPreferences: {
+      email: { type: Boolean, default: true },
+      push: { type: Boolean, default: true },
+      mentions: { type: Boolean, default: true },
+      messages: { type: Boolean, default: true },
+      communityUpdates: { type: Boolean, default: true },
     },
   },
   { timestamps: true, versionKey: false }

@@ -1,9 +1,46 @@
 const getCommunity = require('../../../controllers/community/getCommunityController');
 const Community = require('../../../models/Community');
 const CommunityMember = require('../../../models/CommunityMember');
+const CommunityJoinRequest = require('../../../models/CommunityJoinRequest');
 const User = require('../../../models/User');
 const { connectToDB, clearDatabase, disconnectFromDB } = require('../../helpers/DBUtils');
 const responseMock = require('../../helpers/responseMock');
+
+/**
+ * Invoke an asyncHandler-wrapped controller deterministically.
+ * asyncHandler does not return the handler's promise, so plain
+ * `await handler(req, res)` returns before the response is sent. This
+ * helper resolves only once res.json/res.send is called (or next(err)).
+ */
+const invoke = (handler, req) =>
+  new Promise((resolve) => {
+    const res = responseMock();
+    let nextError = null;
+    let settled = false;
+    const settle = () => {
+      if (!settled) {
+        settled = true;
+        resolve({ res, nextError });
+      }
+    };
+    const origJson = res.json.bind(res);
+    const origSend = res.send.bind(res);
+    res.json = (obj) => {
+      origJson(obj);
+      settle();
+      return res;
+    };
+    res.send = (data) => {
+      origSend(data);
+      settle();
+      return res;
+    };
+    const next = (err) => {
+      nextError = err;
+      settle();
+    };
+    handler(req, res, next);
+  });
 
 describe('getCommunityController', () => {
   let testUser;
@@ -48,13 +85,10 @@ describe('getCommunityController', () => {
 
   describe('GET /communities/:id', () => {
     it('should return community details for authenticated users', async () => {
-      const req = {
+      const { res } = await invoke(getCommunity, {
         params: { id: testCommunity._id.toString() },
         user: { _id: testUser._id }
-      };
-      const res = responseMock();
-
-      await getCommunity(req, res);
+      });
 
       expect(res.statusCode).toBe(200);
       expect(res.body.success).toBe(true);
@@ -64,26 +98,20 @@ describe('getCommunityController', () => {
     });
 
     it('should include isJoined flag for authenticated users who are members', async () => {
-      const req = {
+      const { res } = await invoke(getCommunity, {
         params: { id: testCommunity._id.toString() },
         user: { _id: testUser._id }
-      };
-      const res = responseMock();
-
-      await getCommunity(req, res);
+      });
 
       expect(res.statusCode).toBe(200);
       expect(res.body.data.community.isJoined).toBe(true);
     });
 
     it('should include role for authenticated members', async () => {
-      const req = {
+      const { res } = await invoke(getCommunity, {
         params: { id: testCommunity._id.toString() },
         user: { _id: testUser._id }
-      };
-      const res = responseMock();
-
-      await getCommunity(req, res);
+      });
 
       expect(res.statusCode).toBe(200);
       expect(res.body.data.community.role).toBe('owner');
@@ -97,68 +125,129 @@ describe('getCommunityController', () => {
         password: 'password123'
       });
 
-      const req = {
+      const { res } = await invoke(getCommunity, {
         params: { id: testCommunity._id.toString() },
         user: { _id: anotherUser._id }
-      };
-      const res = responseMock();
-
-      await getCommunity(req, res);
+      });
 
       expect(res.statusCode).toBe(200);
       expect(res.body.data.community.isJoined).toBe(false);
       expect(res.body.data.community.role).toBeNull();
     });
 
-    it('should work for unauthenticated users', async () => {
-      const req = {
-        params: { id: testCommunity._id.toString() }
-      };
-      const res = responseMock();
+    it('should include isPending true for users with a pending join request', async () => {
+      const anotherUser = await User.create({
+        username: 'another',
+        fullName: 'Another User',
+        email: 'another@example.com',
+        password: 'password123'
+      });
 
-      await getCommunity(req, res);
+      await CommunityJoinRequest.create({
+        user: anotherUser._id,
+        community: testCommunity._id
+      });
+
+      const { res } = await invoke(getCommunity, {
+        params: { id: testCommunity._id.toString() },
+        user: { _id: anotherUser._id }
+      });
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body.data.community.isJoined).toBe(false);
+      expect(res.body.data.community.isPending).toBe(true);
+    });
+
+    it('should include isPending false for users without a pending join request', async () => {
+      const anotherUser = await User.create({
+        username: 'another',
+        fullName: 'Another User',
+        email: 'another@example.com',
+        password: 'password123'
+      });
+
+      const { res } = await invoke(getCommunity, {
+        params: { id: testCommunity._id.toString() },
+        user: { _id: anotherUser._id }
+      });
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body.data.community.isJoined).toBe(false);
+      expect(res.body.data.community.isPending).toBe(false);
+    });
+
+    it('should ignore rejected join requests for isPending', async () => {
+      const anotherUser = await User.create({
+        username: 'another',
+        fullName: 'Another User',
+        email: 'another@example.com',
+        password: 'password123'
+      });
+
+      await CommunityJoinRequest.create({
+        user: anotherUser._id,
+        community: testCommunity._id,
+        status: 'rejected'
+      });
+
+      const { res } = await invoke(getCommunity, {
+        params: { id: testCommunity._id.toString() },
+        user: { _id: anotherUser._id }
+      });
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body.data.community.isPending).toBe(false);
+    });
+
+    it('should return isPending false for members', async () => {
+      const { res } = await invoke(getCommunity, {
+        params: { id: testCommunity._id.toString() },
+        user: { _id: testUser._id }
+      });
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body.data.community.isJoined).toBe(true);
+      expect(res.body.data.community.isPending).toBe(false);
+    });
+
+    it('should work for unauthenticated users', async () => {
+      const { res } = await invoke(getCommunity, {
+        params: { id: testCommunity._id.toString() }
+      });
 
       expect(res.statusCode).toBe(200);
       expect(res.body.data.community.name).toBe('Tech Community');
-      expect(res.body.data.community.isJoined).toBeUndefined();
-      expect(res.body.data.community.role).toBeUndefined();
+      expect(res.body.data.community.isJoined).toBe(false);
+      expect(res.body.data.community.isPending).toBe(false);
+      expect(res.body.data.community.role).toBeNull();
     });
 
     it('should return 404 for non-existent community', async () => {
-      const req = {
+      const { nextError } = await invoke(getCommunity, {
         params: { id: '507f1f77bcf86cd799439011' },
         user: { _id: testUser._id }
-      };
-      const res = responseMock();
+      });
 
-      await getCommunity(req, res);
-
-      expect(res.statusCode).toBe(404);
-      expect(res.body.success).toBe(false);
-      expect(res.body.message).toMatch(/not found/i);
+      expect(nextError).toBeDefined();
+      expect(nextError.statusCode).toBe(404);
+      expect(nextError.message).toMatch(/not found/i);
     });
 
     it('should return 400 for invalid community ID', async () => {
-      const req = {
+      const { nextError } = await invoke(getCommunity, {
         params: { id: 'invalid-id' },
         user: { _id: testUser._id }
-      };
-      const res = responseMock();
+      });
 
-      await getCommunity(req, res);
-
-      expect(res.statusCode).toBe(400);
-      expect(res.body.success).toBe(false);
+      expect(nextError).toBeDefined();
+      expect(nextError.statusCode).toBe(400);
     });
 
     it('should include all community fields', async () => {
-      const req = {
+      const { res } = await invoke(getCommunity, {
         params: { id: testCommunity._id.toString() },
         user: { _id: testUser._id }
-      };
-      const res = responseMock();
-
-      await getCommunity(req, res);
+      });
 
       const community = res.body.data.community;
       expect(community._id).toBeDefined();

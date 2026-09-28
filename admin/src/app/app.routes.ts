@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard, guestGuard } from './core/guards/auth.guard';
+import { authGuard, guestGuard, platformAdminGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -19,23 +19,52 @@ export const routes: Routes = [
     children: [
       {
         path: 'dashboard',
-        loadComponent: () => import('./pages/dashboard/dashboard.component').then(m => m.DashboardComponent)
+        loadComponent: () => import('./pages/dashboard/dashboard.component').then(m => m.DashboardComponent),
+        canActivate: [platformAdminGuard]
       },
       {
         path: 'users',
-        loadComponent: () => import('./pages/users/users.component').then(m => m.UsersComponent)
+        loadComponent: () => import('./pages/users/users.component').then(m => m.UsersComponent),
+        canActivate: [platformAdminGuard]
       },
       {
         path: 'posts',
-        loadComponent: () => import('./pages/posts/posts.component').then(m => m.PostsComponent)
+        loadComponent: () => import('./pages/posts/posts.component').then(m => m.PostsComponent),
+        canActivate: [platformAdminGuard]
       },
       {
         path: 'comments',
-        loadComponent: () => import('./pages/comments/comments.component').then(m => m.CommentsComponent)
+        loadComponent: () => import('./pages/comments/comments.component').then(m => m.CommentsComponent),
+        canActivate: [platformAdminGuard]
       },
       {
         path: 'communities',
-        loadComponent: () => import('./pages/communities/communities.component').then(m => m.CommunitiesComponent)
+        loadComponent: () => import('./pages/communities/communities.component').then(m => m.CommunitiesComponent),
+        canActivate: [platformAdminGuard]
+      },
+      {
+        path: 'branches',
+        loadComponent: () => import('./pages/branches/branches.component').then(m => m.BranchesComponent)
+      },
+      {
+        path: 'branches/:branchId',
+        loadComponent: () => import('./pages/branch-detail/branch-detail.component').then(m => m.BranchDetailComponent)
+      },
+      {
+        path: 'branches/:branchId/rounds/:roundId',
+        loadComponent: () => import('./pages/round-detail/round-detail.component').then(m => m.RoundDetailComponent)
+      },
+      {
+        path: 'enrollment-requests',
+        loadComponent: () => import('./pages/enrollment-requests/enrollment-requests.component').then(m => m.EnrollmentRequestsComponent)
+      },
+      {
+        path: 'jobs',
+        loadComponent: () => import('./pages/jobs/jobs.component').then(m => m.JobsComponent)
+      },
+      {
+        path: 'events',
+        loadComponent: () => import('./pages/events/events.component').then(m => m.EventsComponent)
       }
     ]
   },

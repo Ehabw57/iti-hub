@@ -5,7 +5,9 @@ import {
   FiHeart, 
   FiMessageCircle, 
   FiRepeat, 
-  FiUserPlus 
+  FiUserPlus,
+  FiUserCheck,
+  FiUserX
 } from 'react-icons/fi';
 import { formatNotificationTime } from '../../utils/notificationHelpers';
 import notificationsContent from '../../content/notifications/notificationsCenter.content';
@@ -25,6 +27,12 @@ const NOTIFICATION_ICONS = {
   reply: FiMessageCircle,
   repost: FiRepeat,
   follow: FiUserPlus,
+  enrollment_request: FiUserPlus,
+  enrollment_approved: FiUserCheck,
+  enrollment_rejected: FiUserX,
+  group_join_request: FiUserPlus,
+  group_join_approved: FiUserCheck,
+  group_join_rejected: FiUserX,
 };
 
 /**
@@ -77,6 +85,20 @@ export const NotificationItem = ({ notification, onMarkAsRead, onNavigate, inFli
     // Navigate based on notification type
     if (type === 'follow' && actor) {
       navigate(`/profile/${actor.username}`);
+    } else if (
+      ['enrollment_request', 'enrollment_approved', 'enrollment_rejected'].includes(type) &&
+      target
+    ) {
+      // Enrollment flow notifications point at the track (target = Track)
+      const trackId = target._id || target;
+      navigate(`/tracks/${trackId}`);
+    } else if (
+      ['group_join_request', 'group_join_approved', 'group_join_rejected'].includes(type) &&
+      target
+    ) {
+      // Community-group join flow notifications point at the communities page
+      // (target = CommunityGroup; no per-group detail route exists yet)
+      navigate('/communities');
     } else if (type === 'repost' && target) {
       // For reposts, navigate to the repost itself (the notification target IS the repost)
       const repostId = target._id || target;
@@ -159,6 +181,18 @@ export const NotificationItem = ({ notification, onMarkAsRead, onNavigate, inFli
         return notificationTypes.repost[locale]({ actor: '' })
       case 'follow':
         return notificationTypes.follow[locale]({ actor: '' })
+      case 'enrollment_request':
+        return notificationTypes.enrollment_request[locale]({ actor: '' })
+      case 'enrollment_approved':
+        return notificationTypes.enrollment_approved[locale]({ actor: '' })
+      case 'enrollment_rejected':
+        return notificationTypes.enrollment_rejected[locale]({ actor: '' })
+      case 'group_join_request':
+        return notificationTypes.group_join_request[locale]({ actor: '' })
+      case 'group_join_approved':
+        return notificationTypes.group_join_approved[locale]({ actor: '' })
+      case 'group_join_rejected':
+        return notificationTypes.group_join_rejected[locale]({ actor: '' })
       default:
         return content.defaultInteraction;
     }
@@ -183,11 +217,9 @@ export const NotificationItem = ({ notification, onMarkAsRead, onNavigate, inFli
 
   return (
     <div
-      className="relative flex gap-3 p-4 border-b transition-colors duration-200 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-100"
-      style={{
-        backgroundColor: !isRead ? 'var(--color-secondary-300)' : 'transparent',
-        borderColor: 'var(--color-neutral-200)'
-      }}
+      className={`relative flex gap-3 p-4 border-b border-outline last:border-b-0 transition-colors duration-200 cursor-pointer hover:bg-neutral-200/40 ${
+        !isRead ? 'bg-primary-50/60' : 'bg-transparent'
+      }`}
       onClick={handleClick}
       role="button"
       tabIndex={0}
@@ -199,14 +231,6 @@ export const NotificationItem = ({ notification, onMarkAsRead, onNavigate, inFli
       }}
       aria-label={`${actorText} ${notificationMessage}`}
     >
-      {/* Unread Indicator */}
-      {!isRead && (
-        <div 
-          className="absolute left-0 top-0 bottom-0 w-1" 
-          style={{ backgroundColor: 'var(--color-secondary-500)' }}
-        />
-      )}
-
       {/* Actor Avatar */}
       <div className="relative shrink-0">
         <img
@@ -217,13 +241,13 @@ export const NotificationItem = ({ notification, onMarkAsRead, onNavigate, inFli
         
         {/* Notification Type Icon Badge */}
         <div 
-          className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center"
+          className="absolute -bottom-1 ltr:-right-1 rtl:-left-1 w-6 h-6 rounded-full flex items-center justify-center ring-2 ring-neutral-50"
           style={{
             backgroundColor: 
-              type === 'like' || type === 'comment_like' ? 'var(--color-primary-500)' :
-              type === 'comment' || type === 'reply' ? 'var(--color-secondary-500)' :
-              type === 'repost' ? 'var(--color-success)' :
-              type === 'follow' ? '#a855f7' : 'var(--color-neutral-500)'
+              type === 'like' || type === 'comment_like' ? '#ef4444' :
+              type === 'comment' || type === 'reply' ? '#3b82f6' :
+              type === 'repost' ? '#22c55e' :
+              type === 'follow' ? '#a855f7' : '#64748b'
           }}
         >
           <IconComponent className="w-3 h-3 text-white" />
@@ -234,20 +258,20 @@ export const NotificationItem = ({ notification, onMarkAsRead, onNavigate, inFli
       <div className="flex-1 min-w-0">
         {/* Actor Names and Action */}
         <p className="text-body-2">
-          <span className="font-semibold text-neutral-900">{actorText}</span>
+          <span className="font-semibold text-primary-700">{actorText}</span>
           {' '}
           <span className="text-neutral-600">{notificationMessage}</span>
         </p>
 
         {/* Post Preview (if applicable) */}
         {displayContent && (
-          <p className="mt-1 text-body-2 text-neutral-600 line-clamp-2">
+          <p className="mt-1 text-body-2 text-neutral-500 line-clamp-2">
             "{truncateText(displayContent, 50)}"
           </p>
         )}
 
         {/* Timestamp */}
-        <p className="mt-1 text-caption text-neutral-500">
+        <p className="mt-1 text-caption text-neutral-400 font-medium">
           {formattedTime}
         </p>
       </div>
@@ -260,25 +284,10 @@ export const NotificationItem = ({ notification, onMarkAsRead, onNavigate, inFli
             onMarkAsRead(_id);
           }}
           disabled={inFlight.markRead}
-          className="shrink-0 text-button disabled:opacity-50 disabled:cursor-not-allowed"
-          style={{ color: 'var(--color-secondary-600)' }}
-          aria-label={content.markAsRead}
-        >
-          {inFlight.markRead ? content.loading : '✓'}
-        </button>
-      )}
-
-      {/* New Badge */}
-      {!isRead && (
-        <span 
-          className="absolute top-2 right-2 px-2 py-0.5 text-caption font-medium rounded-full"
-          style={{
-            backgroundColor: 'var(--color-secondary-100)',
-            color: 'var(--color-secondary-800)'
-          }}
-        >
-          {content.newBadge}
-        </span>
+          title={content.markAsRead?.value || 'Mark as read'}
+          aria-label={content.markAsRead?.value || 'Mark as read'}
+          className="shrink-0 self-start mt-1 w-3 h-3 rounded-full bg-primary-500 hover:bg-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
+        />
       )}
     </div>
   );

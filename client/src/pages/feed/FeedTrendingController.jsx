@@ -14,7 +14,7 @@ import homeContent from '../../content/feed/home.content';
  */
 export default function FeedTrendingController() {
   const  content  = useIntlayer(homeContent.key);
-  const [timeframe, setTimeframe] = useState('24h');
+  const [timeframe] = useState('24h');
 
   const { 
     data, 

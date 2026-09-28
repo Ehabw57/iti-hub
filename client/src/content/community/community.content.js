@@ -40,6 +40,30 @@ export default {
       en: 'Join Community',
       ar: 'انضمام للمجتمع',
     }),
+    requestToJoin: t({
+      en: 'Request to Join',
+      ar: 'طلب الانضمام',
+    }),
+    requestPending: t({
+      en: 'Request Pending',
+      ar: 'طلبك قيد المراجعة',
+    }),
+    requestPendingHint: t({
+      en: "Your join request is waiting for a moderator's approval",
+      ar: 'طلب الانضمام بانتظار موافقة أحد المشرفين',
+    }),
+    joinRequestSent: t({
+      en: 'Join request sent! You will be notified once reviewed.',
+      ar: 'تم إرسال طلب الانضمام! سيتم إخطارك عند مراجعته.',
+    }),
+    cancelJoinRequest: t({
+      en: 'Cancel Request',
+      ar: 'إلغاء الطلب',
+    }),
+    joinRequestFailed: t({
+      en: 'Failed to send join request',
+      ar: 'فشل إرسال طلب الانضمام',
+    }),
     leaveCommunity: t({
       en: 'Leave Community',
       ar: 'مغادرة المجتمع',
@@ -155,6 +179,26 @@ export default {
     kickMember: t({
       en: 'Remove from Community',
       ar: 'إزالة من المجتمع',
+    }),
+
+    // Join-request moderation (work order §4)
+    joinRequestsTitle: t({
+      en: 'Pending Join Requests',
+      ar: 'طلبات الانضمام المعلقة',
+    }),
+    noJoinRequests: t({
+      en: 'No pending join requests',
+      ar: 'لا توجد طلبات انضمام معلقة',
+    }),
+    approve: t({ en: 'Approve', ar: 'قبول' }),
+    reject: t({ en: 'Reject', ar: 'رفض' }),
+    joinRequestApprovedFailed: t({
+      en: 'Failed to approve request',
+      ar: 'فشل قبول الطلب',
+    }),
+    joinRequestRejectedFailed: t({
+      en: 'Failed to reject request',
+      ar: 'فشل رفض الطلب',
     }),
     confirmKick: t({
       en: 'Are you sure you want to remove this member from the community?',

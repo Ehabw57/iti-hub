@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { UserAvatar } from './UserAvatar';
 import Button from '@/components/common/Button';
+import { Chip } from '@/components/common';
 import { useAuthStore } from '@store/auth';
 import { useFollowUser, useUnfollowUser } from '@hooks/mutations/useConnectionMutations';
 import useRequireAuth from '@hooks/useRequireAuth';
@@ -73,9 +74,9 @@ const UserCard = ({ user, size = 'small' }) => {
                 <h3 className="text-heading-4 text-neutral-900 truncate">{fullName}</h3>
                 <p className="text-body-2 text-neutral-600 truncate">@{username}</p>
                 {specialization && (
-                  <span className="inline-block mt-1 bg-secondary-100 text-secondary-700 text-caption px-2 py-0.5 rounded-full">
+                  <Chip tone="border-transparent bg-secondary-100 text-secondary-700" className="mt-1">
                     {specialization}
-                  </span>
+                  </Chip>
                 )}
               </div>
               {!isOwnProfile && (
@@ -121,9 +122,9 @@ const UserCard = ({ user, size = 'small' }) => {
                 <h4 className="text-heading-5 text-neutral-900 truncate">{fullName}</h4>
                 <p className="text-body-2 text-neutral-600 truncate">@{username}</p>
                 {specialization && (
-                  <span className="inline-block mt-1 bg-secondary-100 text-secondary-700 text-caption px-2 py-0.5 rounded-full">
+                  <Chip tone="border-transparent bg-secondary-100 text-secondary-700" className="mt-1">
                     {specialization}
-                  </span>
+                  </Chip>
                 )}
               </div>
               {!isOwnProfile && (

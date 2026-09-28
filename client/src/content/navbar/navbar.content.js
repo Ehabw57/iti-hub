@@ -11,5 +11,8 @@ export default {
     expandSearch: t({ en: "Expand search", ar: "توسيع البحث" }),
     collapseSearch: t({ en: "Collapse search", ar: "إغلاق البحث" }),
     logout: t({ en: "Logout", ar: "تسجيل الخروج" }),
+    notifications: t({ en: "Notifications", ar: "الإشعارات" }),
+    messages: t({ en: "Messages", ar: "الرسائل" }),
+    myProfile: t({ en: "My Profile", ar: "ملفي الشخصي" }),
   },
 };

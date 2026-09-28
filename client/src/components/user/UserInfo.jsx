@@ -20,15 +20,13 @@ dayjs.extend(relativeTime);
  * @param {string} props.timestamp - ISO date string
  * @param {boolean} [props.edited=false] - Whether content was edited
  * @param {Function} props.onProfileClick - Handler for profile navigation
- * @param {string} [props.size='md'] - Size variant (currently unused, for future)
  */
-export function UserInfo({ 
-  fullName, 
-  username, 
-  timestamp, 
+export function UserInfo({
+  fullName,
+  username,
+  timestamp,
   edited = false,
-  onProfileClick,
-  size = 'md' 
+  onProfileClick
 }) {
   const { locale } = useUIStore();
   dayjs.locale(locale);

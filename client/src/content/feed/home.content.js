@@ -67,6 +67,40 @@ export default {
     updateFailed: t({ en: "Failed to update post", ar: "فشل تحديث المنشور" }),
     edited: t({ en: "edited", ar: "معدّل" }),
     
+    // Composer trigger
+    startPost: t({ en: "Start a post...", ar: "ابدأ منشورًا..." }),
+    tryAiPrompt: t({ en: "Try AI Prompt ✨", ar: "جرّب مطالبة الذكاء الاصطناعي ✨" }),
+    photoVideo: t({ en: "Media", ar: "وسائط" }),
+    event: t({ en: "Event", ar: "حدث" }),
+    article: t({ en: "Article", ar: "مقال" }),
+    postButton: t({ en: "Post", ar: "نشر" }),
+
+    // Right rail
+    trendingTopics: t({ en: "Trending ITI Topics", ar: "أكثر مواضيع ITI رواجًا" }),
+    suggestedForYou: t({ en: "Suggested for you", ar: "مقترح لك" }),
+    upcomingEvents: t({ en: "Upcoming Events", ar: "الأحداث القادمة" }),
+    showMore: t({ en: "Show more", ar: "عرض المزيد" }),
+    studentsDiscussing: t({ en: "students discussing", ar: "طالب يناقشون" }),
+    activePosts: t({ en: "active posts", ar: "منشور نشط" }),
+    members: t({ en: "members", ar: "عضو" }),
+    attendees: t({ en: "attendees", ar: "حاضرًا" }),
+
+    // Join-request flow (community groups)
+    joinRequested: t({ en: "Request sent", ar: "تم إرسال الطلب" }),
+    joinRequestPendingHint: t({
+      en: "Waiting for the group admin's approval",
+      ar: "بانتظار موافقة مسؤول المجموعة",
+    }),
+    joinRequestFailed: t({ en: "Failed to send join request", ar: "فشل إرسال طلب الانضمام" }),
+    cancelJoinRequest: t({ en: "Cancel request", ar: "إلغاء الطلب" }),
+    pendingJoinRequests: t({ en: "Pending join requests", ar: "طلبات انضمام معلقة" }),
+    approve: t({ en: "Approve", ar: "قبول" }),
+    reject: t({ en: "Reject", ar: "رفض" }),
+    moderateGroupsHint: t({
+      en: "Review requests to join your groups",
+      ar: "راجع طلبات الانضمام إلى مجموعاتك",
+    }),
+
     // Read more/less
     readMore: t({ en: "Read more", ar: "اقرأ المزيد" }),
     showLess: t({ en: "Show less", ar: "إظهار أقل" }),

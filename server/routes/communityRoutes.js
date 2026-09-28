@@ -17,6 +17,12 @@ const addModerator = require('../controllers/community/addModeratorController');
 const removeModerator = require('../controllers/community/removeModeratorController');
 const kickMember = require('../controllers/community/kickMemberController');
 const listCommunities = require('../controllers/community/listCommunitiesController');
+const {
+  decideCommunityJoinRequest,
+  cancelCommunityJoinRequest,
+  listCommunityJoinRequests,
+  getMyCommunityJoinRequests,
+} = require('../controllers/community/communityJoinRequestController');
 
 const communityRoutes = express.Router();
 
@@ -71,7 +77,7 @@ communityRoutes.post('/:id/cover-image', checkAuth, cover, updateCommunityCoverI
 
 /**
  * @route   POST /api/communities/:id/join
- * @desc    Join a community
+ * @desc    Request to join a community (pending review by a moderator)
  * @access  Private
  */
 communityRoutes.post('/:id/join', checkAuth, joinCommunity);
@@ -82,6 +88,14 @@ communityRoutes.post('/:id/join', checkAuth, joinCommunity);
  * @access  Private
  */
 communityRoutes.post('/:id/leave', checkAuth, leaveCommunity);
+
+// ---- Join-request moderation (request → moderator decision) ----
+// NOTE: static-ish segment paths are registered before dynamic ':id'
+// sub-paths so Express doesn't capture "join-requests" as an :id.
+communityRoutes.get('/join-requests/my', checkAuth, getMyCommunityJoinRequests);
+communityRoutes.patch('/join-requests/:id/decision', checkAuth, decideCommunityJoinRequest);
+communityRoutes.delete('/join-requests/:id', checkAuth, cancelCommunityJoinRequest);
+communityRoutes.get('/:id/join-requests', checkAuth, listCommunityJoinRequests);
 
 /**
  * @route   POST /api/communities/:id/moderators

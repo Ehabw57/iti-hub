@@ -1,0 +1,13 @@
+openapi: "3.0.0"
+info:
+  title: "Admin API"
+  version: "1.0.0"
+  description: "Administrative operations for platform management (requires admin role)"
+tags:
+  - name: "Admin"
+    description: "Administrative operations for platform management (requires admin role)"
+paths: {}
+components:
+  schemas: {}
+  securitySchemes: {}
+  responses: {}

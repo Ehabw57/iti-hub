@@ -30,7 +30,7 @@ export default function CommentForm({
     try {
       await onSubmit(sanitized);
       setContent(''); // Clear form on success
-    } catch (error) {
+    } catch {
       // Error handled by mutation hook
     } finally {
       setIsSubmitting(false);

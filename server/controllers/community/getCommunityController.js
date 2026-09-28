@@ -1,5 +1,6 @@
 const Community = require('../../models/Community');
 const CommunityMember = require('../../models/CommunityMember');
+const CommunityJoinRequest = require('../../models/CommunityJoinRequest');
 const mongoose = require('mongoose');
 const { asyncHandler } = require('../../middlewares/errorHandler');
 const { ValidationError, NotFoundError } = require('../../utils/errors');
@@ -59,6 +60,7 @@ const getCommunity = asyncHandler(async (req, res) => {
     createdAt: community.createdAt,
     updatedAt: community.updatedAt,
     isJoined: false, // Default to false
+    isPending: false, // True when the user has a pending join request
     role: null
   };
 
@@ -66,9 +68,21 @@ const getCommunity = asyncHandler(async (req, res) => {
   if (userId) {
     const isJoined = await CommunityMember.isEnrolled(userId, id);
     const role = await CommunityMember.getRole(userId, id);
-    
+
     communityData.isJoined = isJoined;
     communityData.role = role;
+
+    // Pending join-request flag (Round 3 work order §4)
+    if (!isJoined) {
+      const pendingRequest = await CommunityJoinRequest.findOne({
+        user: userId,
+        community: id,
+        status: 'pending',
+      })
+        .select('_id')
+        .lean();
+      communityData.isPending = !!pendingRequest;
+    }
   }
 
   sendSuccess(res, { community: communityData });

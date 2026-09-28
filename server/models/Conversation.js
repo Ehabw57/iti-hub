@@ -59,10 +59,20 @@ const conversationSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-    toJSON: { getters: true },
-    toObject: { getters: true },
+    toJSON: { getters: true, virtuals: true },
+    toObject: { getters: true, virtuals: true },
   }
 );
+
+// Discriminator: `type` is derived, never persisted. Legacy code guarded on
+// `conversation.type`, but the field was never part of the schema, so mongoose
+// strict mode silently stripped it — every group-admin guard was dead code.
+// Deriving from the stored `isGroup` flag keeps controllers/specs working
+// without a data migration. Note: virtuals are NOT queryable — queries must
+// filter on `isGroup` directly (see findByParticipants).
+conversationSchema.virtual("type").get(function () {
+  return this.isGroup ? CONVERSATION_TYPES.GROUP : CONVERSATION_TYPES.INDIVIDUAL;
+});
 
 // Indexes
 conversationSchema.index({ participants: 1, updatedAt: -1 });
@@ -104,8 +114,11 @@ conversationSchema.statics.findByParticipants = async function (
 ) {
   const sortedIds = participantIds.map((id) => id.toString()).sort();
 
+  // `type` is a virtual (not queryable) — map it onto the stored isGroup flag
+  const isGroup = type === CONVERSATION_TYPES.GROUP;
+
   return this.findOne({
-    type,
+    isGroup,
     participants: { $all: sortedIds, $size: sortedIds.length },
   });
 };

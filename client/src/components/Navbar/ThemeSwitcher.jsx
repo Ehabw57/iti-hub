@@ -35,20 +35,20 @@ export default function ThemeSwitcher({ variant = "default" }) {
       <span className="absolute left-0 top-0 w-full h-full rounded-full pointer-events-none opacity-70" />
       {/* Thumb */}
       <span
-        className={`absolute top-1 ${theme === "light" ? "left-1" : "right-7"} w-6 h-6 rounded-full bg-white items-center justify-center transition-all duration-300
-          ${theme === "dark" ? "translate-x-6" : "translate-x-0"}`}
+        className={`absolute top-1 start-1 w-6 h-6 rounded-full bg-neutral-100 flex items-center justify-center transition-transform duration-300
+          ${theme === "dark" ? "ltr:translate-x-12 rtl:-translate-x-12" : "translate-x-0"}`}
       >
         {theme === "dark" ? (
-          <HiMoon className="w-5 h-5 text-yellow-300" />
+          <HiMoon className="w-5 h-5 text-warning" />
         ) : (
           <HiSun className="w-5 h-5 text-primary-500" />
         )}
       </span>
       {/* Icons on track */}
-      <span className="absolute left-2 top-1.5 text-yellow-400">
+      <span className="absolute start-2 top-1.5 text-warning">
         <HiSun className="w-4 h-4" />
       </span>
-      <span className="absolute right-2 top-1.5 text-blue-400 dark:text-yellow-300">
+      <span className="absolute end-2 top-1.5 text-secondary-400 dark:text-warning">
         <HiMoon className="w-4 h-4" />
       </span>
     </button>

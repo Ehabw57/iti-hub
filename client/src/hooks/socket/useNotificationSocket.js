@@ -31,7 +31,7 @@ export const useNotificationSocket = () => {
         console.log('[useNotificationSocket] New notification received:', data);
       }
 
-      const { notification, timestamp } = data;
+      const { notification } = data;
 
       if (!notification) {
         console.warn('[useNotificationSocket] Received empty notification');
@@ -118,7 +118,7 @@ export const useNotificationSocket = () => {
         console.log('[useNotificationSocket] Notification update received:', data);
       }
 
-      const { notification, timestamp } = data;
+      const { notification } = data;
 
       if (!notification) {
         console.warn('[useNotificationSocket] Received empty notification update');
@@ -168,7 +168,7 @@ export const useNotificationSocket = () => {
         console.log('[useNotificationSocket] Count updated:', data);
       }
 
-      const { unreadCount, timestamp } = data;
+      const { unreadCount } = data;
 
       // Update unread count in cache
       queryClient.setQueryData(['notifications', 'unread-count'], (old) => {
@@ -195,7 +195,7 @@ export const useNotificationSocket = () => {
         console.log('[useNotificationSocket] Notification read:', data);
       }
 
-      const { notificationId, unreadCount, timestamp } = data;
+      const { notificationId, unreadCount } = data;
 
       // Mark notification as read in cache
       queryClient.setQueryData(['notifications'], (old) => {

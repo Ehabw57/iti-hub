@@ -4,6 +4,7 @@ import { useIntlayer, useLocale } from 'react-intlayer';
 import { useAuthStore } from '@store/auth';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import { Chip } from '@components/common';
 
 dayjs.extend(relativeTime);
 
@@ -103,10 +104,10 @@ export const ConversationItem = memo(function ConversationItem({ conversation, o
         p-4
         cursor-pointer
         transition-colors duration-200
-        border-b border-neutral-200
-        hover:bg-neutral-50
-        ${isActive ? 'bg-blue-50 border-l-4 border-l-secondary-500' : ''}
-        ${hasUnread ? 'bg-blue-50/30' : ''}
+        border-b border-b-outline border-s-4
+        hover:bg-surface-high
+        ${isActive ? 'bg-surface-high border-s-secondary-500' : 'border-s-transparent'}
+        ${hasUnread && !isActive ? 'bg-secondary-500/10' : ''}
       `}
       role="button"
       tabIndex={0}
@@ -123,11 +124,11 @@ export const ConversationItem = memo(function ConversationItem({ conversation, o
           src={displayAvatar}
           alt={displayName}
           size="md"
-          className="ring-2 ring-white"
+          className="ring-2 ring-surface-lowest"
         />
         {/* Unread Badge Overlay */}
         {hasUnread && (
-          <div className="absolute -top-1 -right-1 w-5 h-5 bg-secondary-500 text-white text-xs font-semibold rounded-full flex items-center justify-center">
+          <div className="absolute -top-1 -end-1 w-5 h-5 bg-secondary-500 text-white text-xs font-semibold rounded-full flex items-center justify-center">
             {unreadCount > 9 ? '9+' : unreadCount}
           </div>
         )}
@@ -139,14 +140,14 @@ export const ConversationItem = memo(function ConversationItem({ conversation, o
           {/* Name */}
           <h3
             className={`
-              text-md  truncate
+              text-body-1 truncate
               ${hasUnread ? 'font-semibold text-neutral-900' : 'font-medium text-neutral-800'}
             `}
           >
             {displayName}
           </h3>
             {isGroup && participants && (
-              <span className="text-xs text-left text-neutral-500 font-normal ">
+              <span className="text-xs text-start text-neutral-500 font-normal">
                 {participants.length === 1
                   ? content.member.value
                   : content.groupMembers[locale]({ count: participants.length })}
@@ -156,8 +157,8 @@ export const ConversationItem = memo(function ConversationItem({ conversation, o
           {/* Timestamp */}
           <span
             className={`
-              text-caption rtl:mr-auto ltr:ml-auto
-              ${hasUnread ? 'text-secondary-600 font-medium' : 'text-neutral-500'}
+              text-caption ms-auto
+              ${hasUnread ? 'text-secondary-700 dark:text-secondary-400 font-medium' : 'text-neutral-500'}
             `}
           >
             {timeLabel}
@@ -177,9 +178,14 @@ export const ConversationItem = memo(function ConversationItem({ conversation, o
 
           {/* Unread Count Badge */}
           {hasUnread && (
-            <span className="shrink-0 px-2 py-0.5 bg-secondary-500 text-white text-xs font-semibold rounded-full">
+            <Chip
+              size="xs"
+              dot={false}
+              tone="border-transparent bg-secondary-500 text-white"
+              className="shrink-0"
+            >
               {content.newBadge}
-            </span>
+            </Chip>
           )}
         </div>
       </div>

@@ -8,10 +8,10 @@ export default function Card({ children, className = '', padding = 'md' }) {
   return (
     <div
       className={`
-        bg-neutral-50
+        bg-neutral-100
         border border-neutral-200
-        rounded-lg
-        shadow-elevation-2
+        rounded-md
+        shadow-elevation-1
         ${paddingClasses[padding]}
         ${className}
       `}

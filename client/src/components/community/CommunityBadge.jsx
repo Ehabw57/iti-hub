@@ -1,4 +1,5 @@
 import { HiBuildingLibrary } from 'react-icons/hi2';
+import Chip from '@components/common/Chip';
 
 /**
  * CommunityBadge Component
@@ -19,10 +20,12 @@ export function CommunityBadge({ community, onClick, size = 'md' }) {
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-2 text-${size} text-primary-600 hover:text-primary-700 transition-colors`}
+      className="inline-flex transition-transform hover:-translate-y-px"
+      title={community.name}
     >
-      <HiBuildingLibrary className="w-4 h-4" />
-      <span>{community.name}</span>
+      <Chip icon={HiBuildingLibrary} size={size === 'sm' ? 'xs' : 'sm'}>
+        {community.name}
+      </Chip>
     </button>
   );
 }

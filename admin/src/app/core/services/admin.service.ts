@@ -101,6 +101,7 @@ export interface AdminUser {
   email: string;
   fullName: string;
   role: string;
+  branchId?: string | null;
   isBlocked: boolean;
   createdAt: string;
   lastSeen?: string;
@@ -163,6 +164,95 @@ export interface AdminCommunity {
   }[];
   memberCount: number;
   createdAt: string;
+}
+
+// Enrollment request interfaces (tracks system — role-scoped review queue;
+// served by /tracks endpoints, NOT under /admin)
+export interface AdminEnrollmentRequest {
+  _id: string;
+  status: 'pending' | 'approved' | 'rejected';
+  createdAt: string;
+  decidedAt?: string | null;
+  user_id: {
+    _id: string;
+    username: string;
+    fullName: string;
+    profilePicture?: string;
+  } | null;
+  track_id: {
+    _id: string;
+    name: string;
+    category?: string;
+  } | null;
+  branch_id: {
+    _id: string;
+    name: string;
+    location?: string;
+  } | null;
+}
+
+export interface EnrollmentRequestQueryParams {
+  status?: string;
+}
+
+// Job board interfaces (work order §4 — /jobs endpoints)
+export interface AdminJob {
+  _id: string;
+  title: string;
+  company: string;
+  companyLogo?: string | null;
+  location?: string;
+  description?: string;
+  tags?: string[];
+  applyUrl: string;
+  isActive?: boolean;
+  createdAt: string;
+  postedBy?: {
+    _id: string;
+    username: string;
+    fullName: string;
+    profilePicture?: string;
+  } | null;
+}
+
+export interface CreateJobPayload {
+  title: string;
+  company: string;
+  location?: string;
+  description?: string;
+  tags?: string[];
+  applyUrl: string;
+}
+
+// Events interfaces (work order §1 — /events endpoints)
+export interface AdminEvent {
+  _id: string;
+  title: string;
+  description?: string;
+  date: string;
+  endDate?: string | null;
+  location?: string;
+  branchIds?: { _id: string; name: string }[] | string[];
+  registerUrl?: string | null;
+  attendeeCount?: number;
+  isRegistered?: boolean;
+  createdAt: string;
+  createdBy?: {
+    _id: string;
+    username: string;
+    fullName: string;
+    profilePicture?: string;
+  } | null;
+}
+
+export interface CreateEventPayload {
+  title: string;
+  description?: string;
+  date: string;
+  endDate?: string | null;
+  location?: string;
+  branchIds?: string[];
+  registerUrl?: string | null;
 }
 
 // Query params interfaces
@@ -305,8 +395,15 @@ export class AdminService {
     return this.http.delete<ApiResponse<{ deletedUser: string }>>(`${this.apiUrl}/users/${userId}`);
   }
 
-  updateUserRole(userId: string, role: string): Observable<ApiResponse<{ user: AdminUser }>> {
-    return this.http.patch<ApiResponse<{ user: AdminUser }>>(`${this.apiUrl}/users/${userId}/role`, { role });
+  updateUserRole(
+    userId: string,
+    role: string,
+    branchId?: string
+  ): Observable<ApiResponse<{ user: AdminUser }>> {
+    return this.http.patch<ApiResponse<{ user: AdminUser }>>(
+      `${this.apiUrl}/users/${userId}/role`,
+      { role, ...(branchId ? { branchId } : {}) }
+    );
   }
 
   // =========================================================================
@@ -369,5 +466,63 @@ export class AdminService {
 
   deleteCommunity(communityId: string): Observable<ApiResponse<{ deletedCommunity: string }>> {
     return this.http.delete<ApiResponse<{ deletedCommunity: string }>>(`${this.apiUrl}/communities/${communityId}`);
+  }
+
+  // =========================================================================
+  // ENROLLMENT REQUESTS (tracks system — role-scoped by the server:
+  // super admin sees all, branch admin their branch, instructors their tracks)
+  // =========================================================================
+
+  getEnrollmentRequests(params?: EnrollmentRequestQueryParams): Observable<ApiResponse<{ requests: AdminEnrollmentRequest[] }>> {
+    let httpParams = new HttpParams();
+    if (params?.status) httpParams = httpParams.set('status', params.status);
+
+    return this.http.get<ApiResponse<{ requests: AdminEnrollmentRequest[] }>>(
+      `${environment.apiUrl}/tracks/enroll-requests`,
+      { params: httpParams }
+    );
+  }
+
+  decideEnrollmentRequest(
+    requestId: string,
+    decision: 'approved' | 'rejected'
+  ): Observable<ApiResponse<{ request: { _id: string; status: string } }>> {
+    return this.http.patch<ApiResponse<{ request: { _id: string; status: string } }>>(
+      `${environment.apiUrl}/tracks/enroll-requests/${requestId}/decision`,
+      { decision }
+    );
+  }
+
+  // =========================================================================
+  // JOBS (work order §4 — /jobs endpoints; creation is server-gated to
+  // super admin / branch admin / instructor)
+  // =========================================================================
+
+  getJobs(): Observable<ApiResponse<{ jobs: AdminJob[] }>> {
+    return this.http.get<ApiResponse<{ jobs: AdminJob[] }>>(`${environment.apiUrl}/jobs`);
+  }
+
+  createJob(payload: CreateJobPayload): Observable<ApiResponse<{ job: AdminJob }>> {
+    return this.http.post<ApiResponse<{ job: AdminJob }>>(`${environment.apiUrl}/jobs`, payload);
+  }
+
+  deleteJob(jobId: string): Observable<void> {
+    return this.http.delete<void>(`${environment.apiUrl}/jobs/${jobId}`);
+  }
+
+  // =========================================================================
+  // EVENTS (work order §1 — /events endpoints)
+  // =========================================================================
+
+  getEvents(): Observable<ApiResponse<{ events: AdminEvent[] }>> {
+    return this.http.get<ApiResponse<{ events: AdminEvent[] }>>(`${environment.apiUrl}/events`);
+  }
+
+  createEvent(payload: CreateEventPayload): Observable<ApiResponse<{ event: AdminEvent }>> {
+    return this.http.post<ApiResponse<{ event: AdminEvent }>>(`${environment.apiUrl}/events`, payload);
+  }
+
+  deleteEvent(eventId: string): Observable<void> {
+    return this.http.delete<void>(`${environment.apiUrl}/events/${eventId}`);
   }
 }

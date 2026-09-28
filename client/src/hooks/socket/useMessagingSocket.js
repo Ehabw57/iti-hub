@@ -1,7 +1,6 @@
 import { useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useSocketEvent } from './useSocketEvent';
-import { useAuthStore } from '@store/auth';
 
 /**
  * @fileoverview Hook for handling real-time messaging events via WebSocket
@@ -25,7 +24,6 @@ import { useAuthStore } from '@store/auth';
  */
 export const useMessagingSocket = (conversationId) => {
   const queryClient = useQueryClient();
-  const currentUser = useAuthStore((state) => state.user);
 
   /**
    * Handle new message event

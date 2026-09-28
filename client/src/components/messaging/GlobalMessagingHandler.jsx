@@ -37,7 +37,6 @@ import { useAuthStore } from '@store/auth';
  * }
  */
 export const GlobalMessagingHandler = () => {
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const currentUser = useAuthStore((state) => state.user);
   const queryClient = useQueryClient();
 
@@ -196,12 +195,10 @@ export const GlobalMessagingHandler = () => {
     [queryClient, currentUser?._id]
   );
 
-  // Only setup listeners when user is authenticated
-  if (!isAuthenticated) {
-    return null;
-  }
-
   // Setup socket event listeners for global message events
+  // NOTE: useSocketEvent only attaches listeners while the authenticated
+  // socket is connected, so calling these hooks unconditionally keeps
+  // React hook order stable across renders.
   useSocketEvent('message:new', handleNewMessage, [handleNewMessage]);
   useSocketEvent('message:seen', handleMessageSeen, [handleMessageSeen]);
 

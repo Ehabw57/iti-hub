@@ -63,7 +63,7 @@ export function ConversationsList({
   if (items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center p-8 text-center">
-        <div className="w-24 h-24 mb-4 rounded-full bg-neutral-100 flex items-center justify-center">
+        <div className="w-24 h-24 mb-4 rounded-full bg-neutral-200 flex items-center justify-center">
           <svg
             className="w-12 h-12 text-neutral-400"
             fill="none"
@@ -92,7 +92,7 @@ export function ConversationsList({
   return (
     <div className="flex flex-col">
       {/* Conversations */}
-      <div className="divide-y divide-neutral-200">
+      <div className="divide-y divide-outline">
         {items.map((conversation) => (
           <ConversationItem
             key={conversation._id}
@@ -111,7 +111,7 @@ export function ConversationsList({
           ) : (
             <button
               onClick={onLoadMore}
-              className="text-secondary-600 hover:text-secondary-700 text-body-2 font-medium transition-colors"
+              className="text-secondary-700 dark:text-secondary-400 hover:text-secondary-900 dark:hover:text-secondary-300 text-body-2 font-medium transition-colors"
             >
               {content.loadingMore.value}
             </button>

@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { HiMagnifyingGlass } from 'react-icons/hi2';
 import { useIntlayer } from 'react-intlayer';
@@ -107,7 +106,7 @@ const SearchPage = () => {
           )}
           
           {/* Tabs */}
-          <div className="flex gap-1 border-b border-neutral-200">
+          <div className="flex max-w-full gap-1 overflow-x-auto border-b border-neutral-200">
             {tabs.map((tab) => {
               const isActive = activeTab === tab.id;
               return (

@@ -7,8 +7,8 @@ export default function ErrorDisplay({ error, onRetry, className = "" }) {
   return (
     <div
       className={`
-        bg-red-50
-        border-l-4 border-error
+        bg-error/10
+        border-s-4 border-s-error
         rounded-lg
         p-4
         ${className}
@@ -22,7 +22,7 @@ export default function ErrorDisplay({ error, onRetry, className = "" }) {
             aria-hidden="true"
           />
         </div>
-        <div className="ml-3 flex-1">
+        <div className="ms-3 flex-1">
           {/* Error Message */}
           <p className="text-sm font-medium text-neutral-900">
             {error.message}
@@ -50,7 +50,7 @@ export default function ErrorDisplay({ error, onRetry, className = "" }) {
               <Button
                 variant="text"
                 onClick={onRetry}
-                className="text-error hover:text-error hover:bg-red-100"
+                className="text-error hover:text-error hover:bg-error/20"
               >
                 Try Again
               </Button>

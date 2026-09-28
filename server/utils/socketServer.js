@@ -69,6 +69,23 @@ const initializeSocketServer = (httpServer) => {
     }
     userSocketMap.get(userId).push(socket.id);
 
+    /**
+     * track:join / track:leave - Join or leave a track chat room.
+     * Rooms are namespaced as `track:<trackId>` so chat broadcasts and
+     * activity events can target all members of a track.
+     */
+    socket.on('track:join', (trackId) => {
+      if (trackId) {
+        socket.join(`track:${trackId}`);
+      }
+    });
+
+    socket.on('track:leave', (trackId) => {
+      if (trackId) {
+        socket.leave(`track:${trackId}`);
+      }
+    });
+
     // Update user online status
     try {
       await User.findByIdAndUpdate(userId, {

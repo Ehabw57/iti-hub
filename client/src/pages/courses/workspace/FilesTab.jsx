@@ -23,14 +23,16 @@ import { getFileVisual } from './fileIcons';
 import { NameDialog, WorkspaceToolbar } from './FolderShared';
 
 /**
- * Files tab — SharePoint-style (reissued work order §1). The track's folders
+ * Files tab — SharePoint-style (reissued work order §1). The track's Files-tab
+ * folders (kind 'files' — a list fully independent from the Records tab's)
  * and uploads render in one sortable table (folders always first); managers
  * create / rename / delete folders, upload into any folder and delete files.
  * Students keep view / download-only access.
  */
 export default function FilesTab({ trackId, isManager, t }) {
   const { data, isLoading } = useTrackFiles(trackId);
-  const { data: foldersData } = useTrackFolders(trackId);
+  // This tab's own folders only (kind 'files') — fully independent of Records
+  const { data: foldersData } = useTrackFolders(trackId, 'files');
 
   const createFolderMutation = useCreateTrackFolder();
   const renameFolderMutation = useUpdateTrackFolder();
@@ -69,7 +71,7 @@ export default function FilesTab({ trackId, isManager, t }) {
         await renameFolderMutation.mutateAsync({ folderId: nameDialog.folder._id, name });
         toast.success(t('folderRenamed', 'Folder renamed'));
       } else {
-        await createFolderMutation.mutateAsync({ trackId, name });
+        await createFolderMutation.mutateAsync({ trackId, name, kind: 'files' });
         toast.success(t('folderCreated', 'Folder created'));
       }
       setNameDialog(null);

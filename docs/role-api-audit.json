@@ -1,0 +1,54 @@
+[
+  {
+    "account": "student5@itihub.com",
+    "role": "student",
+    "login": 200,
+    "reads": {
+      "/tracks": 200,
+      "/community/groups": 200,
+      "/jobs": 200,
+      "/events": 200,
+      "/tracks/enroll-requests": 403,
+      "/admin/users": 403
+    }
+  },
+  {
+    "account": "instructor1@itihub.com",
+    "role": "instructor",
+    "login": 200,
+    "reads": {
+      "/tracks": 200,
+      "/community/groups": 200,
+      "/jobs": 200,
+      "/events": 200,
+      "/tracks/enroll-requests": 200,
+      "/admin/users": 403
+    }
+  },
+  {
+    "account": "admin.alexandria@itihub.com",
+    "role": "branch_admin",
+    "login": 200,
+    "reads": {
+      "/tracks": 200,
+      "/community/groups": 200,
+      "/jobs": 200,
+      "/events": 200,
+      "/tracks/enroll-requests": 200,
+      "/admin/users": 403
+    }
+  },
+  {
+    "account": "superadmin@itihub.com",
+    "role": "super_admin",
+    "login": 200,
+    "reads": {
+      "/tracks": 200,
+      "/community/groups": 200,
+      "/jobs": 200,
+      "/events": 200,
+      "/tracks/enroll-requests": 200,
+      "/admin/users": 200
+    }
+  }
+]

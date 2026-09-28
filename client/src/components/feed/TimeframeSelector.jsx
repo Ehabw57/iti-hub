@@ -1,5 +1,3 @@
-import { useState } from 'react';
-
 /**
  * Timeframe selector for trending feed
  * @param {Object} props

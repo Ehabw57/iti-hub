@@ -56,6 +56,27 @@ export default {
     members: insert({ en: "{{count}} members", ar: "{{count}} أعضاء" }),
     member: t({ en: "1 member", ar: "عضو واحد" }),
 
+    // Group settings panel
+    groupSettingsTitle: t({ en: "Group settings", ar: "إعدادات المجموعة" }),
+    searchMembersPlaceholder: t({
+      en: "Search users to add...",
+      ar: "ابحث عن مستخدمين للإضافة...",
+    }),
+    noResultsFound: t({ en: "No users found", ar: "لا يوجد مستخدمون" }),
+    alreadyMembersHint: t({
+      en: "Users already in this group are hidden",
+      ar: "المستخدمون الأعضاء في المجموعة مخفيون",
+    }),
+    adminBadge: t({ en: "Admin", ar: "المسؤول" }),
+    saveChanges: t({ en: "Save", ar: "حفظ" }),
+    changePhoto: t({ en: "Change photo", ar: "تغيير الصورة" }),
+    deleteGroupAction: t({ en: "Delete group", ar: "حذف المجموعة" }),
+    confirmDeleteGroup: t({
+      en: "Are you sure you want to delete this group? All messages will be lost. This cannot be undone.",
+      ar: "هل أنت متأكد من حذف هذه المجموعة؟ ستفقد جميع الرسائل. لا يمكن التراجع عن هذا الإجراء.",
+    }),
+    confirmDelete: t({ en: "Yes, delete", ar: "نعم، احذف" }),
+
     // Confirmations
     confirmLeaveGroup: t({
       en: "Are you sure you want to leave this group?",

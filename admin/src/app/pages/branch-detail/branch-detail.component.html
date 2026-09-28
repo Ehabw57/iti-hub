@@ -1,0 +1,128 @@
+<div class="branch-detail-page">
+  <header class="page-header">
+    <div class="header-titles">
+      <a class="back-link" [routerLink]="['/branches']">← {{ i18n.t('structure.backToBranches') }}</a>
+      @if (branch(); as b) {
+        <h1 class="text-heading-2">
+          {{ b.name }}
+          <span class="badge" [class.badge-core]="b.type === 'core'" [class.badge-extension]="b.type !== 'core'">
+            {{ b.type === 'core' ? i18n.t('structure.core') : i18n.t('structure.extension') }}
+          </span>
+        </h1>
+        <p class="text-body-2 subtitle">{{ b.location }}</p>
+      }
+    </div>
+    <button class="btn btn-primary" (click)="openCreateModal()">
+      {{ i18n.t('structure.addRound') }}
+    </button>
+  </header>
+
+  @if (successMessage()) {
+    <div class="success-message">{{ successMessage() }}</div>
+  }
+  @if (errorMessage()) {
+    <div class="error-message">{{ errorMessage() }}</div>
+  }
+
+  @if (isLoading()) {
+    <div class="loading-state"><span class="spinner-lg"></span></div>
+  } @else {
+    <div class="table-container card">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>{{ i18n.t('structure.roundName') }}</th>
+            <th>{{ i18n.t('structure.status') }}</th>
+            <th>{{ i18n.t('structure.tracks') }}</th>
+            <th>{{ i18n.t('common.actions') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (round of rounds(); track round._id) {
+            <tr class="row-clickable" (click)="openRound(round)">
+              <td class="strong-cell">{{ round.name }}</td>
+              <td>
+                <span class="badge" [class.badge-active]="round.isActive" [class.badge-inactive]="!round.isActive">
+                  {{ round.isActive ? i18n.t('structure.active') : i18n.t('structure.inactive') }}
+                </span>
+              </td>
+              <td>{{ round.trackCount ?? 0 }}</td>
+              <td>
+                <div class="actions">
+                  <button class="btn btn-sm btn-primary" (click)="openRound(round)">
+                    {{ i18n.t('structure.manageTracks') }} →
+                  </button>
+                  <button
+                    class="btn btn-sm btn-secondary"
+                    (click)="toggleRoundActive(round, $event)"
+                    [disabled]="actionLoading() === round._id"
+                  >
+                    {{ round.isActive ? i18n.t('structure.closeRound') : i18n.t('structure.reopenRound') }}
+                  </button>
+                  <button
+                    class="btn btn-sm btn-secondary"
+                    (click)="openEditModal(round, $event)"
+                    [disabled]="actionLoading() === round._id"
+                  >
+                    {{ i18n.t('common.edit') }}
+                  </button>
+                  <button
+                    class="btn btn-sm btn-danger"
+                    (click)="confirmDelete(round, $event)"
+                    [disabled]="actionLoading() === round._id"
+                  >
+                    {{ i18n.t('common.delete') }}
+                  </button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="4" class="empty-cell">{{ i18n.t('common.noResults') }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  <!-- Create / Edit Round Modal -->
+  @if (showFormModal()) {
+    <div class="modal-overlay" (click)="closeFormModal()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <h3 class="text-heading-5 modal-title">
+          {{ editingRound() ? i18n.t('structure.editRound') : i18n.t('structure.addRound') }}
+        </h3>
+
+        <label class="field-label">{{ i18n.t('structure.roundName') }}</label>
+        <input type="text" class="input" [(ngModel)]="formName" />
+
+        <label class="checkbox-label">
+          <input type="checkbox" [(ngModel)]="formIsActive" />
+          {{ i18n.t('structure.active') }}
+        </label>
+
+        <div class="modal-actions">
+          <button class="btn btn-secondary" (click)="closeFormModal()">{{ i18n.t('common.cancel') }}</button>
+          <button class="btn btn-primary" (click)="submitForm()" [disabled]="!formName.trim()">
+            {{ i18n.t('common.save') }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Delete Confirmation Modal -->
+  @if (showConfirmModal()) {
+    <div class="modal-overlay" (click)="cancelDelete()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <h3 class="text-heading-5 modal-title">{{ i18n.t('common.confirm') }}</h3>
+        <p class="text-body-2 modal-message">{{ i18n.t('structure.confirmDeleteRound') }}</p>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" (click)="cancelDelete()">{{ i18n.t('common.cancel') }}</button>
+          <button class="btn btn-danger" (click)="executeDelete()">{{ i18n.t('common.confirm') }}</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

@@ -6,7 +6,7 @@ const {checkAuth} = require("../middlewares/checkAuth");
 const {resendVerificationEmail} = require("../controllers/auth/emailVerificationController");
 
 // Import controllers from auth directory
-const {register, login, requestPasswordReset, confirmPasswordReset , verifyEmail} = require("../controllers/auth");
+const {register, login, requestPasswordReset, confirmPasswordReset , verifyEmail, googleAuth} = require("../controllers/auth");
 
 // Disable rate limiting in test environment
 const isTestEnv = process.env.NODE_ENV === 'test';
@@ -49,8 +49,10 @@ const passwordResetLimiter = isTestEnv ? (req, res, next) => next() : rateLimit(
 });
 
 // Authentication routes
-authRoute.post("/register", register);
+// registerLimiter is applied like the other auth limiters (pass-through in test env)
+authRoute.post("/register", registerLimiter, register);
 authRoute.post("/login", loginLimiter, login);
+authRoute.post("/google", loginLimiter, googleAuth);
 authRoute.post("/password-reset/request", passwordResetLimiter, requestPasswordReset);
 authRoute.post("/password-reset/confirm", passwordResetLimiter, confirmPasswordReset);
 authRoute.get("/verify-email", verifyEmail);

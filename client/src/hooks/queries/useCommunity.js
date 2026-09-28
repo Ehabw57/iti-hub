@@ -126,10 +126,46 @@ export const useCommunityMembersInfinite = (communityId, options = {}) => {
   });
 };
 
+/**
+ * Fetch a community's join-request review queue (owners/moderators)
+ * Round 3 work order §4 — legacy-community pending-approval flow.
+ * @param {string} communityId
+ * @param {string} [status='pending'] - pending | approved | rejected | all
+ */
+export const useCommunityJoinRequests = (communityId, status = 'pending') => {
+  return useQuery({
+    queryKey: ['community', 'join-requests', communityId, status],
+    queryFn: async () => {
+      const response = await api.get(`/communities/${communityId}/join-requests`, {
+        params: { status },
+      });
+      return response.data.data;
+    },
+    enabled: !!communityId,
+    staleTime: 30 * 1000,
+  });
+};
+
+/**
+ * Fetch the current user's own legacy-community join requests (all statuses)
+ */
+export const useMyCommunityJoinRequests = () => {
+  return useQuery({
+    queryKey: ['community', 'join-requests', 'my'],
+    queryFn: async () => {
+      const response = await api.get('/communities/join-requests/my');
+      return response.data.data;
+    },
+    staleTime: 1 * 60 * 1000,
+  });
+};
+
 export default {
   useCommunityDetails,
   useCommunityFeed,
   useCommunitiesList,
   useCommunityMembers,
-  useCommunityMembersInfinite
+  useCommunityMembersInfinite,
+  useCommunityJoinRequests,
+  useMyCommunityJoinRequests
 };

@@ -60,13 +60,13 @@ export function MessageInput({
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      toast.error(content.invalidImageType);
+      toast.error(content.invalidImageType?.value || 'Please select an image file');
       return;
     }
 
     // Validate file size (10MB max)
     if (file.size > 10 * 1024 * 1024) {
-      toast.error(content.imageTooLarge);
+      toast.error(content.imageTooLarge?.value || 'Image must be less than 10MB');
       return;
     }
 
@@ -121,7 +121,7 @@ export function MessageInput({
   const canSend = (value.trim() || selectedImage) && !disabled && !sending;
 
   return (
-    <div className="border-t border-neutral-200 bg-white">
+    <div className="border-t border-outline bg-neutral-100">
       {/* Image Preview */}
       {imagePreview && (
         <div className="px-4 pt-3 pb-2">
@@ -133,7 +133,7 @@ export function MessageInput({
             />
             <button
               onClick={handleRemoveImage}
-              className="absolute -top-2 -right-2 bg-neutral-800 text-white rounded-full p-1 hover:bg-neutral-900 transition-colors"
+              className="absolute -top-2 -end-2 bg-neutral-800 text-white rounded-full p-1 hover:bg-neutral-900 transition-colors"
               aria-label="Remove image"
             >
               <HiOutlineXMark className="w-4 h-4" />
@@ -179,7 +179,7 @@ export function MessageInput({
             rounded-xl
             text-body-2
             placeholder:text-neutral-500
-            focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:bg-white
+            focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:bg-neutral-100
             disabled:opacity-50 disabled:cursor-not-allowed
             transition-colors
           "

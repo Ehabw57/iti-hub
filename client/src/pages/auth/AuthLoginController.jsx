@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import dayjs from 'dayjs';
 import { useAuthStore } from '@store/auth';
 import { useLogin } from '@hooks/mutations/useLogin';
+import { useGoogleAuth } from '@hooks/mutations/useGoogleAuth';
 import AuthLoginForm from '@components/auth/AuthLoginForm';
 import { ErrorDisplay } from '@components/common';
 
@@ -17,7 +18,6 @@ export default function AuthLoginController() {
   const [cooldownRemaining, setCooldownRemaining] = useState(0);
 
   const {
-    register,
     handleSubmit,
     formState: { errors },
     setValue,
@@ -30,6 +30,7 @@ export default function AuthLoginController() {
   });
 
   const loginMutation = useLogin();
+  const googleAuthMutation = useGoogleAuth();
 
   // Watch form values
   const email = watch('email');
@@ -102,13 +103,32 @@ export default function AuthLoginController() {
   });
 
   const inCooldown = cooldownEnd && cooldownRemaining > 0;
+
+  // Google Sign-In — exchange the GIS credential (ID token) for the app JWT
+  const handleGoogleSuccess = (idToken) => {
+    googleAuthMutation.mutate(
+      { idToken },
+      {
+        onSuccess: (response) => {
+          const { token, user } = response.data.data;
+          setToken(token);
+          setUser(user);
+          navigate('/');
+        },
+        // Errors flow through googleAuthMutation.error → ErrorDisplay below
+      }
+    );
+  };
   const formErrors = {
     email: errors.email?.message,
     password: errors.password?.message,
   };
 
-  // Map server errors to form fields
-  const serverError = loginMutation.error?.response?.data?.error;
+  // Map server errors to form fields (either the password login or the Google login)
+  const rawServerError =
+    loginMutation.error?.response?.data?.error ||
+    googleAuthMutation.error?.response?.data?.error;
+  const serverError = rawServerError ?? null;
   if (serverError && serverError.code === 'INVALID_CREDENTIALS') {
     formErrors.email = formErrors.email || 'Invalid email or password';
   }
@@ -116,16 +136,16 @@ export default function AuthLoginController() {
   return (
     <div className="w-full max-w-md mx-auto space-y-4">
       {/* Error Display */}
-      {loginMutation.isError && serverError?.code !== 'INVALID_CREDENTIALS' && (
+      {(loginMutation.isError || googleAuthMutation.isError) && serverError?.code !== 'INVALID_CREDENTIALS' && (
         <ErrorDisplay
           error={serverError}
-          onRetry={!inCooldown ? () => loginMutation.reset() : undefined}
+          onRetry={!inCooldown ? () => { loginMutation.reset(); googleAuthMutation.reset(); } : undefined}
         />
       )}
 
       {/* Cooldown Message */}
       {inCooldown && (
-        <div className="bg-red-50 border-l-4 border-error rounded-lg p-4">
+        <div className="bg-error/10 border-s-4 border-s-error rounded-lg p-4">
           <p className="text-sm text-neutral-900">
             Too many login attempts. Please wait{' '}
             {dayjs.duration(cooldownRemaining).format('mm:ss')} before trying again.
@@ -138,10 +158,16 @@ export default function AuthLoginController() {
         email={email}
         password={password}
         errors={formErrors}
-        submitting={loginMutation.isPending}
+        submitting={loginMutation.isPending || googleAuthMutation.isPending}
         disabled={inCooldown}
         onChange={handleFormChange}
         onSubmit={onSubmit}
+        onGoogleSuccess={handleGoogleSuccess}
+        onGoogleError={() => {
+          // GIS itself failed (no credential) — nothing to send to the server.
+          // The button remains rendered so the user can simply retry.
+          googleAuthMutation.reset();
+        }}
       />
     </div>
   );

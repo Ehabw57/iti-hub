@@ -66,7 +66,13 @@ const upload = {
   }).fields([
     { name: 'profilePicture', maxCount: 1 },
     { name: 'coverImage', maxCount: 1 }
-  ])
+  ]),
+
+  // Track file upload (any file type, max 50MB)
+  trackFile: multer({
+    storage,
+    limits: { fileSize: 50 * 1024 * 1024 }
+  }).single('file')
 };
 
 // Middleware to handle multer errors

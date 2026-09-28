@@ -3,12 +3,14 @@ import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { FaShieldAlt, FaUsers, FaCrown, FaUserPlus, FaUserMinus, FaArrowLeft } from 'react-icons/fa';
 import { AiOutlineUserAdd, AiOutlineUserDelete } from 'react-icons/ai';
 import { useIntlayer } from 'react-intlayer';
+import toast from 'react-hot-toast';
 import communityContent from '@content/community/community.content';
-import { useCommunityDetails, useCommunityMembersInfinite } from '@hooks/queries/useCommunity';
-import { useAddModerator, useRemoveModerator, useKickMember } from '@hooks/mutations/useCommunityMutations';
+import { useCommunityDetails, useCommunityMembersInfinite, useCommunityJoinRequests } from '@hooks/queries/useCommunity';
+import { useAddModerator, useRemoveModerator, useKickMember, useDecideCommunityJoinRequest } from '@hooks/mutations/useCommunityMutations';
 import useIntersectionObserver from '@hooks/useIntersectionObserver';
 import useRequireAuth from '@hooks/useRequireAuth';
 import ConfirmDialog from '@components/common/ConfirmDialog';
+import { Chip } from '@components/common';
 
 /**
  * CommunityManagement Page
@@ -47,6 +49,32 @@ const CommunityManagement = () => {
   const addModeratorMutation = useAddModerator(communityId);
   const removeModeratorMutation = useRemoveModerator(communityId);
   const kickMemberMutation = useKickMember(communityId);
+  const decideJoinRequestMutation = useDecideCommunityJoinRequest(communityId);
+
+  // Pending join requests review queue (work order §4) — 403 just means
+  // the user isn't a moderator, so don't retry or surface an error there.
+  const {
+    data: joinRequestsData,
+    isLoading: loadingJoinRequests,
+  } = useCommunityJoinRequests(communityId, 'pending');
+  const pendingJoinRequests = joinRequestsData?.requests ?? [];
+
+  // Decide (approve/reject) a join request with a toast on failure
+  const handleDecideJoinRequest = (requestId, decision) => {
+    decideJoinRequestMutation.mutate(
+      { requestId, decision },
+      {
+        onError: (err) => {
+          const message =
+            err?.response?.data?.error?.message ||
+            (decision === 'approved'
+              ? content.joinRequestApprovedFailed?.value || 'Failed to approve request'
+              : content.joinRequestRejectedFailed?.value || 'Failed to reject request');
+          toast.error(message);
+        },
+      }
+    );
+  };
 
   // Infinite scroll observer
   const { observerTarget } = useIntersectionObserver({
@@ -117,7 +145,7 @@ const CommunityManagement = () => {
 
   // Access denied - redirect to community page
   if (!isModerator) {
-    return <Navigate to={`/communities/${communityId}`} replace />;
+    return <Navigate to={`/community/${communityId}`} replace />;
   }
 
   return (
@@ -145,10 +173,13 @@ const CommunityManagement = () => {
               </div>
             </div>
             {isOwner && (
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-red-100 text-red-700 rounded-full text-caption font-semibold">
-                <FaCrown size={14} />
-                <span>{content.owner || 'Owner'}</span>
-              </div>
+              <Chip
+                icon={FaCrown}
+                dot={false}
+                tone="border-transparent bg-error-100 text-error-700"
+              >
+                {content.owner || 'Owner'}
+              </Chip>
             )}
           </div>
         </div>
@@ -194,6 +225,79 @@ const CommunityManagement = () => {
             </div>
           </div>
         </div>
+
+        {/* Join Requests (pending-approval review — work order §4) */}
+        {isModerator && (
+          <div className="bg-neutral-100 rounded-lg shadow-elevation-2 p-4 mb-6">
+            <h2 className="flex items-center gap-2 text-heading-6 text-neutral-900 font-bold mb-3">
+              <FaUserPlus size={18} className="text-primary-600" />
+              {content.joinRequestsTitle || 'Pending Join Requests'}
+              {pendingJoinRequests.length > 0 && (
+                <span className="bg-primary-600 text-white text-caption px-2 py-0.5 rounded-full font-semibold">
+                  {pendingJoinRequests.length}
+                </span>
+              )}
+            </h2>
+
+            {loadingJoinRequests ? (
+              <p className="text-body-2 text-neutral-500">
+                {content.loading?.value || 'Loading...'}
+              </p>
+            ) : pendingJoinRequests.length === 0 ? (
+              <p className="text-body-2 text-neutral-500">
+                {content.noJoinRequests || 'No pending join requests'}
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {pendingJoinRequests.map((request) => (
+                  <div
+                    key={request._id}
+                    className="flex items-center gap-3 bg-neutral-50 rounded-lg border border-outline p-3"
+                  >
+                    {request.requester?.profilePicture ? (
+                      <img
+                        src={request.requester.profilePicture}
+                        alt={request.requester?.username || 'User'}
+                        className="w-10 h-10 rounded-full object-cover shrink-0"
+                      />
+                    ) : (
+                      <span className="w-10 h-10 rounded-full bg-surface-high flex items-center justify-center shrink-0 text-neutral-600 font-semibold">
+                        {(request.requester?.username || 'U').charAt(0).toUpperCase()}
+                      </span>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-body-2 text-neutral-900 truncate">
+                        {request.requester?.fullName || request.requester?.username || 'Unknown user'}
+                      </p>
+                      <p className="text-caption text-neutral-500 truncate">
+                        @{request.requester?.username || 'unknown'} ·{' '}
+                        {new Date(request.requestedAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => handleDecideJoinRequest(request._id, 'approved')}
+                        disabled={decideJoinRequestMutation.isPending}
+                        className="px-4 py-2 rounded-full bg-primary-600 text-white text-button font-semibold hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {content.approve || 'Approve'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDecideJoinRequest(request._id, 'rejected')}
+                        disabled={decideJoinRequestMutation.isPending}
+                        className="px-4 py-2 rounded-full border border-outline text-neutral-700 text-button font-semibold hover:bg-surface-high transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {content.reject || 'Reject'}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Filters */}
         <div className="bg-neutral-100 rounded-lg shadow-elevation-2 p-4 mb-6 space-y-4">
@@ -303,14 +407,20 @@ const CommunityManagement = () => {
                       </p>
                       <p className="text-caption text-neutral-600">@{member.username}</p>
                       <div className="flex items-center gap-2 mt-1">
-                        <span className={`px-2 py-0.5 rounded-full text-caption font-medium ${
-                          member.role === 'owner' ? 'bg-red-100 text-red-700' :
-                          member.role === 'moderator' ? 'bg-secondary-100 text-secondary-700' :
-                          'bg-neutral-300 text-neutral-700'
-                        }`}>
+                        <Chip
+                          size="xs"
+                          dot={false}
+                          tone={
+                            member.role === 'owner'
+                              ? 'border-transparent bg-error-100 text-error-700'
+                              : member.role === 'moderator'
+                                ? 'border-transparent bg-secondary-100 text-secondary-700'
+                                : 'border-transparent bg-neutral-300 text-neutral-700'
+                          }
+                        >
                           {member.role === 'owner' ? '👑 ' : member.role === 'moderator' ? '🛡️ ' : ''}
                           {member.role}
-                        </span>
+                        </Chip>
                         <span className="text-caption text-neutral-500">
                           {content.joined || 'Joined'}: {new Date(member.joinedAt).toLocaleDateString('ar-EG', { 
                             year: 'numeric', 

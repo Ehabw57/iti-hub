@@ -2,11 +2,20 @@
 
 
 /* ========================================
-   DESIGN SYSTEM - COLOR TOKENS
+   CUSTOM VARIANT - Dark Mode via .dark class
+   ======================================== */
+@custom-variant dark (&:where(.dark, .dark *));
+
+
+/* ========================================
+   DESIGN SYSTEM v3 — X-STYLE MINIMAL
+   Pure white / true-black surfaces, single ITI-red
+   accent, hairline #EFF3F4 borders, no gradients,
+   no elevation, text-and-icon driven.
    ======================================== */
 
 @theme {
-  /* Primary Red Scale */
+  /* ---- Primary Red Scale (from DESIGN.md) ---- */
   --color-red-50: #fef2f2;
   --color-red-100: #fee2e2;
   --color-red-200: #fecaca;
@@ -18,37 +27,100 @@
   --color-red-800: #991b1b;
   --color-red-900: #7f1d1d;
 
-  /* Secondary Light Blue/Gray Scale */
-  --color-blue-50: #f8fafc;
-  --color-blue-100: #f1f5f9;
-  --color-blue-200: #e2e8f0;
-  --color-blue-300: #cbd5e1;
-  --color-blue-400: #94a3b8;
-  --color-blue-500: #64748b;
-  --color-blue-600: #475569;
-  --color-blue-700: #334155;
-  --color-blue-800: #1e293b;
-  --color-blue-900: #0f172a;
+  /* ---- Secondary: mapped onto the red ramp — ONE accent (X-style single-hue system) ---- */
+  --color-maroon-50: #fef2f2;
+  --color-maroon-100: #fee2e2;
+  --color-maroon-200: #fecaca;
+  --color-maroon-300: #fca5a5;
+  --color-maroon-400: #f87171;
+  --color-maroon-500: #ef4444;
+  --color-maroon-600: #dc2626;
+  --color-maroon-700: #b91c1c;
+  --color-maroon-800: #991b1b;
+  --color-maroon-900: #7f1d1d;
 
-  /* Neutral Gray Scale */
-  --color-neutral-50: #f9fafb;
-  --color-neutral-100: #f3f4f6;
-  --color-neutral-200: #e5e7eb;
-  --color-neutral-300: #d1d5db;
-  --color-neutral-400: #9ca3af;
-  --color-neutral-500: #6b7280;
-  --color-neutral-600: #4b5563;
-  --color-neutral-700: #374151;
-  --color-neutral-800: #1f2937;
-  --color-neutral-900: #111827;
+  /* ---- Ink Navy (real palette - banners, ink text, elevated darks) ---- */
+  --color-ink-navy: #0f172a;
+  --color-ink-navy-700: #334155;
+  --color-ink-navy-800: #1e293b;
+  --color-ink-navy-900: #0f172a;
 
-  /* Status Colors */
+  /* ---- Banner stops: flat ITI red — no gradients anywhere ---- */
+  --banner-from: #dc2626; /* flat ITI red */
+  --banner-to: #dc2626;   /* flat ITI red */
+
+  /* ---- Neutrals: X ramp — white surfaces, ink #0F1419, meta #536471, hairline #EFF3F4 ---- */
+  --color-neutral-50: #ffffff;   /* App background — pure white */
+  --color-neutral-100: #f7f9f9;  /* Hover tint — X gray-hover (was card fill) */
+  --color-neutral-200: #eff3f4;  /* Hairline border — X border */
+  --color-neutral-300: #cfd9de;  /* Strong / disabled border */
+  --color-neutral-400: #536471;  /* Placeholder text */
+  --color-neutral-500: #536471;  /* Secondary / meta text — THE X gray */
+  --color-neutral-600: #536471;  /* Tertiary text (same X gray) */
+  --color-neutral-700: #0f1419;  /* Body text — X ink */
+  --color-neutral-800: #0f1419;  /* Heading text — X ink */
+  --color-neutral-900: #0f1419;  /* High-contrast text — X ink */
+
+  /* ---- Status (REBUILD §2.1 — error reuses brand red) ---- */
   --color-success: #16a34a;
   --color-error: #dc2626;
-  --color-warning: #fbbf24;
-  --color-info: #3b82f6;
+  --color-warning: #f59e0b;
+  --color-info: #2563eb;
 
-  /* Semantic Mappings for Tailwind */
+  /* Status ramps — enable -50…-900 utilities (e.g. ConfirmDialog variants) */
+  --color-success-50: #f0fdf4;
+  --color-success-100: #dcfce7;
+  --color-success-200: #bbf7d0;
+  --color-success-300: #86efac;
+  --color-success-400: #4ade80;
+  --color-success-500: #22c55e;
+  --color-success-600: #16a34a;
+  --color-success-700: #15803d;
+  --color-success-800: #166534;
+  --color-success-900: #14532d;
+
+  --color-error-50: var(--color-red-50);
+  --color-error-100: var(--color-red-100);
+  --color-error-200: var(--color-red-200);
+  --color-error-300: var(--color-red-300);
+  --color-error-400: var(--color-red-400);
+  --color-error-500: var(--color-red-500);
+  --color-error-600: var(--color-red-600);
+  --color-error-700: var(--color-red-700);
+  --color-error-800: var(--color-red-800);
+  --color-error-900: var(--color-red-900);
+
+  --color-warning-50: #fffbeb;
+  --color-warning-100: #fef3c7;
+  --color-warning-200: #fde68a;
+  --color-warning-300: #fcd34d;
+  --color-warning-400: #fbbf24;
+  --color-warning-500: #f59e0b;
+  --color-warning-600: #d97706;
+  --color-warning-700: #b45309;
+  --color-warning-800: #92400e;
+  --color-warning-900: #78350f;
+
+  --color-info-50: #eff6ff;
+  --color-info-100: #dbeafe;
+  --color-info-200: #bfdbfe;
+  --color-info-300: #93c5fd;
+  --color-info-400: #60a5fa;
+  --color-info-500: #3b82f6;
+  --color-info-600: #2563eb;
+  --color-info-700: #1d4ed8;
+  --color-info-800: #1e40af;
+  --color-info-900: #1e3a8a;
+
+  /* ---- Category Threads — Track.category (design system §2.3) ---- */
+  --color-cat-software: #7c3aed;
+  --color-cat-web: #0284c7;
+  --color-cat-systems: #b45309;
+  --color-cat-networks: #0f766e;
+  --color-cat-arts: #db2777;
+  --color-cat-other: #52525b;
+
+  /* ---- Semantic Mappings for Tailwind ---- */
   --color-primary-50: var(--color-red-50);
   --color-primary-100: var(--color-red-100);
   --color-primary-200: var(--color-red-200);
@@ -60,63 +132,75 @@
   --color-primary-800: var(--color-red-800);
   --color-primary-900: var(--color-red-900);
 
-  --color-secondary-50: var(--color-blue-50);
-  --color-secondary-100: var(--color-blue-100);
-  --color-secondary-200: var(--color-blue-200);
-  --color-secondary-300: var(--color-blue-300);
-  --color-secondary-400: var(--color-blue-400);
-  --color-secondary-500: var(--color-blue-500);
-  --color-secondary-600: var(--color-blue-600);
-  --color-secondary-700: var(--color-blue-700);
-  --color-secondary-800: var(--color-blue-800);
-  --color-secondary-900: var(--color-blue-900);
+  --color-secondary-50: var(--color-maroon-50);
+  --color-secondary-100: var(--color-maroon-100);
+  --color-secondary-200: var(--color-maroon-200);
+  --color-secondary-300: var(--color-maroon-300);
+  --color-secondary-400: var(--color-maroon-400);
+  --color-secondary-500: var(--color-maroon-500);
+  --color-secondary-600: var(--color-maroon-600);
+  --color-secondary-700: var(--color-maroon-700);
+  --color-secondary-800: var(--color-maroon-800);
+  --color-secondary-900: var(--color-maroon-900);
 
-  /* Shadow Elevations */
-  --shadow-elevation-1: 0 1px 2px rgba(0, 0, 0, 0.06);
-  --shadow-elevation-2: 0 1px 2px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.06);
-  --shadow-elevation-3: 0 8px 24px rgba(0, 0, 0, 0.18);
+  /* ---- Surface layers (X-style: white + hairline, no elevation) ---- */
+  --color-surface-lowest: #ffffff;   /* cards, inputs, menus */
+  --color-surface-low: #f7f9f9;      /* hover / subtle tint */
+  --color-surface: #f7f9f9;         /* default container */
+  --color-surface-high: #eff3f4;     /* active surface */
+  --color-surface-highest: #cfd9de;  /* selected surface */
+  --color-outline: #eff3f4;
+  --color-outline-variant: #cfd9de;  /* strong divider */
 
-  /* Border Radius Tokens */
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
+  /* ---- Shadows (X-style: no elevation — only dialogs/menus keep X's soft shadow) ---- */
+  --shadow-elevation-1: none;
+  --shadow-elevation-2: none;
+  --shadow-elevation-3: 0 0 15px rgba(101, 119, 134, 0.2), 0 0 3px 1px rgba(101, 119, 134, 0.15);
+
+  /* ---- Border Radius Tokens (from DESIGN.md) ---- */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
   --radius-full: 9999px;
 
-  /* Typography Tokens */
-  --font-family-base: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, "Noto Sans", "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
-  --font-family-arabic: "Cairo", "Noto Sans Arabic", "Segoe UI", Tahoma, Arial, sans-serif;
+  /* ---- Typography (X-style: one quiet sans for both scripts) ---- */
+  --font-display: "IBM Plex Sans", "IBM Plex Sans Arabic", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, "Noto Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "IBM Plex Sans", "IBM Plex Sans Arabic", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, "Noto Sans", "Helvetica Neue", Arial, sans-serif;
 
-  /* Font Sizes with Line Heights */
-  --font-size-h1: 2rem; /* 32px */
-  --line-height-h1: 2.5rem; /* 40px */
-  
-  --font-size-h2: 1.75rem; /* 28px */
-  --line-height-h2: 2.25rem; /* 36px */
-  
-  --font-size-h3: 1.5rem; /* 24px */
-  --line-height-h3: 2rem; /* 32px */
-  
-  --font-size-h4: 1.25rem; /* 20px */
-  --line-height-h4: 1.75rem; /* 28px */
-  
-  --font-size-h5: 1.125rem; /* 18px */
-  --line-height-h5: 1.625rem; /* 26px */
-  
-  --font-size-h6: 1rem; /* 16px */
-  --line-height-h6: 1.5rem; /* 24px */
-  
-  --font-size-body-1: 1rem; /* 16px */
-  --line-height-body-1: 1.5rem; /* 24px */
-  
-  --font-size-body-2: 0.875rem; /* 14px */
-  --line-height-body-2: 1.25rem; /* 20px */
-  
-  --font-size-caption: 0.75rem; /* 12px */
-  --line-height-caption: 1rem; /* 16px */
-  
-  --font-size-button: 0.875rem; /* 14px */
-  --line-height-button: 1.25rem; /* 20px */
+  /* Font Sizes with Line Heights (X scale — compact, text-first) */
+  --font-size-h1: 1.5rem;         /* 24px */
+  --line-height-h1: 1.875rem;     /* 30px */
+
+  --font-size-h2: 1.25rem;        /* 20px */
+  --line-height-h2: 1.625rem;     /* 26px */
+
+  --font-size-h3: 1.125rem;       /* 18px */
+  --line-height-h3: 1.5rem;       /* 24px */
+
+  --font-size-h4: 1rem;           /* 16px */
+  --line-height-h4: 1.375rem;     /* 22px */
+
+  --font-size-h5: 0.9375rem;      /* 15px */
+  --line-height-h5: 1.25rem;      /* 20px */
+
+  --font-size-h6: 0.875rem;       /* 14px */
+  --line-height-h6: 1.1875rem;    /* 19px */
+
+  --font-size-body-1: 0.9375rem;  /* 15px — post/body text */
+  --line-height-body-1: 1.25rem;  /* 20px */
+
+  --font-size-body-2: 0.8125rem;  /* 13px — meta text */
+  --line-height-body-2: 1.125rem; /* 18px */
+
+  --font-size-caption: 0.75rem;   /* 12px */
+  --line-height-caption: 1rem;    /* 16px */
+
+  --font-size-button: 0.875rem;   /* 14px */
+  --line-height-button: 1.1875rem; /* 19px */
+
+  --font-size-display: 2rem;      /* 32px — hard ceiling, no oversized headlines */
+  --line-height-display: 2.25rem; /* 36px */
 
   /* Font Weights */
   --font-weight-regular: 400;
@@ -140,16 +224,17 @@
 
   body {
     @apply m-0 p-0 antialiased;
-    font-family: var(--font-family-base);
+    font-family: var(--font-body);
     font-size: var(--font-size-body-1);
     line-height: var(--line-height-body-1);
-    color: var(--color-neutral-900);
-    background-color: #ffffff;
+    color: var(--color-neutral-800);
+    background-color: var(--color-neutral-50);
   }
 
-  /* RTL Arabic Font */
-  [dir="rtl"] body {
-    font-family: var(--font-family-arabic);
+  /* Headings use the display face (REBUILD §3).
+     No dir-based font swap — the body stack covers both scripts. */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
   }
 
   h1, h2, h3, h4, h5, h6, p, ul, ol {
@@ -163,7 +248,7 @@
   /* Focus visible styles */
   *:focus-visible {
     @apply outline-none;
-    box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px var(--color-secondary-500);
+    box-shadow: 0 0 0 2px var(--color-neutral-50), 0 0 0 4px var(--color-secondary-500);
   }
 }
 
@@ -177,18 +262,21 @@
     font-size: var(--font-size-h1);
     line-height: var(--line-height-h1);
     font-weight: var(--font-weight-bold);
+    letter-spacing: -0.02em;
   }
 
   .text-heading-2 {
     font-size: var(--font-size-h2);
     line-height: var(--line-height-h2);
     font-weight: var(--font-weight-bold);
+    letter-spacing: -0.01em;
   }
 
   .text-heading-3 {
     font-size: var(--font-size-h3);
     line-height: var(--line-height-h3);
     font-weight: var(--font-weight-semibold);
+    letter-spacing: -0.01em;
   }
 
   .text-heading-4 {
@@ -233,6 +321,13 @@
     font-weight: var(--font-weight-semibold);
   }
 
+  .text-display {
+    font-size: var(--font-size-display);
+    line-height: var(--line-height-display);
+    font-weight: var(--font-weight-bold);
+    letter-spacing: -0.02em;
+  }
+
   /* Shadow Elevations */
   .shadow-elevation-1 {
     box-shadow: var(--shadow-elevation-1);
@@ -246,6 +341,11 @@
     box-shadow: var(--shadow-elevation-3);
   }
 
+  /* Signature ITI banner gradient - diagonal ink navy -> maroon (work order v2) */
+  .bg-brand-gradient {
+    background-image: linear-gradient(135deg, var(--banner-from), var(--banner-to));
+  }
+
   /* RTL Support - Logical Properties */
   .ps-2 { padding-inline-start: 0.5rem; }
   .ps-3 { padding-inline-start: 0.75rem; }
@@ -253,7 +353,7 @@
   .pe-2 { padding-inline-end: 0.5rem; }
   .pe-3 { padding-inline-end: 0.75rem; }
   .pe-4 { padding-inline-end: 1rem; }
-  
+
   .ms-2 { margin-inline-start: 0.5rem; }
   .ms-3 { margin-inline-start: 0.75rem; }
   .ms-4 { margin-inline-start: 1rem; }
@@ -268,36 +368,82 @@
 }
 
 /* ========================================
-   DARK MODE COLORS
+   DARK MODE — X "lights-out"
+   Same token names — true-black inversion, X dark grays.
    ======================================== */
 
 .dark {
-  /* Primary Red Scale - Adjusted for dark backgrounds */
-  /* Neutral Gray Scale - Inverted for dark mode */
-  --color-white: #111827;
-  --color-black: #f9fafb;
-  --color-neutral-50: #111827;
-  --color-neutral-100: #1f2937;
-  --color-neutral-200: #374151;
-  --color-neutral-300: #4b5563;
-  --color-neutral-400: #6b7280;
-  --color-neutral-500: #9ca3af;
-  --color-neutral-600: #d1d5db;
-  --color-neutral-700: #e5e7eb;
-  --color-neutral-800: #f3f4f6;
-  --color-neutral-900: #f9fafb;
+  /* Neutrals invert (X "lights-out": true black) */
+  --color-neutral-50: #000000;   /* app background — true black */
+  --color-neutral-100: #16181c;  /* hover tint / component gray */
+  --color-neutral-200: #2f3336;  /* hairline border — X dark border */
+  --color-neutral-300: #3e4347; /* strong / disabled border */
+  --color-neutral-400: #71767b; /* placeholder / icons */
+  --color-neutral-500: #71767b;  /* secondary / meta text — X dark gray */
+  --color-neutral-600: #71767b;  /* tertiary text (same X gray) */
+  --color-neutral-700: #e7e9ea;  /* body text — X dark primary */
+  --color-neutral-800: #e7e9ea;  /* heading text */
+  --color-neutral-900: #e7e9ea;  /* high-contrast text */
 
-  /* Status Colors - Adjusted for dark backgrounds */
+  /* Brand steps brighten for legibility on black (X dark) */
+  --color-red-700: #f87171;
+  --color-red-800: #fca5a5;
+  --color-maroon-600: #dc2626;
+  --color-maroon-700: #f87171;
+
+  /* Status - brightened for dark (§2.2) */
   --color-success: #22c55e;
   --color-error: #ef4444;
   --color-warning: #fbbf24;
   --color-info: #60a5fa;
 
+  /* Category Threads - brightened for dark (§2.3) */
+  --color-cat-software: #a78bfa;
+  --color-cat-web: #38bdf8;
+  --color-cat-systems: #fbbf24;
+  --color-cat-networks: #2dd4bf;
+  --color-cat-arts: #f472b6;
+  --color-cat-other: #a1a1aa;
+
+  /* Surface layers (X dark: black + hairline) */
+  --color-surface-lowest: #000000;
+  --color-surface-low: #16181c;
+  --color-surface: #16181c;
+  --color-surface-high: #202327;
+  --color-surface-highest: #2f3336;
+  --color-outline: #2f3336;
+  --color-outline-variant: #3e4347;
 }
 
 .dark body {
   background-color: var(--color-neutral-50);
-  color: var(--color-neutral-900);
+  color: var(--color-neutral-800);
+}
+
+/* ========================================
+   NO-SCROLLBAR UTILITY (reissued work order §2)
+   Site-wide: every scrollable area keeps native scroll/swipe/keyboard
+   behaviour but never renders a visible scrollbar. Applied to page body
+   (html), sidebars, modals, chat panels, dropdowns and filter rows.
+   ======================================== */
+
+@utility no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Page body — the primary scroll container hides its bar too */
+html {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+html::-webkit-scrollbar {
+  display: none;
 }
 
 /* ========================================
@@ -355,4 +501,30 @@
 
 .animate-float-slower {
   animation: float-slower 8s ease-in-out infinite;
+}
+
+/* ========================================
+   REDUCED MOTION (Accessibility)
+   Respect prefers-reduced-motion: disable decorative
+   animation/parallax for users who opt out.
+   ======================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  /* Decorative looping animations */
+  .animate-float-slow,
+  .animate-float-slower {
+    animation: none;
+  }
 }

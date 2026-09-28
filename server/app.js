@@ -3,6 +3,7 @@ const http = require("http");
 const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
+const path = require("path");
 
 const authRoute = require("./routes/authRoutes");
 const commentRoute = require("./routes/commentRoutes");
@@ -16,6 +17,12 @@ const notificationRoutes = require("./routes/notificationRoutes");
 const searchRoutes = require("./routes/searchRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const aiRoutes = require("./routes/aiRoutes");
+const branchRoutes = require("./routes/branchRoutes");
+const roundRoutes = require("./routes/roundRoutes");
+const trackRoutes = require("./routes/trackRoutes");
+const communityGroupRoutes = require("./routes/communityGroupRoutes");
+const jobRoutes = require("./routes/jobRoutes");
+const eventRoutes = require("./routes/eventRoutes");
 const { initializeSocketServer } = require("./utils/socketServer");
 const { errorHandler } = require("./middlewares/errorHandler");
 
@@ -48,6 +55,11 @@ if (process.env.NODE_ENV === "dev") {
 
 app.use(express.json());
 app.use(cors());
+
+// Locally-uploaded files (fallback storage when Cloudinary is not configured).
+// .gitignore already excludes uploads/ — runtime content only, never committed.
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 app.use("/auth", authRoute);
 app.use("/comments", commentRoute);
 app.use("/conversations", conversationRoute);
@@ -60,6 +72,16 @@ app.use("/notifications", notificationRoutes);
 app.use("/search", searchRoutes);
 app.use("/admin", adminRoutes);
 app.use("/ai", aiRoutes);
+
+// Independent top-level modules (corrected structure — no /courses nesting):
+// Branches → Rounds → Tracks hierarchy
+app.use("/branches", branchRoutes);
+app.use("/rounds", roundRoutes);
+app.use("/tracks", trackRoutes);
+// Community, Jobs and Events are fully independent sections
+app.use("/community", communityGroupRoutes);
+app.use("/jobs", jobRoutes);
+app.use("/events", eventRoutes);
 app.get("/", (req, res) => {
   res.send(
     "Hi if you are see this message!, that means that the server is running :)"

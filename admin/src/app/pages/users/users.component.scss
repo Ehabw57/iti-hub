@@ -103,9 +103,62 @@
 }
 
 .role-select {
-  width: 100px;
+  width: 130px;
   padding: var(--spacing-1) var(--spacing-2);
   font-size: var(--font-size-caption);
+}
+
+// Role cell + inline assignment editor (role-fix doc)
+.role-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  white-space: nowrap;
+}
+
+.role-badge {
+  display: inline-block;
+  padding: var(--spacing-1) var(--spacing-2);
+  border-radius: var(--radius-full);
+  background-color: var(--color-neutral-100);
+  color: var(--color-neutral-700);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+
+  &.role-badge-admin {
+    background-color: var(--color-primary-100);
+    color: var(--color-primary-700);
+  }
+}
+
+.role-editor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  min-width: 220px;
+}
+
+.branch-select {
+  width: 100%;
+}
+
+.role-editor-actions {
+  display: flex;
+  gap: var(--spacing-2);
+}
+
+.role-hint {
+  margin: 0;
+  font-size: var(--font-size-caption);
+  color: var(--color-neutral-500);
+  max-width: 240px;
+  line-height: 1.4;
+}
+
+.role-error {
+  margin: 0;
+  font-size: var(--font-size-caption);
+  color: var(--color-red-600, #dc2626);
 }
 
 .actions {

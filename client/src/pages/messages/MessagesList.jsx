@@ -69,15 +69,15 @@ export function MessagesList() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-white">
+    <div className="flex flex-col h-full bg-neutral-100">
       {/* Header */}
-      <div className="sticky top-0 z-3 bg-white border-b border-neutral-200">
+      <div className="shrink-0 bg-neutral-100 border-b border-outline">
         <div className="flex items-center justify-between px-4 py-3">
-          <h1 className="text-heading-4 font-bold text-neutral-900">
-            {content.pageTitle.value}
+          <h1 className="text-heading-5 font-bold text-neutral-900">
+            {content.recentChats?.value || content.pageTitle.value}
           </h1>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             {/* New Message Button */}
             <Button
               variant="text"
@@ -93,7 +93,7 @@ export function MessagesList() {
             <Button
               variant="primary"
               onClick={() => setShowNewGroupModal(true)}
-              className="gap-2"
+              className="gap-2 rounded-full h-9 px-3.5"
               aria-label={content.newGroup.value}
             >
               <HiOutlineUserGroup className="w-5 h-5" />
@@ -111,12 +111,12 @@ export function MessagesList() {
             placeholder={content.searchPlaceholder.value}
             className="
               w-full px-4 py-2
-              bg-neutral-100
+              bg-surface
               border border-transparent
-              rounded-xl
+              rounded-full
               text-body-2
               placeholder:text-neutral-500
-              focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:bg-white
+              focus:outline-none focus:ring-2 focus:ring-primary-300 focus:bg-surface-lowest
               transition-colors
             "
           />
@@ -124,7 +124,7 @@ export function MessagesList() {
       </div>
 
       {/* Conversations List */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-y-auto no-scrollbar">
         <ConversationsList
           items={filteredConversations}
           loading={isLoading}

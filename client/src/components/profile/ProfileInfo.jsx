@@ -15,56 +15,56 @@ const ProfileInfo = ({ profile }) => {
 
   return (
     <>
-      <div className="bg-white dark:bg-neutral-100 shadow-sm rounded-lg p-6 mb-4">
+      <div className="bg-neutral-50 shadow-sm rounded-lg p-6 mb-4">
         {/* Bio Section */}
         {profile.bio && (
           <div className="mb-6">
-            <p className="text-neutral-800 dark:text-neutral-800 leading-relaxed whitespace-pre-wrap">
+            <p className="text-neutral-800 leading-relaxed whitespace-pre-wrap">
               {profile.bio}
             </p>
           </div>
         )}
 
         {/* Stats Section */}
-        <div className="flex items-center gap-8 pt-4 border-t border-neutral-200 dark:border-neutral-200">
+        <div className="flex items-center gap-8 pt-4 border-t border-neutral-200">
           {/* Followers */}
           <button 
             onClick={() => setShowFollowers(true)}
-            className="flex items-center gap-3 group hover:bg-neutral-50 dark:hover:bg-neutral-50 px-3 py-2 rounded-lg transition-colors"
+            className="flex items-center gap-3 group hover:bg-neutral-50 px-3 py-2 rounded-lg transition-colors"
           >
           <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center group-hover:bg-primary-200 transition-colors">
             <FaUsers className="w-5 h-5 text-primary-600" />
           </div>
           <div className="text-left">
-            <p className="text-2xl font-bold text-neutral-900 dark:text-neutral-900">
+            <p className="text-2xl font-bold text-neutral-900">
               {formatNumber(profile.followersCount || 0)}
             </p>
-            <p className="text-sm text-neutral-600 dark:text-neutral-600">{content.followers}</p>
+            <p className="text-sm text-neutral-600">{content.followers}</p>
           </div>
         </button>
 
         {/* Following */}
         <button 
           onClick={() => setShowFollowing(true)}
-          className="flex items-center gap-3 group hover:bg-neutral-50 dark:hover:bg-neutral-50 px-3 py-2 rounded-lg transition-colors"
-        >
+            className="flex items-center gap-3 group hover:bg-neutral-50 px-3 py-2 rounded-lg transition-colors"
+          >
           <div className="w-10 h-10 rounded-full bg-secondary-100 flex items-center justify-center group-hover:bg-secondary-200 transition-colors">
             <FaUserCheck className="w-5 h-5 text-secondary-600" />
           </div>
           <div className="text-left">
-            <p className="text-2xl font-bold text-neutral-900 dark:text-neutral-900">
+            <p className="text-2xl font-bold text-neutral-900">
               {formatNumber(profile.followingCount || 0)}
             </p>
-            <p className="text-sm text-neutral-600 dark:text-neutral-600">{content.followingCount}</p>
+            <p className="text-sm text-neutral-600">{content.followingCount}</p>
           </div>
         </button>
 
         {/* Posts Count (if available) */}
         {profile.postsCount !== undefined && (
           <div className="flex items-center gap-3 px-3 py-2">
-            <div className="w-10 h-10 rounded-full bg-neutral-100 dark:bg-neutral-100 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center">
               <svg
-                className="w-5 h-5 text-neutral-600 dark:text-neutral-600"
+                className="w-5 h-5 text-neutral-600"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -78,10 +78,10 @@ const ProfileInfo = ({ profile }) => {
               </svg>
             </div>
             <div className="text-left">
-              <p className="text-2xl font-bold text-neutral-900 dark:text-neutral-900">
+              <p className="text-2xl font-bold text-neutral-900">
                 {formatNumber(profile.postsCount || 0)}
               </p>
-              <p className="text-sm text-neutral-600 dark:text-neutral-600">{content.posts}</p>
+              <p className="text-sm text-neutral-600">{content.posts}</p>
             </div>
           </div>
         )}
@@ -89,7 +89,7 @@ const ProfileInfo = ({ profile }) => {
 
       {/* Follows You Badge */}
       {profile.followsYou && (
-        <div className="mt-4 pt-4 border-t border-neutral-200 dark:border-neutral-200">
+        <div className="mt-4 pt-4 border-t border-neutral-200">
           <span className="inline-flex items-center gap-2 px-3 py-1 bg-secondary-100 text-secondary-700 rounded-full text-sm font-medium">
             <FaUserCheck className="w-4 h-4" />
             Follows You

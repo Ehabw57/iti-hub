@@ -4,6 +4,8 @@
  * Reusable for posts, communities, search results
  */
 
+import { Chip } from '@components/common';
+
 /**
  * TagList - Display tags with optional max visible limit
  * @param {Object} props
@@ -19,12 +21,9 @@ export function TagList({ tags, maxVisible = 5 }) {
   return (
     <div className="flex flex-wrap gap-2">
       {visibleTags.map((tag, idx) => (
-        <span 
-          key={idx}
-          className="px-2 py-1 bg-primary-100 text-primary-600 text-sm rounded-full"
-        >
-          #{tag}
-        </span>
+        <Chip key={idx} hash size="xs">
+          {tag}
+        </Chip>
       ))}
       {remainingCount > 0 && (
         <span className="text-sm text-neutral-500">

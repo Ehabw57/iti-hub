@@ -1,9 +1,9 @@
 import { AiOutlineLoading } from 'react-icons/ai';
 
 const variantClasses = {
-  primary: 'bg-primary-600 text-white hover:bg-primary-700 active:bg-primary-800 disabled:bg-neutral-200 disabled:text-neutral-500',
-  secondary: 'bg-secondary-600 text-white hover:bg-secondary-700 active:bg-secondary-800 disabled:bg-neutral-200 disabled:text-neutral-500',
-  text: 'bg-transparent text-secondary-600 hover:underline hover:bg-secondary-50 active:text-secondary-700 disabled:text-neutral-400',
+  primary: 'bg-primary-600 border-transparent text-white hover:bg-primary-700 active:bg-primary-800 disabled:bg-neutral-200 disabled:text-neutral-500',
+  secondary: 'bg-transparent border-neutral-300 text-neutral-900 hover:bg-neutral-100 hover:border-neutral-400 active:bg-neutral-200 disabled:text-neutral-400 disabled:border-neutral-200',
+  text: 'bg-transparent border-transparent text-neutral-500 hover:underline hover:text-neutral-700 active:text-neutral-800 disabled:text-neutral-400',
 };
 
 export default function Button({

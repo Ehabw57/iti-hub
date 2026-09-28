@@ -4,6 +4,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { Card, ErrorDisplay } from "@components/common";
 import { useAuthStore } from "@store/auth";
 import { useRegister } from "@hooks/mutations/useRegister";
+import { useGoogleAuth } from "@hooks/mutations/useGoogleAuth";
 import { useCheckEmailAvailability } from "@hooks/mutations/useCheckEmailAvailability";
 import { useCheckUsernameAvailability } from "@hooks/mutations/useCheckUsernameAvailability";
 import {
@@ -53,6 +54,7 @@ export default function RegisterController() {
   const checkEmailMutation = useCheckEmailAvailability();
   const checkUsernameMutation = useCheckUsernameAvailability();
   const registerMutation = useRegister();
+  const googleAuthMutation = useGoogleAuth();
 
   // Check cooldown on mount
   useEffect(() => {
@@ -242,6 +244,22 @@ export default function RegisterController() {
     );
   };
 
+  // Google Sign-In completes registration instantly (server creates the
+  // account from the verified Google profile and returns the app JWT)
+  const handleGoogleSuccess = (idToken) => {
+    googleAuthMutation.mutate(
+      { idToken },
+      {
+        onSuccess: (response) => {
+          const { token, user } = response.data.data;
+          setToken(token);
+          setUser(user);
+          navigate("/");
+        },
+      }
+    );
+  };
+
   // Cooldown message
   if (cooldown) {
     const remaining = Math.ceil((cooldown - Date.now()) / 1000);
@@ -293,8 +311,10 @@ export default function RegisterController() {
         </div>
 
         {/* Error Display */}
-        {registerMutation.isError && (
-          <ErrorDisplay error={registerMutation.error} />
+        {(registerMutation.isError || googleAuthMutation.isError) && (
+          <ErrorDisplay
+            error={registerMutation.isError ? registerMutation.error : googleAuthMutation.error}
+          />
         )}
 
         {/* Step Components */}
@@ -305,6 +325,7 @@ export default function RegisterController() {
             onChange={handleChange}
             onNext={handleStepOneNext}
             checking={checkEmailMutation.isPending}
+            onGoogleSuccess={handleGoogleSuccess}
           />
         )}
 

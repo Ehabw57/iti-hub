@@ -4,6 +4,12 @@ export default {
   key: "messagesList",
   content: {
     pageTitle: t({ en: "Messages", ar: "الرسائل" }),
+    recentChats: t({ en: "Recent Chats", ar: "المحادثات الأخيرة" }),
+    selectConversationTitle: t({ en: "Your messages", ar: "رسائلك" }),
+    selectConversationMessage: t({
+      en: "Select a chat from the list to start messaging.",
+      ar: "اختر محادثة من القائمة لبدء المراسلة.",
+    }),
 
     // Action buttons
     newMessage: t({ en: "New message", ar: "رسالة جديدة" }),

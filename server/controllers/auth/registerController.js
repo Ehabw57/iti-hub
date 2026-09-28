@@ -98,13 +98,20 @@ exports.register = asyncHandler(async (req, res) => {
 
   await newUser.save();
 
-  const verifyLink = `http://localhost:5173/verify-email?token=${verificationToken}`;
+  const frontendBaseUrl = process.env.FRONTEND_BASE_URL || 'http://localhost:5173';
+  const verifyLink = `${frontendBaseUrl}/verify-email?token=${verificationToken}`;
 
-  await sendEmail({
-    to: newUser.email,
-    subject: 'Verify Your Email - itiHub',
-    html: getEmailVerificationTemplate(verifyLink, newUser.fullName)
-  });
+  // Send the verification email, but never fail registration because of it:
+  // the user can request a resend from the app.
+  try {
+    await sendEmail({
+      to: newUser.email,
+      subject: 'Verify Your Email - itiHub',
+      html: getEmailVerificationTemplate(verifyLink, newUser.fullName)
+    });
+  } catch (emailError) {
+    console.error('[register] Verification email send failed:', emailError.message);
+  }
 
   // Generate JWT token
   const token = jwt.sign(

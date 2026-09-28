@@ -14,6 +14,7 @@ const { register } = require('./registerController');
 const { login } = require('./loginController');
 const { requestPasswordReset, confirmPasswordReset } = require('./passwordResetController');
 const { verifyEmail } = require('./emailVerificationController');
+const { googleAuth } = require('./googleAuthController');
 
 module.exports = {
   // Registration
@@ -21,6 +22,9 @@ module.exports = {
   
   // Login
   login,
+
+  // Google Sign-In
+  googleAuth,
   
   // Password Reset
   requestPasswordReset,

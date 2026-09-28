@@ -25,13 +25,15 @@ import { NameDialog, WorkspaceToolbar } from './FolderShared';
 
 /**
  * Records tab — SharePoint-style (reissued work order §1). Session
- * recordings / Teams meeting links now live in folders like files do:
- * managers create, rename and delete folders, add records into any folder
- * and edit / delete records; members browse by folder and open links.
+ * recordings / Teams meeting links live in this tab's own folders (kind
+ * 'records' — a list fully independent from the Files tab's): managers
+ * create, rename and delete folders, add records into any folder and edit /
+ * delete records; members browse by folder and open links.
  */
 export default function RecordsTab({ trackId, isManager, t }) {
   const { data, isLoading } = useTrackRecords(trackId);
-  const { data: foldersData } = useTrackFolders(trackId);
+  // This tab's own folders only (kind 'records') — fully independent of Files
+  const { data: foldersData } = useTrackFolders(trackId, 'records');
 
   const createRecordMutation = useCreateTrackRecord();
   const updateRecordMutation = useUpdateTrackRecord();
@@ -68,7 +70,7 @@ export default function RecordsTab({ trackId, isManager, t }) {
         await renameFolderMutation.mutateAsync({ folderId: nameDialog.folder._id, name });
         toast.success(t('folderRenamed', 'Folder renamed'));
       } else {
-        await createFolderMutation.mutateAsync({ trackId, name });
+        await createFolderMutation.mutateAsync({ trackId, name, kind: 'records' });
         toast.success(t('folderCreated', 'Folder created'));
       }
       setNameDialog(null);

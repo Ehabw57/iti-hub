@@ -182,7 +182,7 @@ export function MessageList({
     <div
       ref={scrollContainerRef}
       onScroll={handleScroll}
-      className="flex-1 overflow-y-auto px-4 py-4 space-y-4"
+      className="flex-1 overflow-y-auto no-scrollbar px-4 py-4 space-y-4"
     >
       {/* Load Older Messages Button - Intersection Observer Target */}
       {hasOlderMessages && (
