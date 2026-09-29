@@ -65,7 +65,7 @@ async function main() {
 
   // ---------- Prerequisite: /admin stats accept super_admin ----------
   console.log('━━━ Prerequisite: platform admin endpoints accept super_admin ━━━');
-  const stats = await api('GET', '/admin/statistics/overview', { token: superAdmin.token });
+  const stats = await api('GET', '/api/admin/statistics/overview', { token: superAdmin.token });
   check('0', 'GET /admin/statistics/overview as super_admin (200)', stats.status === 200, `got ${stats.status}`);
 
   // ---------- Item 1: branches list reflects DB immediately ----------

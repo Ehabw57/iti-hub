@@ -4,6 +4,7 @@ const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const path = require("path");
+const fs = require("fs");
 
 const authRoute = require("./routes/authRoutes");
 const commentRoute = require("./routes/commentRoutes");
@@ -60,6 +61,37 @@ app.use(cors());
 // .gitignore already excludes uploads/ — runtime content only, never committed.
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
+// ---------------------------------------------------------------------------
+// API mounts — every router is reachable BOTH at its legacy top-level path
+// (React client: /auth, /posts, /branches, ...) AND under /api/<path>
+// (Angular admin dashboard production build calls /api/...).
+// The admin API lives ONLY at /api/admin: the bare /admin path serves the
+// admin dashboard SPA below, so there is no route clash.
+// ---------------------------------------------------------------------------
+const apiRouter = express.Router();
+apiRouter.use("/auth", authRoute);
+apiRouter.use("/comments", commentRoute);
+apiRouter.use("/conversations", conversationRoute);
+apiRouter.use(userRouter);
+apiRouter.use("/posts", postRoutes);
+apiRouter.use(connectionRoute);
+apiRouter.use("/feed", feedRoutes);
+apiRouter.use("/communities", communityRoutes);
+apiRouter.use("/notifications", notificationRoutes);
+apiRouter.use("/search", searchRoutes);
+apiRouter.use("/admin", adminRoutes); // → /api/admin/... (bare /admin serves the dashboard SPA)
+apiRouter.use("/ai", aiRoutes);
+// Branches → Rounds → Tracks hierarchy + independent sections
+apiRouter.use("/branches", branchRoutes);
+apiRouter.use("/rounds", roundRoutes);
+apiRouter.use("/tracks", trackRoutes);
+apiRouter.use("/community", communityGroupRoutes);
+apiRouter.use("/jobs", jobRoutes);
+apiRouter.use("/events", eventRoutes);
+app.use("/api", apiRouter);
+
+// Legacy top-level mounts (React client + existing scripts) — /admin
+// intentionally NOT repeated here (moved to /api/admin).
 app.use("/auth", authRoute);
 app.use("/comments", commentRoute);
 app.use("/conversations", conversationRoute);
@@ -70,18 +102,30 @@ app.use("/feed", feedRoutes);
 app.use("/communities", communityRoutes);
 app.use("/notifications", notificationRoutes);
 app.use("/search", searchRoutes);
-app.use("/admin", adminRoutes);
 app.use("/ai", aiRoutes);
-
-// Independent top-level modules (corrected structure — no /courses nesting):
-// Branches → Rounds → Tracks hierarchy
 app.use("/branches", branchRoutes);
 app.use("/rounds", roundRoutes);
 app.use("/tracks", trackRoutes);
-// Community, Jobs and Events are fully independent sections
 app.use("/community", communityGroupRoutes);
 app.use("/jobs", jobRoutes);
 app.use("/events", eventRoutes);
+
+// ---------------------------------------------------------------------------
+// Admin dashboard SPA (Angular production build) served at /admin.
+// Registered only when the build output exists, so dev machines without
+// `ng build` are unaffected. Client-side routes (/admin/dashboard, ...) fall
+// back to index.html. A method-agnostic middleware is used instead of a
+// wildcard route because Express 5 changed path-to-regexp syntax.
+// ---------------------------------------------------------------------------
+const adminDistDir = path.resolve(__dirname, "../admin/dist/admin/browser");
+if (fs.existsSync(adminDistDir)) {
+  app.use("/admin", express.static(adminDistDir, { index: "index.html" }));
+  app.use("/admin", (req, res, next) => {
+    if (req.method !== "GET" && req.method !== "HEAD") return next();
+    res.sendFile(path.join(adminDistDir, "index.html"));
+  });
+  console.log("Admin dashboard served from", adminDistDir);
+}
 app.get("/", (req, res) => {
   res.send(
     "Hi if you are see this message!, that means that the server is running :)"
