@@ -56,18 +56,18 @@ const EditProfile = ({ profile, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black/5 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-neutral-100 rounded-lg shadow-2xl w-full max-w-md z-[60]">
+      <div className="bg-neutral-50 rounded-lg shadow-2xl w-full max-w-md z-[60]">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200 dark:border-neutral-200">
-          <h2 className="text-xl font-bold text-neutral-900 dark:text-neutral-900">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200">
+          <h2 className="text-xl font-bold text-neutral-900">
             {content.editProfile}
           </h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-50 rounded-full transition-colors"
+            className="p-2 hover:bg-neutral-100 rounded-full transition-colors"
             type="button"
           >
-            <FaTimes className="w-5 h-5 text-neutral-600 dark:text-neutral-600" />
+            <FaTimes className="w-5 h-5 text-neutral-600" />
           </button>
         </div>
 
@@ -77,7 +77,7 @@ const EditProfile = ({ profile, onClose }) => {
           <div>
             <label 
               htmlFor="fullName" 
-              className="block text-sm font-medium text-neutral-700 dark:text-neutral-700 mb-2"
+              className="block text-sm font-medium text-neutral-700 mb-2"
             >
               {content.fullName || 'Full Name'}
             </label>
@@ -86,10 +86,10 @@ const EditProfile = ({ profile, onClose }) => {
               type="text"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-white dark:text-neutral-900 ${
-                errors.fullName 
-                  ? 'border-red-500' 
-                  : 'border-neutral-300 dark:border-neutral-300'
+              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-neutral-50 text-neutral-900 ${
+                errors.fullName
+                  ? 'border-red-500'
+                  : 'border-neutral-300'
               }`}
               placeholder={content.fullNamePlaceholder || 'Enter your full name'}
             />
@@ -102,7 +102,7 @@ const EditProfile = ({ profile, onClose }) => {
           <div>
             <label 
               htmlFor="bio" 
-              className="block text-sm font-medium text-neutral-700 dark:text-neutral-700 mb-2"
+              className="block text-sm font-medium text-neutral-700 mb-2"
             >
               {content.bio || 'Bio'}
             </label>
@@ -111,10 +111,10 @@ const EditProfile = ({ profile, onClose }) => {
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               rows={4}
-              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none dark:bg-white dark:text-neutral-900 ${
-                errors.bio 
-                  ? 'border-red-500' 
-                  : 'border-neutral-300 dark:border-neutral-300'
+              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none bg-neutral-50 text-neutral-900 ${
+                errors.bio
+                  ? 'border-red-500'
+                  : 'border-neutral-300'
               }`}
               placeholder={content.bioPlaceholder || 'Tell us about yourself'}
             />
@@ -122,7 +122,7 @@ const EditProfile = ({ profile, onClose }) => {
               {errors.bio && (
                 <p className="text-sm text-red-600">{errors.bio}</p>
               )}
-              <p className="text-sm text-neutral-500 dark:text-neutral-600 ml-auto">
+              <p className="text-sm text-neutral-500 ml-auto">
                 {bio.length}/500
               </p>
             </div>
@@ -140,7 +140,7 @@ const EditProfile = ({ profile, onClose }) => {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 border border-neutral-300 dark:border-neutral-300 text-neutral-700 dark:text-neutral-700 rounded-lg hover:bg-neutral-50 transition-colors font-medium"
+              className="flex-1 px-4 py-2 border border-neutral-300 text-neutral-700 rounded-lg hover:bg-neutral-50 transition-colors font-medium"
             >
               {content.cancel || 'Cancel'}
             </button>

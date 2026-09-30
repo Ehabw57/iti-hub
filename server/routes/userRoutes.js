@@ -1,11 +1,14 @@
 const express = require("express");
-const { 
-  getUserProfile, 
-  updateProfile, 
-  blockUser, 
+const {
+  getUserProfile,
+  updateProfile,
+  blockUser,
   unblockUser,
   uploadProfilePicture,
   uploadCoverImage,
+  changePassword,
+  updateNotificationPreferences,
+  deleteAccount,
 } = require("../controllers/user");
 const { getUserPosts } = require("../controllers/post");
 const getUserCommunities = require("../controllers/community/getUserCommunities");
@@ -18,6 +21,15 @@ const userRouter = express.Router();
 // Get current user details & communities
 userRouter.get("/users/me", checkAuth, (req, res) => res.json(req.user)); // Get current authenticated user
 userRouter.get("/users/me/communities", checkAuth, getUserCommunities);
+
+// Settings: update profile (profile section)
+userRouter.patch("/users/me", checkAuth, updateProfile); // Partial update of profile fields
+// Settings: change password (security section)
+userRouter.patch("/users/me/password", checkAuth, changePassword);
+// Settings: notification preferences
+userRouter.patch("/users/me/notification-preferences", checkAuth, updateNotificationPreferences);
+// Settings: delete account
+userRouter.delete("/users/me", checkAuth, deleteAccount);
 
 // Get & update user profile
 userRouter.get("/users/:username", optionalAuth, getUserProfile); // Public, optional auth

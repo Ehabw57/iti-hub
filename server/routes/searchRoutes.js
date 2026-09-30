@@ -4,12 +4,14 @@
  * Handles all search-related endpoints
  */
 const express = require("express");
-const router = express.Router();
 const { optionalAuth } = require("../middlewares/checkAuth");
 const { searchUsers } = require("../controllers/user");
 const { searchPosts } = require("../controllers/post");
 const { searchCommunities } = require("../controllers/community");
 const { fastSearch } = require("../controllers/search/fastSearchController");
+const { globalSearch } = require("../controllers/search/globalSearchController");
+
+const router = express.Router();
 
 /**
  * @route   GET /api/v1/search/fast
@@ -18,6 +20,14 @@ const { fastSearch } = require("../controllers/search/fastSearchController");
  * @access  Public (optional authentication for metadata)
  */
 router.get("/fast", optionalAuth, fastSearch);
+
+/**
+ * @route   GET /api/v1/search/all
+ * @desc    Site-wide grouped search (branches, tracks, users, communities, jobs, posts)
+ * @query   q - search query (required, min 2 chars)
+ * @access  Public (optional authentication widens scope to groups + jobs)
+ */
+router.get("/all", optionalAuth, globalSearch);
 
 /**
  * @route   GET /api/v1/search/users

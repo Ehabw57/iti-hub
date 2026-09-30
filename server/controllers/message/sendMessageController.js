@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Conversation = require('../../models/Conversation');
 const Message = require('../../models/Message');
 const { isParticipant, canSendMessage, formatMessage } = require('../../utils/messageHelpers');
-const { uploadToCloudinary } = require('../../utils/cloudinary');
+const { saveFile, absoluteUrl } = require('../../utils/fileStorage');
 const { MAX_MESSAGE_CONTENT_LENGTH } = require('../../utils/constants');
 const { getSocketServer, getUserSocketId } = require('../../utils/socketServer');
 const { asyncHandler } = require('../../middlewares/errorHandler');
@@ -71,8 +71,13 @@ exports.sendMessage = asyncHandler(async (req, res) => {
   let imageUrl = null;
   if (imageFile) {
     try {
-      const result = await uploadToCloudinary(imageFile.buffer, 'messages');
-      imageUrl = result.secure_url;
+      const result = await saveFile(imageFile.buffer, {
+        folder: 'iti-hub/messages',
+        originalName: imageFile.originalname,
+        resourceType: 'image',
+        useFilename: false,
+      });
+      imageUrl = absoluteUrl(req, result.url);
     } catch (uploadError) {
       console.error('Image upload error:', uploadError);
       throw new InternalError('Failed to upload image');

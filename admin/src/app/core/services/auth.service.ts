@@ -13,9 +13,13 @@ export interface User {
   username: string;
   email: string;
   fullName: string;
-  role: 'user' | 'admin';
+  role: 'user' | 'admin' | 'super_admin' | 'branch_admin' | 'instructor' | 'student';
   profilePicture?: string;
+  branchId?: string | null;
 }
+
+/** Roles allowed to use the admin dashboard */
+export const ADMIN_DASHBOARD_ROLES = ['admin', 'super_admin', 'branch_admin', 'instructor'];
 
 export interface LoginResponse {
   success: boolean;
@@ -41,7 +45,17 @@ export class AuthService {
   
   // Computed values
   user = computed(() => this.userSignal());
-  isAuthenticated = computed(() => !!this.userSignal() && this.userSignal()?.role === 'admin');
+  isAuthenticated = computed(() =>
+    !!this.userSignal() && ADMIN_DASHBOARD_ROLES.includes(this.userSignal()!.role)
+  );
+  /** Platform admins manage everything (stats, users, posts, all branches) */
+  isPlatformAdmin = computed(() =>
+    !!this.userSignal() && ['admin', 'super_admin'].includes(this.userSignal()!.role)
+  );
+  /** Branch admins manage only their own branch's rounds/tracks */
+  isBranchAdmin = computed(() => this.userSignal()?.role === 'branch_admin');
+  /** Instructors review requests & manage content for their own tracks only */
+  isInstructor = computed(() => this.userSignal()?.role === 'instructor');
   isLoading = computed(() => this.isLoadingSignal());
   
   // Flag to check if validation is in progress (for interceptor)
@@ -68,9 +82,9 @@ export class AuthService {
       password
     }).pipe(
       tap(response => {
-        if (response.success && response.data.user.role === 'admin') {
+        if (response.success && ADMIN_DASHBOARD_ROLES.includes(response.data.user.role)) {
           this.setSession(response.data.token, response.data.user);
-        } else if (response.data.user.role !== 'admin') {
+        } else if (!ADMIN_DASHBOARD_ROLES.includes(response.data.user.role)) {
           throw new Error('Access denied. Admin role required.');
         }
         this.isLoadingSignal.set(false);
@@ -137,15 +151,15 @@ export class AuthService {
       return;
     }
     
-    // If we have a stored user with admin role, trust it initially
+    // If we have a stored user with an admin dashboard role, trust it initially
     // The interceptor will handle 401s during actual API calls
-    if (storedUser && storedUser.role === 'admin') {
+    if (storedUser && ADMIN_DASHBOARD_ROLES.includes(storedUser.role)) {
       this.userSignal.set(storedUser);
     }
 
     this.isValidating = true;
     
-    this.http.get<{ success: boolean; _id: string; username: string; email: string; fullName: string; role: string; profilePicture?: string }>(
+    this.http.get<{ success: boolean; _id: string; username: string; email: string; fullName: string; role: string; profilePicture?: string; branchId?: string | null }>(
       `${environment.apiUrl}/users/me`
     ).pipe(
       catchError((error: HttpErrorResponse) => {
@@ -159,19 +173,20 @@ export class AuthService {
       })
     ).subscribe(response => {
       this.isValidating = false;
-      if (response && response.role === 'admin') {
+      if (response && ADMIN_DASHBOARD_ROLES.includes(response.role)) {
         const user: User = {
           _id: response._id,
           username: response.username,
           email: response.email,
           fullName: response.fullName,
-          role: response.role as 'admin',
-          profilePicture: response.profilePicture
+          role: response.role as User['role'],
+          profilePicture: response.profilePicture,
+          branchId: response.branchId ?? null
         };
         this.userSignal.set(user);
         localStorage.setItem(this.USER_KEY, JSON.stringify(user));
-      } else if (response && response.role !== 'admin') {
-        // User exists but not admin - clear session
+      } else if (response && !ADMIN_DASHBOARD_ROLES.includes(response.role)) {
+        // User exists but has no admin dashboard role - clear session
         this.clearSession();
       }
       // If response is null (from catchError), we already handled it

@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Conversation = require('../../models/Conversation');
 const { formatConversation } = require('../../utils/messageHelpers');
-const { uploadToCloudinary } = require('../../utils/cloudinary');
+const { saveFile, absoluteUrl } = require('../../utils/fileStorage');
 const { 
   MIN_GROUP_NAME_LENGTH,
   MAX_GROUP_NAME_LENGTH
@@ -68,8 +68,13 @@ exports.updateGroup = asyncHandler(async (req, res) => {
   // Upload and update image if provided
   if (imageFile) {
     try {
-      const result = await uploadToCloudinary(imageFile.buffer, 'groups');
-      conversation.image = result.secure_url;
+      const result = await saveFile(imageFile.buffer, {
+        folder: 'iti-hub/groups',
+        originalName: imageFile.originalname,
+        resourceType: 'image',
+        useFilename: false,
+      });
+      conversation.image = absoluteUrl(req, result.url);
     } catch (uploadError) {
       console.error('Image upload error:', uploadError);
       throw new InternalError('Failed to upload image');

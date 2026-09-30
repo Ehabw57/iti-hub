@@ -1,0 +1,164 @@
+<div class="jobs-page">
+  <header class="page-header">
+    <h1 class="text-heading-2">{{ i18n.t('jobs.title') }}</h1>
+    <p class="text-body-2 page-subtitle">{{ i18n.t('jobs.subtitle') }}</p>
+  </header>
+
+  <!-- Success / Error Messages -->
+  @if (successMessage()) {
+    <div class="success-message">{{ successMessage() }}</div>
+  }
+  @if (errorMessage()) {
+    <div class="error-message">{{ errorMessage() }}</div>
+  }
+
+  <!-- Create form -->
+  <div class="filters card">
+    <div class="filter-row">
+      <button class="btn btn-primary" (click)="toggleForm()">
+        {{ showForm() ? i18n.t('common.cancel') : i18n.t('jobs.createJob') }}
+      </button>
+      <span class="text-caption hint">{{ i18n.t('jobs.hintCreate') }}</span>
+    </div>
+
+    @if (showForm()) {
+      <form class="job-form" (ngSubmit)="createJob()">
+        <div class="form-grid">
+          <input
+            class="input"
+            type="text"
+            [(ngModel)]="formTitle"
+            [ngModelOptions]="{ standalone: true }"
+            [placeholder]="i18n.t('jobs.jobTitle')"
+            required
+          />
+          <input
+            class="input"
+            type="text"
+            [(ngModel)]="formCompany"
+            [ngModelOptions]="{ standalone: true }"
+            [placeholder]="i18n.t('jobs.company')"
+            required
+          />
+          <input
+            class="input"
+            type="text"
+            [(ngModel)]="formLocation"
+            [ngModelOptions]="{ standalone: true }"
+            [placeholder]="i18n.t('jobs.location')"
+          />
+          <input
+            class="input"
+            type="url"
+            [(ngModel)]="formApplyUrl"
+            [ngModelOptions]="{ standalone: true }"
+            [placeholder]="i18n.t('jobs.applyUrl')"
+            required
+          />
+        </div>
+        <input
+          class="input"
+          type="text"
+          [(ngModel)]="formTags"
+          [ngModelOptions]="{ standalone: true }"
+          [placeholder]="i18n.t('jobs.tags')"
+        />
+        <textarea
+          class="input"
+          rows="3"
+          [(ngModel)]="formDescription"
+          [ngModelOptions]="{ standalone: true }"
+          [placeholder]="i18n.t('jobs.description')"
+        ></textarea>
+        <div class="form-actions">
+          <button
+            class="btn btn-primary"
+            type="submit"
+            [disabled]="saving() || !formTitle.trim() || !formCompany.trim() || !formApplyUrl.trim()"
+          >
+            {{ saving() ? i18n.t('common.loading') : i18n.t('jobs.createJob') }}
+          </button>
+        </div>
+      </form>
+    }
+  </div>
+
+  <!-- Jobs table -->
+  @if (isLoading()) {
+    <div class="loading-state">
+      <span class="spinner-lg"></span>
+    </div>
+  } @else {
+    <div class="table-container card">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>{{ i18n.t('jobs.jobTitle') }}</th>
+            <th>{{ i18n.t('jobs.company') }}</th>
+            <th>{{ i18n.t('jobs.location') }}</th>
+            <th>{{ i18n.t('jobs.tags') }}</th>
+            <th>{{ i18n.t('jobs.postedAt') }}</th>
+            <th>{{ i18n.t('common.actions') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (job of jobs(); track job._id) {
+            <tr>
+              <td class="text-body-2 font-medium">{{ job.title }}</td>
+              <td class="text-body-2">{{ job.company }}</td>
+              <td class="text-body-2">{{ job.location || '—' }}</td>
+              <td>
+                <div class="tags-cell">
+                  @for (tag of job.tags || []; track tag) {
+                    <span class="badge badge-pending">{{ tag }}</span>
+                  } @empty {
+                    <span class="text-body-2">—</span>
+                  }
+                </div>
+              </td>
+              <td class="text-body-2">{{ formatDate(job.createdAt) }}</td>
+              <td>
+                <div class="actions">
+                  @if (job.applyUrl) {
+                    <a class="btn btn-sm btn-secondary" [href]="job.applyUrl" target="_blank" rel="noopener noreferrer">
+                      {{ i18n.t('common.view') }}
+                    </a>
+                  }
+                  <button
+                    class="btn btn-sm btn-danger"
+                    (click)="confirmDelete(job)"
+                    [disabled]="actionLoading() === job._id"
+                  >
+                    {{ i18n.t('common.delete') }}
+                  </button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="empty-cell">{{ i18n.t('jobs.noJobs') }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  <!-- Delete confirmation modal -->
+  @if (showConfirmModal()) {
+    <div class="modal-overlay" (click)="cancelDelete()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <h3 class="text-heading-5 modal-title">{{ i18n.t('common.confirm') }}</h3>
+        <p class="text-body-2 modal-message">{{ i18n.t('jobs.confirmDelete') }}</p>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" (click)="cancelDelete()">
+            {{ i18n.t('common.cancel') }}
+          </button>
+          <button class="btn btn-danger" (click)="deleteJob()">
+            {{ i18n.t('common.confirm') }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaCamera, FaUserPlus, FaUserMinus, FaShieldAlt } from 'react-icons/fa';
 import { FiSettings } from 'react-icons/fi';
-import { HiPencil } from 'react-icons/hi2';
+import { HiPencil, HiOutlineClock } from 'react-icons/hi2';
 import { useIntlayer } from 'react-intlayer';
 import communityContent from '@content/community/community.content';
 import useRequireAuth from '@hooks/useRequireAuth';
@@ -12,10 +12,18 @@ import PostComposerModal from '@components/post/PostComposerModal';
 /**
  * CommunityHeader Component - Part 1
  * Displays community cover image, profile picture, and action buttons
+ *
+ * Round 3 work order §4: the Join button now goes through the
+ * pending-request flow — three visual states:
+ *   not joined      → "Request to Join" (sends a join request)
+ *   request pending → "Request Pending" (clock icon, cancel via tooltip action)
+ *   joined          → "Leave Community"
  */
 const CommunityHeader = ({
   community,
   isJoined,
+  isPending,
+  isJoining,
   onJoinLeave,
   onProfilePictureUpdate,
   onCoverImageUpdate,
@@ -166,27 +174,44 @@ const CommunityHeader = ({
                 </Button>
               )}
 
-              {/* Join/Leave Button */}
-              {!isOwner && (
+              {/* Join/Leave Button (pending-request flow — work order §4) */}
+              {!isOwner && !isJoined && isPending && (
+                <button
+                  type="button"
+                  disabled
+                  title={content.requestPendingHint?.value}
+                  className="px-6 py-2.5 rounded-lg text-button font-semibold bg-neutral-200 text-neutral-500 flex items-center gap-2 cursor-not-allowed"
+                >
+                  <HiOutlineClock size={18} />
+                  <span>{content.requestPending?.value || 'Request Pending'}</span>
+                </button>
+              )}
+              {!isOwner && !isJoined && !isPending && (
                 <button
                   onClick={handleJoinLeave}
-                  className={`px-6 py-2.5 rounded-lg text-button font-semibold transition-all shadow-elevation-1 hover:shadow-elevation-2 flex items-center gap-2 ${
-                    isJoined
-                      ? 'bg-neutral-200 text-neutral-700 hover:bg-neutral-300'
-                      : 'bg-primary-600 text-white hover:bg-primary-700'
-                  }`}
+                  disabled={isJoining}
+                  className="px-6 py-2.5 rounded-lg text-button font-semibold bg-primary-600 text-white hover:bg-primary-700 transition-all shadow-elevation-1 hover:shadow-elevation-2 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isJoined ? (
+                  {isJoining ? (
                     <>
-                      <FaUserMinus size={18} />
-                      <span>{content.leaveCommunity}</span>
+                      <HiOutlineClock size={18} className="animate-spin" />
+                      <span>{content.loading?.value || 'Loading...'}</span>
                     </>
                   ) : (
                     <>
                       <FaUserPlus size={18} />
-                      <span>{content.joinCommunity}</span>
+                      <span>{content.requestToJoin?.value || content.joinCommunity}</span>
                     </>
                   )}
+                </button>
+              )}
+              {isJoined && (
+                <button
+                  onClick={handleJoinLeave}
+                  className="px-6 py-2.5 rounded-lg text-button font-semibold bg-neutral-200 text-neutral-700 hover:bg-neutral-300 transition-all shadow-elevation-1 hover:shadow-elevation-2 flex items-center gap-2"
+                >
+                  <FaUserMinus size={18} />
+                  <span>{content.leaveCommunity}</span>
                 </button>
               )}
 

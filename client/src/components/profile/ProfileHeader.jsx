@@ -96,26 +96,33 @@ const ProfileHeader = ({ profile, isOwnProfile }) => {
   };
 
   return (
-    <div className="bg-white dark:bg-neutral-100 shadow-sm rounded-lg overflow-hidden mb-4">
+    <div className="bg-neutral-100 border border-outline shadow-elevation-1 rounded-2xl overflow-hidden mb-4">
       {/* Cover Image */}
       <div 
-        className="relative h-48 bg-linear-to-r from-primary-500 to-primary-700 group"
+        className="relative h-44 bg-gradient-to-r from-neutral-900 via-primary-900 to-primary-700 group"
         onMouseEnter={() => isOwnProfile && setShowCoverUpload(true)}
         onMouseLeave={() => setShowCoverUpload(false)}
       >
-        {profile?.coverImage && (
+        {profile?.coverImage ? (
           <img
             src={profile.coverImage}
             alt="Cover"
             className="w-full h-full object-cover"
           />
+        ) : (
+          /* Decorative network pattern fallback */
+          <>
+            <span className="absolute top-6 ltr:left-[15%] rtl:right-[15%] w-24 h-24 rounded-full border border-white/10" />
+            <span className="absolute bottom-4 ltr:left-[30%] rtl:right-[30%] w-32 h-32 rounded-full border-[14px] border-white/5" />
+            <span className="absolute top-8 ltr:right-[20%] rtl:left-[20%] w-16 h-16 rounded-full bg-primary-500/10 blur-xl" />
+          </>
         )}
         
         {/* Cover Upload Button - Only for own profile */}
         {isOwnProfile && showCoverUpload && (
           <button
             onClick={() => coverInputRef.current?.click()}
-            className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center transition-opacity"
+            className="absolute inset-0 bg-black/40 flex items-center justify-center transition-opacity"
           >
             <div className="flex items-center gap-2 text-white">
               <FaCamera className="w-6 h-6" />
@@ -135,14 +142,14 @@ const ProfileHeader = ({ profile, isOwnProfile }) => {
 
       {/* Profile Info Container */}
       <div className="px-6 pb-6">
-        <div className="flex items-end justify-between -mt-16 mb-4">
+        <div className="flex items-end justify-between -mt-14 mb-3">
           {/* Profile Picture */}
           <div 
             className="relative group"
             onMouseEnter={() => isOwnProfile && setShowProfileUpload(true)}
             onMouseLeave={() => setShowProfileUpload(false)}
           >
-            <div className="w-32 h-32 rounded-full border-4 border-white dark:border-neutral-100 shadow-lg overflow-hidden bg-neutral-200 dark:bg-neutral-200">
+            <div className="w-28 h-28 rounded-2xl border-4 border-neutral-100 shadow-elevation-2 overflow-hidden bg-neutral-200">
               {profile?.profilePicture ? (
                 <img
                   src={profile.profilePicture}
@@ -160,7 +167,7 @@ const ProfileHeader = ({ profile, isOwnProfile }) => {
             {isOwnProfile && showProfileUpload && (
               <button
                 onClick={() => profileInputRef.current?.click()}
-                className="absolute inset-0 rounded-full bg-black bg-opacity-50 flex items-center justify-center"
+                className="absolute inset-0 rounded-2xl bg-black/50 flex items-center justify-center"
               >
                 <FaCamera className="w-8 h-8 text-white" />
               </button>
@@ -176,12 +183,12 @@ const ProfileHeader = ({ profile, isOwnProfile }) => {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-3 mb-4">
+          <div className="flex gap-2.5 mb-3">
             {isOwnProfile ? (
               // Own Profile Actions
               <button 
                 onClick={() => setShowEditProfile(true)}
-                className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium"
+                className="px-5 py-2 bg-primary-600 text-white rounded-full hover:bg-primary-700 transition-colors font-semibold text-button shadow-elevation-1"
               >
                 {editProfile}
               </button>
@@ -193,20 +200,20 @@ const ProfileHeader = ({ profile, isOwnProfile }) => {
                   <button
                     onClick={handleFollow}
                     disabled={isFollowLoading}
-                    className={`px-6 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                    className={`px-5 py-2 rounded-full font-semibold text-button transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
                       profile?.isFollowing
                         ? 'bg-neutral-200 text-neutral-700 hover:bg-neutral-300'
-                        : 'bg-primary-600 text-white hover:bg-primary-700'
+                        : 'bg-primary-600 text-white hover:bg-primary-700 shadow-elevation-1'
                     }`}
                   >
                     {isFollowLoading ? (
                       <>
-                        <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                        <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
                         {loading}
                       </>
                     ) : (
                       <>
-                        <FaUserPlus className="w-5 h-5" />
+                        <FaUserPlus className="w-4 h-4" />
                         {profile?.isFollowing ? following : follow}
                       </>
                     )}
@@ -216,20 +223,20 @@ const ProfileHeader = ({ profile, isOwnProfile }) => {
                 <button
                   onClick={handleBlock}
                   disabled={isBlockLoading}
-                  className={`px-6 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                  className={`px-5 py-2 rounded-full font-semibold text-button transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
                     profile?.isBlocked
                       ? 'bg-red-600 text-white hover:bg-red-700'
-                      : 'bg-neutral-200 text-neutral-700 hover:bg-neutral-300'
+                      : 'border border-outline text-neutral-700 hover:bg-neutral-200/60'
                   }`}
                 >
                   {isBlockLoading ? (
                     <>
-                      <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                      <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
                       {loading}
                     </>
                   ) : (
                     <>
-                      <FaBan className="w-5 h-5" />
+                      <FaBan className="w-4 h-4" />
                       {profile?.isBlocked ? unblock : block}
                     </>
                   )}
@@ -241,17 +248,23 @@ const ProfileHeader = ({ profile, isOwnProfile }) => {
 
         {/* User Info */}
         <div>
-          <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-900">
+          <h1 className="text-heading-3 font-bold text-neutral-900 tracking-tight">
             {profile?.fullName}
           </h1>
-          <p className="text-neutral-600 dark:text-neutral-600">@{profile?.username}</p>
+          <p className="text-body-2 text-neutral-500">@{profile?.username}</p>
           
           {profile?.specialization && (
-            <p className="text-neutral-700 dark:text-neutral-700 mt-1">{profile.specialization}</p>
+            <p className="text-body-1 font-semibold text-primary-600 mt-1">{profile.specialization}</p>
           )}
           
           {profile?.location && (
-            <p className="text-neutral-500 dark:text-neutral-500 text-sm mt-1">{profile.location}</p>
+            <p className="text-body-2 text-neutral-500 mt-1 flex items-center gap-1.5">
+              <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+              </svg>
+              {profile.location}
+            </p>
           )}
 
           {/* Verified Badge */}

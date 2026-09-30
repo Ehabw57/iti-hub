@@ -117,24 +117,24 @@ export function NewGroupModal({ isOpen, onClose }) {
 
       {/* Modal Container */}
       <div className="fixed inset-0 flex items-center justify-center p-4">
-        <DialogPanel className="w-full max-w-md bg-white rounded-lg shadow-elevation-3">
+        <DialogPanel className="w-full max-w-md bg-neutral-100 rounded-lg shadow-elevation-3">
           <form onSubmit={handleSubmit(onSubmit)}>
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-outline">
               <DialogTitle className="text-heading-5 font-semibold text-neutral-900">
                 {content.editGroup.value}
               </DialogTitle>
               <button
                 type="button"
                 onClick={onClose}
-                className="p-2 -mr-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-colors"
+                className="p-2 -me-2 text-neutral-600 hover:text-neutral-900 hover:bg-surface-high rounded-lg transition-colors"
               >
                 <HiOutlineXMark className="w-6 h-6" />
               </button>
             </div>
 
             {/* Content */}
-            <div className="px-6 py-4 space-y-4 max-h-96 overflow-y-auto">
+            <div className="px-6 py-4 space-y-4 max-h-96 overflow-y-auto no-scrollbar">
               {/* Group Image */}
               <div className="flex items-center gap-4">
                 <div className="shrink-0">
@@ -150,7 +150,7 @@ export function NewGroupModal({ isOpen, onClose }) {
                     </div>
                   )}
                 </div>
-                <label className="cursor-pointer text-secondary-600 hover:text-secondary-700 font-medium text-sm">
+                <label className="cursor-pointer text-primary-600 hover:text-primary-700 font-medium text-sm">
                   Upload group photo
                   <input
                     type="file"
@@ -193,7 +193,7 @@ export function NewGroupModal({ isOpen, onClose }) {
                     rounded-xl
                     text-body-2
                     placeholder:text-neutral-500
-                    focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:bg-white
+                    focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:bg-neutral-100
                     transition-colors
                   "
                 />
@@ -212,13 +212,13 @@ export function NewGroupModal({ isOpen, onClose }) {
                     {selectedUsers.map((user) => (
                       <div
                         key={user._id}
-                        className="flex items-center gap-2 px-3 py-1 bg-secondary-50 text-secondary-700 rounded-full"
+                        className="flex items-center gap-2 px-3 py-1 bg-primary-600/10 text-primary-700 dark:text-primary-400 rounded-full"
                       >
                         <span className="text-sm">{user.username}</span>
                         <button
                           type="button"
                           onClick={() => toggleUser(user)}
-                          className="text-secondary-700 hover:text-secondary-900"
+                          className="opacity-70 hover:opacity-100 transition-opacity"
                         >
                           <HiOutlineXMark className="w-4 h-4" />
                         </button>
@@ -230,7 +230,7 @@ export function NewGroupModal({ isOpen, onClose }) {
 
               {/* Search Results */}
               {searchResults.length > 0 && (
-                <div className="border-t border-neutral-200 pt-4">
+                <div className="border-t border-outline pt-4">
                   <p className="text-sm font-medium text-neutral-900 mb-2">
                     Search Results
                   </p>
@@ -242,13 +242,13 @@ export function NewGroupModal({ isOpen, onClose }) {
                           key={user._id}
                           type="button"
                           onClick={() => toggleUser(user)}
-                          className="w-full flex items-center gap-3 p-2 hover:bg-neutral-50 rounded-lg transition-colors"
+                          className="w-full flex items-center gap-3 p-2 hover:bg-surface-high rounded-lg transition-colors"
                         >
                           <input
                             type="checkbox"
                             checked={!!isSelected}
                             onChange={() => {}}
-                            className="w-4 h-4"
+                            className="w-4 h-4 accent-primary-600"
                           />
                           <UserAvatar
                             src={user.profilePicture}
@@ -267,7 +267,7 @@ export function NewGroupModal({ isOpen, onClose }) {
             </div>
 
             {/* Footer */}
-            <div className="flex justify-end gap-2 px-6 py-4 border-t border-neutral-200">
+            <div className="flex justify-end gap-2 px-6 py-4 border-t border-outline">
               <Button type="button" variant="text" onClick={onClose}>
                 {content.cancel.value}
               </Button>

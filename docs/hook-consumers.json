@@ -1,0 +1,1038 @@
+[
+  {
+    "name": "useAskCommunity",
+    "file": "client/src/hooks/mutations/useAskCommunity.js",
+    "consumers": [
+      "client/src/pages/ask/AskCommunityController.jsx"
+    ]
+  },
+  {
+    "name": "useCheckEmailAvailability",
+    "file": "client/src/hooks/mutations/useCheckEmailAvailability.js",
+    "consumers": [
+      "client/src/pages/auth/RegisterController.jsx"
+    ]
+  },
+  {
+    "name": "useCheckUsernameAvailability",
+    "file": "client/src/hooks/mutations/useCheckUsernameAvailability.js",
+    "consumers": [
+      "client/src/pages/auth/RegisterController.jsx"
+    ]
+  },
+  {
+    "name": "useJoinCommunity",
+    "file": "client/src/hooks/mutations/useCommunityMutations.js",
+    "consumers": [
+      "client/src/components/community/Community.jsx"
+    ]
+  },
+  {
+    "name": "useLeaveCommunity",
+    "file": "client/src/hooks/mutations/useCommunityMutations.js",
+    "consumers": [
+      "client/src/components/community/Community.jsx"
+    ]
+  },
+  {
+    "name": "useUpdateCommunity",
+    "file": "client/src/hooks/mutations/useCommunityMutations.js",
+    "consumers": [
+      "client/src/components/community/Community.jsx"
+    ]
+  },
+  {
+    "name": "useUpdateCommunityProfilePicture",
+    "file": "client/src/hooks/mutations/useCommunityMutations.js",
+    "consumers": [
+      "client/src/components/community/Community.jsx"
+    ]
+  },
+  {
+    "name": "useUpdateCommunityCoverImage",
+    "file": "client/src/hooks/mutations/useCommunityMutations.js",
+    "consumers": [
+      "client/src/components/community/Community.jsx"
+    ]
+  },
+  {
+    "name": "useAddModerator",
+    "file": "client/src/hooks/mutations/useCommunityMutations.js",
+    "consumers": [
+      "client/src/components/community/CommunityInfo.jsx",
+      "client/src/pages/community/CommunityManagement.jsx"
+    ]
+  },
+  {
+    "name": "useRemoveModerator",
+    "file": "client/src/hooks/mutations/useCommunityMutations.js",
+    "consumers": [
+      "client/src/components/community/ModeratorsList.jsx",
+      "client/src/pages/community/CommunityManagement.jsx"
+    ]
+  },
+  {
+    "name": "useKickMember",
+    "file": "client/src/hooks/mutations/useCommunityMutations.js",
+    "consumers": [
+      "client/src/pages/community/CommunityManagement.jsx"
+    ]
+  },
+  {
+    "name": "useDecideCommunityJoinRequest",
+    "file": "client/src/hooks/mutations/useCommunityMutations.js",
+    "consumers": [
+      "client/src/pages/community/CommunityManagement.jsx"
+    ]
+  },
+  {
+    "name": "useCancelCommunityJoinRequest",
+    "file": "client/src/hooks/mutations/useCommunityMutations.js",
+    "consumers": []
+  },
+  {
+    "name": "useFollowUser",
+    "file": "client/src/hooks/mutations/useConnectionMutations.js",
+    "consumers": [
+      "client/src/components/user/UserCard.jsx"
+    ]
+  },
+  {
+    "name": "useUnfollowUser",
+    "file": "client/src/hooks/mutations/useConnectionMutations.js",
+    "consumers": [
+      "client/src/components/user/UserCard.jsx"
+    ]
+  },
+  {
+    "name": "useBlockUser",
+    "file": "client/src/hooks/mutations/useConnectionMutations.js",
+    "consumers": []
+  },
+  {
+    "name": "useUnblockUser",
+    "file": "client/src/hooks/mutations/useConnectionMutations.js",
+    "consumers": []
+  },
+  {
+    "name": "useToggleFollow",
+    "file": "client/src/hooks/mutations/useConnectionMutations.js",
+    "consumers": [
+      "client/src/components/profile/FollowersList.jsx",
+      "client/src/components/profile/FollowingList.jsx",
+      "client/src/components/profile/ProfileHeader.jsx"
+    ]
+  },
+  {
+    "name": "useToggleBlock",
+    "file": "client/src/hooks/mutations/useConnectionMutations.js",
+    "consumers": [
+      "client/src/components/profile/ProfileHeader.jsx"
+    ]
+  },
+  {
+    "name": "useUpdateGroup",
+    "file": "client/src/hooks/mutations/useConversationMutations.js",
+    "consumers": [
+      "client/src/components/messaging/GroupSettingsModal.jsx"
+    ]
+  },
+  {
+    "name": "useAddGroupMember",
+    "file": "client/src/hooks/mutations/useConversationMutations.js",
+    "consumers": [
+      "client/src/components/messaging/GroupSettingsModal.jsx"
+    ]
+  },
+  {
+    "name": "useRemoveGroupMember",
+    "file": "client/src/hooks/mutations/useConversationMutations.js",
+    "consumers": [
+      "client/src/components/messaging/GroupSettingsModal.jsx"
+    ]
+  },
+  {
+    "name": "useLeaveGroup",
+    "file": "client/src/hooks/mutations/useConversationMutations.js",
+    "consumers": [
+      "client/src/components/messaging/GroupSettingsModal.jsx"
+    ]
+  },
+  {
+    "name": "useDeleteGroup",
+    "file": "client/src/hooks/mutations/useConversationMutations.js",
+    "consumers": [
+      "client/src/components/messaging/GroupSettingsModal.jsx"
+    ]
+  },
+  {
+    "name": "useRequestEnrollment",
+    "file": "client/src/hooks/mutations/useCourseMutations.js",
+    "consumers": [
+      "client/src/pages/courses/TrackDetailController.jsx"
+    ]
+  },
+  {
+    "name": "useCancelEnrollmentRequest",
+    "file": "client/src/hooks/mutations/useCourseMutations.js",
+    "consumers": [
+      "client/src/pages/courses/TrackDetailController.jsx"
+    ]
+  },
+  {
+    "name": "useDecideEnrollmentRequest",
+    "file": "client/src/hooks/mutations/useCourseMutations.js",
+    "consumers": [
+      "client/src/pages/courses/TrackDetailController.jsx"
+    ]
+  },
+  {
+    "name": "useSettingsUpdateProfile",
+    "file": "client/src/hooks/mutations/useCourseMutations.js",
+    "consumers": [
+      "client/src/pages/settings/ProfileSettings.jsx"
+    ]
+  },
+  {
+    "name": "useChangePassword",
+    "file": "client/src/hooks/mutations/useCourseMutations.js",
+    "consumers": [
+      "client/src/pages/settings/SecuritySettings.jsx"
+    ]
+  },
+  {
+    "name": "useUpdateNotificationPreferences",
+    "file": "client/src/hooks/mutations/useCourseMutations.js",
+    "consumers": [
+      "client/src/pages/settings/NotificationSettings.jsx"
+    ]
+  },
+  {
+    "name": "useDeleteAccount",
+    "file": "client/src/hooks/mutations/useCourseMutations.js",
+    "consumers": [
+      "client/src/pages/settings/DeleteAccountSection.jsx"
+    ]
+  },
+  {
+    "name": "useCreateTrackRecord",
+    "file": "client/src/hooks/mutations/useCourseMutations.js",
+    "consumers": [
+      "client/src/pages/courses/workspace/RecordsTab.jsx"
+    ]
+  },
+  {
+    "name": "useUpdateTrackRecord",
+    "file": "client/src/hooks/mutations/useCourseMutations.js",
+    "consumers": [
+      "client/src/pages/courses/workspace/RecordsTab.jsx"
+    ]
+  },
+  {
+    "name": "useDeleteTrackRecord",
+    "file": "client/src/hooks/mutations/useCourseMutations.js",
+    "consumers": [
+      "client/src/pages/courses/workspace/RecordsTab.jsx"
+    ]
+  },
+  {
+    "name": "useCreateTrackFolder",
+    "file": "client/src/hooks/mutations/useCourseMutations.js",
+    "consumers": [
+      "client/src/pages/courses/workspace/FilesTab.jsx",
+      "client/src/pages/courses/workspace/RecordsTab.jsx"
+    ]
+  },
+  {
+    "name": "useUpdateTrackFolder",
+    "file": "client/src/hooks/mutations/useCourseMutations.js",
+    "consumers": [
+      "client/src/pages/courses/workspace/FilesTab.jsx",
+      "client/src/pages/courses/workspace/RecordsTab.jsx"
+    ]
+  },
+  {
+    "name": "useDeleteTrackFolder",
+    "file": "client/src/hooks/mutations/useCourseMutations.js",
+    "consumers": [
+      "client/src/pages/courses/workspace/FilesTab.jsx",
+      "client/src/pages/courses/workspace/RecordsTab.jsx"
+    ]
+  },
+  {
+    "name": "useSendTrackChatMessage",
+    "file": "client/src/hooks/mutations/useCourseMutations.js",
+    "consumers": [
+      "client/src/pages/courses/workspace/ChatTab.jsx"
+    ]
+  },
+  {
+    "name": "useDeleteTrackChatMessage",
+    "file": "client/src/hooks/mutations/useCourseMutations.js",
+    "consumers": [
+      "client/src/pages/courses/workspace/ChatTab.jsx"
+    ]
+  },
+  {
+    "name": "useCreateBranch",
+    "file": "client/src/hooks/mutations/useCourseMutations.js",
+    "consumers": []
+  },
+  {
+    "name": "useUpdateBranch",
+    "file": "client/src/hooks/mutations/useCourseMutations.js",
+    "consumers": []
+  },
+  {
+    "name": "useDeleteBranch",
+    "file": "client/src/hooks/mutations/useCourseMutations.js",
+    "consumers": []
+  },
+  {
+    "name": "useCreateRound",
+    "file": "client/src/hooks/mutations/useCourseMutations.js",
+    "consumers": []
+  },
+  {
+    "name": "useUpdateRound",
+    "file": "client/src/hooks/mutations/useCourseMutations.js",
+    "consumers": []
+  },
+  {
+    "name": "useDeleteRound",
+    "file": "client/src/hooks/mutations/useCourseMutations.js",
+    "consumers": []
+  },
+  {
+    "name": "useCreateTrack",
+    "file": "client/src/hooks/mutations/useCourseMutations.js",
+    "consumers": []
+  },
+  {
+    "name": "useUpdateTrack",
+    "file": "client/src/hooks/mutations/useCourseMutations.js",
+    "consumers": []
+  },
+  {
+    "name": "useDeleteTrack",
+    "file": "client/src/hooks/mutations/useCourseMutations.js",
+    "consumers": []
+  },
+  {
+    "name": "useUpdateTrackMembers",
+    "file": "client/src/hooks/mutations/useCourseMutations.js",
+    "consumers": [
+      "client/src/pages/courses/TrackMembersPanel.jsx"
+    ]
+  },
+  {
+    "name": "useUploadTrackFile",
+    "file": "client/src/hooks/mutations/useCourseMutations.js",
+    "consumers": [
+      "client/src/pages/courses/workspace/FilesTab.jsx"
+    ]
+  },
+  {
+    "name": "useDeleteTrackFile",
+    "file": "client/src/hooks/mutations/useCourseMutations.js",
+    "consumers": [
+      "client/src/pages/courses/workspace/FilesTab.jsx"
+    ]
+  },
+  {
+    "name": "useAddTrackVideo",
+    "file": "client/src/hooks/mutations/useCourseMutations.js",
+    "consumers": [
+      "client/src/pages/courses/workspace/VideosTab.jsx"
+    ]
+  },
+  {
+    "name": "useDeleteTrackVideo",
+    "file": "client/src/hooks/mutations/useCourseMutations.js",
+    "consumers": [
+      "client/src/pages/courses/workspace/VideosTab.jsx"
+    ]
+  },
+  {
+    "name": "useSendChatMessage",
+    "file": "client/src/hooks/mutations/useCourseMutations.js",
+    "consumers": []
+  },
+  {
+    "name": "useDeleteChatMessage",
+    "file": "client/src/hooks/mutations/useCourseMutations.js",
+    "consumers": []
+  },
+  {
+    "name": "useToggleReview",
+    "file": "client/src/hooks/mutations/useCourseMutations.js",
+    "consumers": []
+  },
+  {
+    "name": "useCreateGroup",
+    "file": "client/src/hooks/mutations/useCourseMutations.js",
+    "consumers": [
+      "client/src/pages/groups/SpecializationGroups.jsx"
+    ]
+  },
+  {
+    "name": "useJoinGroup",
+    "file": "client/src/hooks/mutations/useCourseMutations.js",
+    "consumers": [
+      "client/src/components/feed/FeedRightRail.jsx",
+      "client/src/pages/groups/SpecializationGroups.jsx"
+    ]
+  },
+  {
+    "name": "useLeaveGroup",
+    "file": "client/src/hooks/mutations/useCourseMutations.js",
+    "consumers": [
+      "client/src/components/messaging/GroupSettingsModal.jsx"
+    ]
+  },
+  {
+    "name": "useCancelJoinRequest",
+    "file": "client/src/hooks/mutations/useCourseMutations.js",
+    "consumers": []
+  },
+  {
+    "name": "useDecideJoinRequest",
+    "file": "client/src/hooks/mutations/useCourseMutations.js",
+    "consumers": [
+      "client/src/components/feed/FeedRightRail.jsx",
+      "client/src/pages/groups/SpecializationGroups.jsx"
+    ]
+  },
+  {
+    "name": "useCreateGroupPost",
+    "file": "client/src/hooks/mutations/useCourseMutations.js",
+    "consumers": []
+  },
+  {
+    "name": "useToggleGroupPostLike",
+    "file": "client/src/hooks/mutations/useCourseMutations.js",
+    "consumers": []
+  },
+  {
+    "name": "useAddGroupComment",
+    "file": "client/src/hooks/mutations/useCourseMutations.js",
+    "consumers": []
+  },
+  {
+    "name": "useCreateJob",
+    "file": "client/src/hooks/mutations/useCourseMutations.js",
+    "consumers": []
+  },
+  {
+    "name": "useDeleteJob",
+    "file": "client/src/hooks/mutations/useCourseMutations.js",
+    "consumers": []
+  },
+  {
+    "name": "useCreateEvent",
+    "file": "client/src/hooks/mutations/useCourseMutations.js",
+    "consumers": []
+  },
+  {
+    "name": "useToggleEventRegister",
+    "file": "client/src/hooks/mutations/useCourseMutations.js",
+    "consumers": [
+      "client/src/pages/events/EventsListController.jsx"
+    ]
+  },
+  {
+    "name": "useDeleteEvent",
+    "file": "client/src/hooks/mutations/useCourseMutations.js",
+    "consumers": []
+  },
+  {
+    "name": "useCreateComment",
+    "file": "client/src/hooks/mutations/useCreateComment.js",
+    "consumers": [
+      "client/src/components/comments/CommentItem.jsx",
+      "client/src/components/comments/CommentsSection.jsx"
+    ]
+  },
+  {
+    "name": "useCreateConversation",
+    "file": "client/src/hooks/mutations/useCreateConversation.js",
+    "consumers": [
+      "client/src/components/messaging/NewMessageModal.jsx"
+    ]
+  },
+  {
+    "name": "useCreateGroupConversation",
+    "file": "client/src/hooks/mutations/useCreateGroupConversation.js",
+    "consumers": [
+      "client/src/components/messaging/NewGroupModal.jsx"
+    ]
+  },
+  {
+    "name": "useCreatePost",
+    "file": "client/src/hooks/mutations/useCreatePost.js",
+    "consumers": [
+      "client/src/components/post/PostComposerModal.jsx"
+    ]
+  },
+  {
+    "name": "useDeleteComment",
+    "file": "client/src/hooks/mutations/useDeleteComment.js",
+    "consumers": [
+      "client/src/components/comments/CommentItem.jsx"
+    ]
+  },
+  {
+    "name": "useDeletePost",
+    "file": "client/src/hooks/mutations/useDeletePost.js",
+    "consumers": [
+      "client/src/components/post/PostCard.jsx"
+    ]
+  },
+  {
+    "name": "useGeneratePost",
+    "file": "client/src/hooks/mutations/useGeneratePost.js",
+    "consumers": [
+      "client/src/components/post/PostComposerModal.jsx"
+    ]
+  },
+  {
+    "name": "useGoogleAuth",
+    "file": "client/src/hooks/mutations/useGoogleAuth.js",
+    "consumers": [
+      "client/src/pages/auth/AuthLoginController.jsx",
+      "client/src/pages/auth/RegisterController.jsx"
+    ]
+  },
+  {
+    "name": "useLogin",
+    "file": "client/src/hooks/mutations/useLogin.js",
+    "consumers": [
+      "client/src/pages/auth/AuthLoginController.jsx"
+    ]
+  },
+  {
+    "name": "useMarkAllRead",
+    "file": "client/src/hooks/mutations/useMarkAllRead.js",
+    "consumers": [
+      "client/src/pages/notifications/NotificationsCenterController.jsx"
+    ]
+  },
+  {
+    "name": "useMarkMessagesAsSeen",
+    "file": "client/src/hooks/mutations/useMarkMessagesAsSeen.js",
+    "consumers": [
+      "client/src/pages/messages/ConversationDetail.jsx"
+    ]
+  },
+  {
+    "name": "useMarkNotificationRead",
+    "file": "client/src/hooks/mutations/useMarkNotificationRead.js",
+    "consumers": [
+      "client/src/pages/notifications/NotificationsCenterController.jsx"
+    ]
+  },
+  {
+    "name": "usePasswordResetConfirm",
+    "file": "client/src/hooks/mutations/usePasswordResetConfirm.js",
+    "consumers": [
+      "client/src/pages/auth/PasswordResetConfirmController.jsx"
+    ]
+  },
+  {
+    "name": "usePasswordResetRequest",
+    "file": "client/src/hooks/mutations/usePasswordResetRequest.js",
+    "consumers": [
+      "client/src/pages/auth/PasswordResetRequestController.jsx"
+    ]
+  },
+  {
+    "name": "useRegister",
+    "file": "client/src/hooks/mutations/useRegister.js",
+    "consumers": [
+      "client/src/pages/auth/RegisterController.jsx"
+    ]
+  },
+  {
+    "name": "useRepost",
+    "file": "client/src/hooks/mutations/useRepost.js",
+    "consumers": [
+      "client/src/components/post/PostCard.jsx",
+      "client/src/components/post/RepostComposerModal.jsx"
+    ]
+  },
+  {
+    "name": "useResendVerificationEmail",
+    "file": "client/src/hooks/mutations/useResendVerificationEmail.js",
+    "consumers": [
+      "client/src/pages/auth/ResendVerificationPage.jsx"
+    ]
+  },
+  {
+    "name": "useSendMessage",
+    "file": "client/src/hooks/mutations/useSendMessage.js",
+    "consumers": [
+      "client/src/pages/messages/ConversationDetail.jsx"
+    ]
+  },
+  {
+    "name": "useToggleCommentLike",
+    "file": "client/src/hooks/mutations/useToggleCommentLike.js",
+    "consumers": [
+      "client/src/components/comments/CommentItem.jsx"
+    ]
+  },
+  {
+    "name": "useToggleLike",
+    "file": "client/src/hooks/mutations/useToggleLike.js",
+    "consumers": [
+      "client/src/components/post/PostCard.jsx"
+    ]
+  },
+  {
+    "name": "useToggleSave",
+    "file": "client/src/hooks/mutations/useToggleSave.js",
+    "consumers": [
+      "client/src/components/post/PostCard.jsx"
+    ]
+  },
+  {
+    "name": "useUpdateComment",
+    "file": "client/src/hooks/mutations/useUpdateComment.js",
+    "consumers": [
+      "client/src/components/comments/CommentItem.jsx"
+    ]
+  },
+  {
+    "name": "useUpdatePost",
+    "file": "client/src/hooks/mutations/useUpdatePost.js",
+    "consumers": [
+      "client/src/components/post/PostComposerModal.jsx"
+    ]
+  },
+  {
+    "name": "useUpdateProfile",
+    "file": "client/src/hooks/mutations/useUserMutations.js",
+    "consumers": [
+      "client/src/components/profile/EditProfile.jsx"
+    ]
+  },
+  {
+    "name": "useUploadProfilePicture",
+    "file": "client/src/hooks/mutations/useUserMutations.js",
+    "consumers": [
+      "client/src/components/profile/ProfileHeader.jsx",
+      "client/src/pages/settings/ProfileSettings.jsx"
+    ]
+  },
+  {
+    "name": "useUploadCoverImage",
+    "file": "client/src/hooks/mutations/useUserMutations.js",
+    "consumers": [
+      "client/src/components/profile/ProfileHeader.jsx",
+      "client/src/pages/settings/ProfileSettings.jsx"
+    ]
+  },
+  {
+    "name": "useVerifyEmail",
+    "file": "client/src/hooks/mutations/useVerifyEmail.js",
+    "consumers": [
+      "client/src/pages/auth/EmailVerifyPage.jsx"
+    ]
+  },
+  {
+    "name": "useCommentReplies",
+    "file": "client/src/hooks/queries/useCommentReplies.js",
+    "consumers": [
+      "client/src/components/comments/CommentItem.jsx"
+    ]
+  },
+  {
+    "name": "useCommunityDetails",
+    "file": "client/src/hooks/queries/useCommunity.js",
+    "consumers": [
+      "client/src/components/community/Community.jsx",
+      "client/src/pages/community/CommunityManagement.jsx"
+    ]
+  },
+  {
+    "name": "useCommunityFeed",
+    "file": "client/src/hooks/queries/useCommunity.js",
+    "consumers": [
+      "client/src/components/community/CommunityFeed.jsx"
+    ]
+  },
+  {
+    "name": "useCommunitiesList",
+    "file": "client/src/hooks/queries/useCommunity.js",
+    "consumers": [
+      "client/src/pages/community/CommunitiesController.jsx"
+    ]
+  },
+  {
+    "name": "useCommunityMembers",
+    "file": "client/src/hooks/queries/useCommunity.js",
+    "consumers": []
+  },
+  {
+    "name": "useCommunityMembersInfinite",
+    "file": "client/src/hooks/queries/useCommunity.js",
+    "consumers": [
+      "client/src/pages/community/CommunityManagement.jsx"
+    ]
+  },
+  {
+    "name": "useCommunityJoinRequests",
+    "file": "client/src/hooks/queries/useCommunity.js",
+    "consumers": [
+      "client/src/pages/community/CommunityManagement.jsx"
+    ]
+  },
+  {
+    "name": "useMyCommunityJoinRequests",
+    "file": "client/src/hooks/queries/useCommunity.js",
+    "consumers": []
+  },
+  {
+    "name": "useConversation",
+    "file": "client/src/hooks/queries/useConversation.js",
+    "consumers": [
+      "client/src/pages/messages/ConversationDetail.jsx"
+    ]
+  },
+  {
+    "name": "useConversations",
+    "file": "client/src/hooks/queries/useConversations.js",
+    "consumers": [
+      "client/src/pages/messages/MessagesList.jsx"
+    ]
+  },
+  {
+    "name": "useTracks",
+    "file": "client/src/hooks/queries/useCourse.js",
+    "consumers": [
+      "client/src/pages/courses/CoursesListController.jsx"
+    ]
+  },
+  {
+    "name": "useTrackDetail",
+    "file": "client/src/hooks/queries/useCourse.js",
+    "consumers": [
+      "client/src/pages/courses/TrackDetailController.jsx",
+      "client/src/pages/courses/TrackWorkspaceController.jsx"
+    ]
+  },
+  {
+    "name": "useBranches",
+    "file": "client/src/hooks/queries/useCourse.js",
+    "consumers": [
+      "client/src/pages/branches/BranchesListController.jsx"
+    ]
+  },
+  {
+    "name": "useBranchDetail",
+    "file": "client/src/hooks/queries/useCourse.js",
+    "consumers": [
+      "client/src/pages/branches/BranchDetailController.jsx",
+      "client/src/pages/branches/RoundTracksController.jsx"
+    ]
+  },
+  {
+    "name": "useMyEnrollments",
+    "file": "client/src/hooks/queries/useCourse.js",
+    "consumers": [
+      "client/src/pages/courses/CoursesListController.jsx"
+    ]
+  },
+  {
+    "name": "useCheckEnrollment",
+    "file": "client/src/hooks/queries/useCourse.js",
+    "consumers": [
+      "client/src/pages/courses/TrackDetailController.jsx",
+      "client/src/pages/courses/TrackWorkspaceController.jsx"
+    ]
+  },
+  {
+    "name": "useBranchRounds",
+    "file": "client/src/hooks/queries/useCourse.js",
+    "consumers": []
+  },
+  {
+    "name": "useRoundTracks",
+    "file": "client/src/hooks/queries/useCourse.js",
+    "consumers": [
+      "client/src/pages/branches/RoundTracksController.jsx"
+    ]
+  },
+  {
+    "name": "useTrackMembers",
+    "file": "client/src/hooks/queries/useCourse.js",
+    "consumers": [
+      "client/src/pages/courses/TrackMembersPanel.jsx",
+      "client/src/pages/courses/TrackWorkspaceController.jsx"
+    ]
+  },
+  {
+    "name": "useSearchAssignableUsers",
+    "file": "client/src/hooks/queries/useCourse.js",
+    "consumers": [
+      "client/src/pages/courses/TrackMembersPanel.jsx"
+    ]
+  },
+  {
+    "name": "useTrackFiles",
+    "file": "client/src/hooks/queries/useCourse.js",
+    "consumers": [
+      "client/src/pages/courses/workspace/FilesTab.jsx"
+    ]
+  },
+  {
+    "name": "useTrackVideos",
+    "file": "client/src/hooks/queries/useCourse.js",
+    "consumers": [
+      "client/src/pages/courses/workspace/VideosTab.jsx"
+    ]
+  },
+  {
+    "name": "useTrackSharedResources",
+    "file": "client/src/hooks/queries/useCourse.js",
+    "consumers": []
+  },
+  {
+    "name": "useTrackChat",
+    "file": "client/src/hooks/queries/useCourse.js",
+    "consumers": [
+      "client/src/pages/courses/workspace/ChatTab.jsx"
+    ]
+  },
+  {
+    "name": "useMyReviews",
+    "file": "client/src/hooks/queries/useCourse.js",
+    "consumers": []
+  },
+  {
+    "name": "useTrackLeaderboard",
+    "file": "client/src/hooks/queries/useCourse.js",
+    "consumers": []
+  },
+  {
+    "name": "useCurrentUser",
+    "file": "client/src/hooks/queries/useCourse.js",
+    "consumers": [
+      "client/src/pages/courses/TrackDetailController.jsx",
+      "client/src/pages/courses/TrackWorkspaceController.jsx"
+    ]
+  },
+  {
+    "name": "useMyEnrollRequests",
+    "file": "client/src/hooks/queries/useCourse.js",
+    "consumers": []
+  },
+  {
+    "name": "useTrackEnrollRequests",
+    "file": "client/src/hooks/queries/useCourse.js",
+    "consumers": [
+      "client/src/pages/courses/TrackDetailController.jsx"
+    ]
+  },
+  {
+    "name": "useTrackRecords",
+    "file": "client/src/hooks/queries/useCourse.js",
+    "consumers": [
+      "client/src/pages/courses/workspace/RecordsTab.jsx"
+    ]
+  },
+  {
+    "name": "useTrackFolders",
+    "file": "client/src/hooks/queries/useCourse.js",
+    "consumers": [
+      "client/src/pages/courses/workspace/FilesTab.jsx",
+      "client/src/pages/courses/workspace/RecordsTab.jsx"
+    ]
+  },
+  {
+    "name": "useGroups",
+    "file": "client/src/hooks/queries/useCourse.js",
+    "consumers": [
+      "client/src/pages/groups/SpecializationGroups.jsx"
+    ]
+  },
+  {
+    "name": "useGroupDetail",
+    "file": "client/src/hooks/queries/useCourse.js",
+    "consumers": []
+  },
+  {
+    "name": "useGroupJoinRequests",
+    "file": "client/src/hooks/queries/useCourse.js",
+    "consumers": [
+      "client/src/components/feed/FeedRightRail.jsx",
+      "client/src/pages/groups/SpecializationGroups.jsx"
+    ]
+  },
+  {
+    "name": "useMyGroupJoinRequests",
+    "file": "client/src/hooks/queries/useCourse.js",
+    "consumers": []
+  },
+  {
+    "name": "useGroupComments",
+    "file": "client/src/hooks/queries/useCourse.js",
+    "consumers": []
+  },
+  {
+    "name": "useJobs",
+    "file": "client/src/hooks/queries/useCourse.js",
+    "consumers": [
+      "client/src/pages/jobs/JobsListController.jsx"
+    ]
+  },
+  {
+    "name": "useEvents",
+    "file": "client/src/hooks/queries/useCourse.js",
+    "consumers": [
+      "client/src/pages/events/EventsListController.jsx"
+    ]
+  },
+  {
+    "name": "useFastSearch",
+    "file": "client/src/hooks/queries/useFastSearch.js",
+    "consumers": [
+      "client/src/components/Navbar/SearchBar.jsx"
+    ]
+  },
+  {
+    "name": "useFeedFollowing",
+    "file": "client/src/hooks/queries/useFeedFollowing.js",
+    "consumers": [
+      "client/src/pages/feed/FeedFollowingController.jsx"
+    ]
+  },
+  {
+    "name": "useFeedHome",
+    "file": "client/src/hooks/queries/useFeedHome.js",
+    "consumers": [
+      "client/src/pages/feed/FeedHomeController.jsx",
+      "client/src/pages/post/PostDetailController.jsx"
+    ]
+  },
+  {
+    "name": "useFeedTrending",
+    "file": "client/src/hooks/queries/useFeedTrending.js",
+    "consumers": [
+      "client/src/pages/feed/FeedTrendingController.jsx"
+    ]
+  },
+  {
+    "name": "useGlobalSearch",
+    "file": "client/src/hooks/queries/useGlobalSearch.js",
+    "consumers": [
+      "client/src/components/Sidebar/SidebarSearch.jsx"
+    ]
+  },
+  {
+    "name": "useMessages",
+    "file": "client/src/hooks/queries/useMessages.js",
+    "consumers": [
+      "client/src/pages/messages/ConversationDetail.jsx"
+    ]
+  },
+  {
+    "name": "useNotifications",
+    "file": "client/src/hooks/queries/useNotifications.js",
+    "consumers": [
+      "client/src/pages/notifications/NotificationsCenterController.jsx"
+    ]
+  },
+  {
+    "name": "usePost",
+    "file": "client/src/hooks/queries/usePost.js",
+    "consumers": [
+      "client/src/pages/post/PostDetailController.jsx"
+    ]
+  },
+  {
+    "name": "usePostComments",
+    "file": "client/src/hooks/queries/usePostComments.js",
+    "consumers": [
+      "client/src/components/comments/CommentsSection.jsx"
+    ]
+  },
+  {
+    "name": "useSavedPosts",
+    "file": "client/src/hooks/queries/useSavedPosts.js",
+    "consumers": [
+      "client/src/pages/feed/SavedPostsController.jsx"
+    ]
+  },
+  {
+    "name": "useSearch",
+    "file": "client/src/hooks/queries/useSearch.js",
+    "consumers": [
+      "client/src/pages/SearchPage.jsx"
+    ]
+  },
+  {
+    "name": "useSearchUsers",
+    "file": "client/src/hooks/queries/useSearchUsers.js",
+    "consumers": [
+      "client/src/components/messaging/GroupSettingsModal.jsx",
+      "client/src/components/messaging/NewGroupModal.jsx",
+      "client/src/components/messaging/NewMessageModal.jsx"
+    ]
+  },
+  {
+    "name": "useUnreadCount",
+    "file": "client/src/hooks/queries/useUnreadCount.js",
+    "consumers": [
+      "client/src/pages/notifications/NotificationsCenterController.jsx"
+    ]
+  },
+  {
+    "name": "useUnreadMessagesCount",
+    "file": "client/src/hooks/queries/useUnreadMessagesCount.js",
+    "consumers": []
+  },
+  {
+    "name": "useUserCommunities",
+    "file": "client/src/hooks/queries/useUserCommunities.js",
+    "consumers": [
+      "client/src/components/post/CommunitySelector.jsx",
+      "client/src/pages/community/CommunitiesController.jsx"
+    ]
+  },
+  {
+    "name": "useUserCommunitiesInfinite",
+    "file": "client/src/hooks/queries/useUserCommunities.js",
+    "consumers": [
+      "client/src/pages/community/CommunitiesController.jsx"
+    ]
+  },
+  {
+    "name": "useGetUserProfile",
+    "file": "client/src/hooks/queries/useUserQueries.js",
+    "consumers": [
+      "client/src/components/profile/Profile.jsx"
+    ]
+  },
+  {
+    "name": "useGetUserPosts",
+    "file": "client/src/hooks/queries/useUserQueries.js",
+    "consumers": [
+      "client/src/components/profile/ProfilePosts.jsx"
+    ]
+  },
+  {
+    "name": "useGetUserFollowers",
+    "file": "client/src/hooks/queries/useUserQueries.js",
+    "consumers": [
+      "client/src/components/profile/FollowersList.jsx"
+    ]
+  },
+  {
+    "name": "useGetUserFollowing",
+    "file": "client/src/hooks/queries/useUserQueries.js",
+    "consumers": [
+      "client/src/components/profile/FollowingList.jsx"
+    ]
+  }
+]

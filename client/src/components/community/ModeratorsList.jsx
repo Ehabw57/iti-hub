@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import communityContent from '@content/community/community.content';
 import { useRemoveModerator } from '@hooks/mutations/useCommunityMutations';
 import useRequireAuth from '@hooks/useRequireAuth';
+import { Chip } from '@components/common';
 
 /**
  * ModeratorsList Component
@@ -56,9 +57,9 @@ const ModeratorsList = ({ community }) => {
         <h2 className="text-heading-5 text-neutral-900 font-semibold">
           {content.moderators}
         </h2>
-        <span className="px-2 py-0.5 bg-secondary-100 text-secondary-700 text-caption rounded-full font-medium">
+        <Chip tone="border-transparent bg-secondary-100 text-secondary-700" dot={false}>
           {totalCount}
-        </span>
+        </Chip>
       </div>
 
       {/* Moderators List */}

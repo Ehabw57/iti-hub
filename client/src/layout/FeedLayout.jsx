@@ -1,15 +1,16 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation, Outlet } from "react-router-dom";
-import { HiPlus, HiPencil} from "react-icons/hi2";
 import { useIntlayer } from "react-intlayer";
 import { useAuthStore } from "@store/auth";
-import Button from "../components/common/Button";
 import PostComposerModal from "@components/post/PostComposerModal";
+import PostComposerTrigger from "@components/feed/PostComposerTrigger";
+import FeedRightRail from "@components/feed/FeedRightRail";
 import useRequireAuth from "@hooks/useRequireAuth";
 import homeContent from "@/content/feed/home.content";
 
 /**
- * Feed layout with tabs and create post button
+ * Feed layout — center feed column with inline composer trigger + right rail.
+ * Matches /screens home feed: composer card, post stream, trending sidebar.
  */
 export default function FeedLayout() {
   const navigate = useNavigate();
@@ -32,7 +33,7 @@ export default function FeedLayout() {
 
   const handleTabClick = (path, isPublic) => {
     if (!isPublic && !isAuthenticated) {
-      setShowLoginModal(true);
+      requireAuth(() => navigate(path));
     } else {
       navigate(path);
     }
@@ -43,48 +44,43 @@ export default function FeedLayout() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-200">
-      {/* Header with tabs */}
-      <div className="bg-neutral-50 border-b border-neutral-200 sticky top-0 z-2">
-        <div className="max-w-4xl mx-auto px-4">
-          <div className="flex items-center justify-between">
-            <div className="flex gap-1 overflow-x-auto">
-              {tabs.map((tab) => {
-                const isActive = location.pathname === tab.path;
-                return (
-                  (tab.public || isAuthenticated) && (
-                    <button
-                      key={tab.path}
-                      onClick={() => handleTabClick(tab.path, tab.public)}
-                      className={`px-4 py-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-                        isActive
-                          ? "border-primary-600 text-primary-600"
-                          : "border-transparent text-neutral-600 hover:text-neutral-900 hover:border-neutral-300"
-                      }`}
-                    >
-                      {tab.label}
-                    </button>
-                  )
-                );
-              })}
-            </div>
-
-            {/* Create post button */}
-            <Button
-              onClick={handleCreatePost}
-              variant="primary"
-              className="lg:hidden"
-            >
-              <HiPencil className="w-5 h-5" />
-              <span className="hidden md:inline">{content.createPost}</span>
-            </Button>
+    <div className="min-h-screen">
+      <div className="max-w-7xl mx-auto px-4 lg:px-6 py-6 flex gap-6 justify-center">
+        {/* Center column */}
+        <div className="w-full max-w-2xl min-w-0 flex flex-col gap-4">
+          {/* Slim segmented tabs */}
+          <div className="flex gap-1 bg-neutral-100 border border-outline rounded-full p-1 shadow-elevation-1 self-start">
+            {tabs.map((tab) => {
+              if (!(tab.public || isAuthenticated)) return null;
+              const isActive = location.pathname === tab.path;
+              return (
+                <button
+                  key={tab.path}
+                  type="button"
+                  onClick={() => handleTabClick(tab.path, tab.public)}
+                  className={`px-4 py-1.5 text-body-2 font-semibold rounded-full transition-colors ${
+                    isActive
+                      ? "bg-primary-600 text-white"
+                      : "text-neutral-600 hover:text-neutral-900 hover:bg-neutral-200/60"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
           </div>
-        </div>
-      </div>
 
-      {/* Content - key forces remount on route change */}
-      <div className="py-6">
-        <Outlet key={location.pathname} />
+          {/* Inline composer trigger (home only) */}
+          {location.pathname === "/" && (
+            <PostComposerTrigger onCreatePost={handleCreatePost} />
+          )}
+
+          {/* Content - key forces remount on route change */}
+          <Outlet key={location.pathname} />
+        </div>
+
+        {/* Right rail */}
+        <FeedRightRail />
       </div>
 
       {/* Modals */}

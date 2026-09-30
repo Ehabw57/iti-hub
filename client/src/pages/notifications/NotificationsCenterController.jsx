@@ -31,6 +31,9 @@ export const NotificationsCenterController = () => {
   // Local state for in-flight operations
   const [inFlightMap, setInFlightMap] = useState({});
 
+  // Active filter tab: all | likes | comments | follows
+  const [activeTab, setActiveTab] = useState('all');
+
   // Data hooks
   const {
     data: notificationsData,
@@ -62,6 +65,27 @@ export const NotificationsCenterController = () => {
     if (!notificationsData?.pages) return [];
     return notificationsData.pages.flatMap((page) => page.data?.notifications || []);
   }, [notificationsData]);
+
+  /**
+   * Client-side tab filtering (likes / comments / follows)
+   */
+  const filteredNotifications = useMemo(() => {
+    if (activeTab === 'all') return flattenedNotifications;
+    if (activeTab === 'likes') {
+      return flattenedNotifications.filter(
+        (n) => n.type === 'like' || n.type === 'comment_like'
+      );
+    }
+    if (activeTab === 'comments') {
+      return flattenedNotifications.filter(
+        (n) => n.type === 'comment' || n.type === 'reply'
+      );
+    }
+    if (activeTab === 'follows') {
+      return flattenedNotifications.filter((n) => n.type === 'follow');
+    }
+    return flattenedNotifications;
+  }, [flattenedNotifications, activeTab]);
 
   /**
    * Extract pagination info
@@ -116,7 +140,7 @@ export const NotificationsCenterController = () => {
       } finally {
         // Clear in-flight state
         setInFlightMap((prev) => {
-          const { [notificationId]: removed, ...rest } = prev;
+          const { [notificationId]: _removed, ...rest } = prev;
           return rest;
         });
       }
@@ -158,12 +182,12 @@ export const NotificationsCenterController = () => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+          <h2 className="text-xl font-semibold text-neutral-900 mb-2">
             Please log in to view notifications
           </h2>
           <button
             onClick={() => navigate('/login')}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
           >
             Log In
           </button>
@@ -174,39 +198,54 @@ export const NotificationsCenterController = () => {
 
   return (
     <div 
-      className="notifications-center min-h-screen"
+      className="notifications-center h-full flex flex-col"
       style={{ backgroundColor: 'var(--color-neutral-50)' }}
     >
-      {/* Toolbar */}
-      <NotificationsToolbar
-        unreadCount={unreadCount}
-        disabled={isDisabled}
-        onMarkAllRead={handleMarkAllRead}
-        onRefresh={handleRefresh}
-      />
+      <div className="w-full max-w-7xl mx-auto px-4 lg:px-6 flex flex-1 min-h-0 gap-6 justify-center">
+        {/* Main column */}
+        <div className="w-full max-w-3xl min-w-0 flex flex-col min-h-0">
+          {/* Toolbar with tabs */}
+          <NotificationsToolbar
+            unreadCount={unreadCount}
+            disabled={isDisabled}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            onMarkAllRead={handleMarkAllRead}
+            onRefresh={handleRefresh}
+          />
 
-      {/* Error state */}
-      {isError && (
-        <NotificationsStatus
-          status="error"
-          error={error?.response?.data?.error || { message: error?.message }}
-          onRetry={handleRetry}
-        />
-      )}
+          {/* Error state */}
+          {isError && (
+            <div className="mt-4">
+              <NotificationsStatus
+                status="error"
+                error={error?.response?.data?.error || { message: error?.message }}
+                onRetry={handleRetry}
+              />
+            </div>
+          )}
 
-      {/* Notifications list */}
-      {!isError && (
-        <NotificationsList
-          items={flattenedNotifications}
-          pagination={paginationInfo}
-          loading={isLoading}
-          loadingMore={isFetchingNextPage}
-          disabled={isDisabled}
-          onLoadMore={handleLoadMore}
-          onItemMarkRead={handleMarkAsRead}
-          inFlightMap={inFlightMap}
-        />
-      )}
+          {/* Notifications list in card container — per-tab scrollable region.
+              The app layout scrolls in a single root container; this page now
+              follows the MessagesShell convention: the content area gets its
+              own height-constrained overflow region so the toolbar stays
+              pinned and each tab scrolls independently. */}
+          {!isError && (
+            <div className="mt-4 flex-1 min-h-0 bg-neutral-100 border border-outline rounded-2xl shadow-elevation-1 overflow-y-auto no-scrollbar">
+              <NotificationsList
+                items={filteredNotifications}
+                pagination={paginationInfo}
+                loading={isLoading}
+                loadingMore={isFetchingNextPage}
+                disabled={isDisabled}
+                onLoadMore={handleLoadMore}
+                onItemMarkRead={handleMarkAsRead}
+                inFlightMap={inFlightMap}
+              />
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

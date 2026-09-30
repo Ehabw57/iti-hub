@@ -1,6 +1,6 @@
 const Community = require("../models/Community");
 const { SEED_COMMUNITIES } = require("./data/seedData");
-const { getRandomDate, weightedRandom, getRandomCommunityImage } = require("./utils/seedHelpers");
+const { getRandomDate, weightedRandom, getRandomCommunityImage, getRandomCoverImage } = require("./utils/seedHelpers");
 
 /**
  * Seed realistic communities with proper images and varied membership
@@ -73,7 +73,9 @@ module.exports = async function seedCommunities(users = []) {
         name: communityData.name,
         description: communityData.description,
         profilePicture: getRandomCommunityImage(),
-        coverImage: getRandomCommunityImage(), // Different image for cover
+        // Wide 1500x500 banners (SEED_COVER_IMAGES): community cards render
+        // covers in a ~3:1 band, so square 500x500 images get heavily cropped.
+        coverImage: getRandomCoverImage(),
         tags: communityData.tags,
         memberCount: Math.max(owners.length + moderators.length, memberCount),
         postCount,

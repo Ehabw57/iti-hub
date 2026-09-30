@@ -8,6 +8,8 @@ const Comment = require('../../models/Comment');
 const Community = require('../../models/Community');
 const CommunityMember = require('../../models/CommunityMember');
 const Connection = require('../../models/Connection');
+const Branch = require('../../models/Branch');
+const mongoose = require('mongoose');
 const { sendSuccess } = require('../../utils/responseHelpers');
 
 /**
@@ -238,26 +240,83 @@ const deleteUser = async (req, res, next) => {
 };
 
 /**
- * PUT /admin/users/:userId/role
- * Change user role
+ * PATCH /admin/users/:userId/role
+ * Change user role (full granular role set)
+ *
+ * Round 3 work order §2 + `iti-hub-users-page-role-fix.md`:
+ *  - Accepts the full role enum: student, instructor, branch_admin,
+ *    super_admin (legacy 'user'/'admin' values are mapped for compatibility).
+ *  - branch_admin requires a valid branchId in the body.
+ *  - Only super admins may assign branch_admin or super_admin.
+ *  - branchId is persisted for instructor/branch_admin when provided, so
+ *    branch-scoped guards (canManageBranch/canManageTrack) work immediately.
  */
+const ASSIGNABLE_ROLES = ['student', 'instructor', 'branch_admin', 'super_admin'];
+
 const updateUserRole = async (req, res, next) => {
   try {
     const { userId } = req.params;
-    const { role } = req.body;
+    const requester = req.user;
+    const { role, branchId } = req.body;
 
-    if (!role || !['user', 'admin'].includes(role)) {
+    // Legacy values map onto the new role set (no one silently loses access)
+    const mappedRole =
+      role === 'user' ? 'student' : role === 'admin' ? 'super_admin' : role;
+
+    if (!mappedRole || !ASSIGNABLE_ROLES.includes(mappedRole)) {
       return res.status(400).json({
         success: false,
         error: {
           code: 'INVALID_ROLE',
-          message: 'Role must be either "user" or "admin"'
+          message: `Role must be one of: ${ASSIGNABLE_ROLES.join(', ')}`
         }
       });
     }
 
+    // Only super admins may assign branch_admin or super_admin
+    const isSuperAdminRequester =
+      !!requester &&
+      (requester.role === 'super_admin' || requester.role === 'admin');
+
+    if (
+      (mappedRole === 'branch_admin' || mappedRole === 'super_admin') &&
+      !isSuperAdminRequester
+    ) {
+      return res.status(403).json({
+        success: false,
+        error: {
+          code: 'INSUFFICIENT_PERMISSIONS',
+          message: 'Only Super Admins can assign branch_admin or super_admin roles'
+        }
+      });
+    }
+
+    // branch_admin requires a branch assignment
+    if (mappedRole === 'branch_admin') {
+      if (!branchId || !mongoose.Types.ObjectId.isValid(branchId)) {
+        return res.status(400).json({
+          success: false,
+          error: {
+            code: 'BRANCH_REQUIRED',
+            message: 'A valid branch must be selected for the branch_admin role'
+          }
+        });
+      }
+
+      const branch = await Branch.findById(branchId);
+      if (!branch) {
+        return res.status(404).json({
+          success: false,
+          error: {
+            code: 'BRANCH_NOT_FOUND',
+            message: 'Branch not found'
+          }
+        });
+      }
+    }
+
     // Prevent changing own role
-    if (userId === req.user._id.toString()) {
+    if (userId === requester._id.toString()) {
       return res.status(400).json({
         success: false,
         error: {
@@ -267,9 +326,43 @@ const updateUserRole = async (req, res, next) => {
       });
     }
 
+    // Non-super admins (branch admins) may only assign instructor, and only
+    // within their own branch (referenced role-fix doc §5).
+    if (!isSuperAdminRequester && mappedRole !== 'instructor') {
+      return res.status(403).json({
+        success: false,
+        error: {
+          code: 'INSUFFICIENT_PERMISSIONS',
+          message: 'Branch Admins can only assign the instructor role'
+        }
+      });
+    }
+    if (
+      !isSuperAdminRequester &&
+      mappedRole === 'instructor' &&
+      branchId &&
+      requester.branchId &&
+      branchId !== requester.branchId.toString()
+    ) {
+      return res.status(403).json({
+        success: false,
+        error: {
+          code: 'INSUFFICIENT_PERMISSIONS',
+          message: 'Instructors can only be assigned within your own branch'
+        }
+      });
+    }
+
+    const update = { role: mappedRole };
+    if (mappedRole === 'branch_admin') {
+      update.branchId = branchId;
+    } else if (branchId && ['instructor', 'student'].includes(mappedRole)) {
+      update.branchId = branchId;
+    }
+
     const user = await User.findByIdAndUpdate(
       userId,
-      { role },
+      update,
       { new: true, select: '-password -resetPasswordToken -resetPasswordExpires' }
     );
 

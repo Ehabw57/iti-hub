@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { useIntlayer } from 'react-intlayer';
 import usePost from '@hooks/queries/usePost';
 import useFeedHome from '@hooks/queries/useFeedHome';
 import useIntersectionObserver from '@hooks/useIntersectionObserver';
@@ -21,7 +20,6 @@ export default function PostDetailController() {
   const { postId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const { content } = useIntlayer('feedHome');
 
   // Fetch the featured post
   const { 
@@ -110,7 +108,7 @@ export default function PostDetailController() {
     
     return (
       <div className="max-w-2xl mx-auto px-4 py-6">
-        <div className="bg-white rounded-lg shadow-sm border border-neutral-200 p-8 text-center">
+        <div className="bg-neutral-100 rounded-lg shadow-sm border border-neutral-200 p-8 text-center">
           <div className="mb-4">
             <div 
               className="w-16 h-16 mx-auto rounded-full flex items-center justify-center"

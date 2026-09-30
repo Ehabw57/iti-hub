@@ -130,7 +130,7 @@ export default function AskCommunityController() {
         </header>
 
         {/* Main Content */}
-        <main className="flex-1 overflow-y-auto pb-28 sm:pb-32">
+        <main className="flex-1 overflow-y-auto no-scrollbar pb-28 sm:pb-32">
           <div className="max-w-3xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
             {/* AI Answer */}
             <div className="mb-6 sm:mb-8">
@@ -143,14 +143,14 @@ export default function AskCommunityController() {
             {result.referencedPosts && result.referencedPosts.length > 0 && (
               <div>
                 <h3 className="text-body-2 text-neutral-600 mb-3">{content.sourcesTitle}</h3>
-                <div className="flex gap-3 overflow-x-auto pb-2 -mx-3 sm:-mx-4 px-3 sm:px-4 scrollbar-hide">
+                <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2 -mx-3 sm:-mx-4 px-3 sm:px-4">
                   {result.referencedPosts.slice(0, 2).map((post, index) => (
                     <a
                       key={post._id}
                       href={`/posts/${post._id}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="shrink-0 w-56 sm:w-64 p-3 sm:p-4 bg-white border border-neutral-200 rounded-lg hover:border-neutral-300 hover:shadow-sm transition-all group"
+                      className="shrink-0 w-56 sm:w-64 p-3 sm:p-4 bg-neutral-100 border border-neutral-200 rounded-lg hover:border-neutral-300 hover:shadow-sm transition-all group"
                     >
                       <div className="flex items-center gap-2 mb-2">
                         <span className="px-2 py-0.5 bg-primary-100 text-primary-700 rounded text-xs font-semibold">
@@ -197,7 +197,7 @@ export default function AskCommunityController() {
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
                 placeholder={content.followupPlaceholder.value}
-                className="w-full px-4 sm:px-5 py-3 sm:py-3.5 pe-12 sm:pe-14 bg-white border border-neutral-300 rounded-full text-body-2 sm:text-body-1 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
+                className="w-full px-4 sm:px-5 py-3 sm:py-3.5 pe-12 sm:pe-14 bg-neutral-100 border border-neutral-300 rounded-full text-body-2 sm:text-body-1 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
                 disabled={askMutation.isPending}
               />
               <button
@@ -248,7 +248,7 @@ export default function AskCommunityController() {
               {content.suggestionChips?.map((chip, index) => (
                 <span
                   key={index}
-                  className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 bg-white border border-neutral-200 rounded-full text-caption sm:text-body-2 text-neutral-600 shadow-sm"
+                  className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 bg-neutral-100 border border-neutral-200 rounded-full text-caption sm:text-body-2 text-neutral-600 shadow-sm"
                 >
                   <span className="text-neutral-400">
                     {index % 4 === 0 && '🔄'}
@@ -275,7 +275,7 @@ export default function AskCommunityController() {
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
                 placeholder={content.questionPlaceholder.value}
-                className="w-full px-4 sm:px-5 py-3.5 sm:py-4 pe-12 sm:pe-14 bg-white border border-neutral-300 rounded-full text-body-2 sm:text-body-1 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all shadow-elevation-1"
+                className="w-full px-4 sm:px-5 py-3.5 sm:py-4 pe-12 sm:pe-14 bg-neutral-100 border border-neutral-300 rounded-full text-body-2 sm:text-body-1 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all shadow-elevation-1"
                 disabled={askMutation.isPending}
               />
               <button

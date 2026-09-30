@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { HiXMark } from 'react-icons/hi2';
 import { useIntlayer } from 'react-intlayer';
 import { toast } from 'react-hot-toast';
+import { Chip } from '@components/common';
 
 /**
  * Tag selector component
@@ -54,20 +54,15 @@ export default function TagSelector({ tags = [], onChange, maxTags = 5 }) {
       {tags.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-2">
           {tags.map((tag, index) => (
-            <span
+            <Chip
               key={index}
-              className="inline-flex items-center gap-1 px-3 py-1 bg-primary-100 text-primary-700 rounded-full text-sm"
+              hash
+              size="xs"
+              onRemove={() => removeTag(index)}
+              removeLabel={content.removeTag?.value || 'Remove tag'}
             >
-              #{tag}
-              <button
-                type="button"
-                onClick={() => removeTag(index)}
-                className="hover:bg-primary-200 rounded-full p-0.5 transition-colors"
-                aria-label="Remove tag"
-              >
-                <HiXMark className="w-3 h-3" />
-              </button>
-            </span>
+              {tag}
+            </Chip>
           ))}
         </div>
       )}

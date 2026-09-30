@@ -2,9 +2,46 @@ const joinCommunity = require('../../../controllers/community/joinCommunityContr
 const leaveCommunity = require('../../../controllers/community/leaveCommunityController');
 const Community = require('../../../models/Community');
 const CommunityMember = require('../../../models/CommunityMember');
+const CommunityJoinRequest = require('../../../models/CommunityJoinRequest');
 const User = require('../../../models/User');
 const { connectToDB, clearDatabase, disconnectFromDB } = require('../../helpers/DBUtils');
 const responseMock = require('../../helpers/responseMock');
+
+/**
+ * Invoke an asyncHandler-wrapped controller deterministically.
+ * asyncHandler does not return the handler's promise, so plain
+ * `await handler(req, res)` returns before the response is sent. This
+ * helper resolves only once res.json/res.send is called (or next(err)).
+ */
+const invoke = (handler, req) =>
+  new Promise((resolve) => {
+    const res = responseMock();
+    let nextError = null;
+    let settled = false;
+    const settle = () => {
+      if (!settled) {
+        settled = true;
+        resolve({ res, nextError });
+      }
+    };
+    const origJson = res.json.bind(res);
+    const origSend = res.send.bind(res);
+    res.json = (obj) => {
+      origJson(obj);
+      settle();
+      return res;
+    };
+    res.send = (data) => {
+      origSend(data);
+      settle();
+      return res;
+    };
+    const next = (err) => {
+      nextError = err;
+      settle();
+    };
+    handler(req, res, next);
+  });
 
 describe('Join/Leave Community Controllers', () => {
   let testUser;
@@ -52,95 +89,100 @@ describe('Join/Leave Community Controllers', () => {
     });
   });
 
-  describe('POST /communities/:id/join', () => {
-    it('should allow user to join a community', async () => {
-      const req = {
+  describe('POST /communities/:id/join (pending-request flow)', () => {
+    it('should create a pending join request', async () => {
+      const { res } = await invoke(joinCommunity, {
         params: { id: testCommunity._id.toString() },
         user: { _id: testUser._id }
-      };
-      const res = responseMock();
-
-      await joinCommunity(req, res);
+      });
 
       expect(res.statusCode).toBe(201);
       expect(res.body.success).toBe(true);
-      expect(res.body.message).toMatch(/joined/i);
+      expect(res.body.message).toMatch(/waiting|request/i);
+      expect(res.body.data.request.status).toBe('pending');
     });
 
-    it('should create membership record', async () => {
-      const req = {
+    it('should NOT create a membership record on join request', async () => {
+      await invoke(joinCommunity, {
         params: { id: testCommunity._id.toString() },
         user: { _id: testUser._id }
-      };
-      const res = responseMock();
-
-      await joinCommunity(req, res);
+      });
 
       const membership = await CommunityMember.findOne({
         user: testUser._id,
         community: testCommunity._id
       });
-      
-      expect(membership).toBeDefined();
-      expect(membership.role).toBe('member');
+      expect(membership).toBeNull();
+
+      const joinRequest = await CommunityJoinRequest.findOne({
+        user: testUser._id,
+        community: testCommunity._id
+      });
+      expect(joinRequest).toBeDefined();
+      expect(joinRequest.status).toBe('pending');
     });
 
-    it('should increment member count', async () => {
-      const req = {
+    it('should NOT increment member count on join request', async () => {
+      await invoke(joinCommunity, {
         params: { id: testCommunity._id.toString() },
         user: { _id: testUser._id }
-      };
-      const res = responseMock();
-
-      await joinCommunity(req, res);
+      });
 
       const updated = await Community.findById(testCommunity._id);
-      expect(updated.memberCount).toBe(2);
+      expect(updated.memberCount).toBe(1);
     });
 
-    it('should be idempotent when already joined', async () => {
+    it('should reject a duplicate pending request (409)', async () => {
+      await CommunityJoinRequest.create({
+        user: testUser._id,
+        community: testCommunity._id
+      });
+
+      const { nextError } = await invoke(joinCommunity, {
+        params: { id: testCommunity._id.toString() },
+        user: { _id: testUser._id }
+      });
+
+      expect(nextError).toBeDefined();
+      expect(nextError.statusCode).toBe(409);
+      expect(nextError.message).toMatch(/pending/i);
+    });
+
+    it('should reject joining when already a member (409)', async () => {
       await CommunityMember.create({
         user: testUser._id,
         community: testCommunity._id,
         role: 'member'
       });
 
-      const req = {
+      const { nextError } = await invoke(joinCommunity, {
         params: { id: testCommunity._id.toString() },
         user: { _id: testUser._id }
-      };
-      const res = responseMock();
+      });
 
-      await joinCommunity(req, res);
-
-      expect(res.statusCode).toBe(200);
-      expect(res.body.message).toMatch(/already/i);
+      expect(nextError).toBeDefined();
+      expect(nextError.statusCode).toBe(409);
+      expect(nextError.message).toMatch(/already/i);
     });
 
     it('should return 404 for non-existent community', async () => {
-      const req = {
+      const { nextError } = await invoke(joinCommunity, {
         params: { id: '507f1f77bcf86cd799439011' },
         user: { _id: testUser._id }
-      };
-      const res = responseMock();
+      });
 
-      await joinCommunity(req, res);
-
-      expect(res.statusCode).toBe(404);
-      expect(res.body.success).toBe(false);
+      expect(nextError).toBeDefined();
+      expect(nextError.statusCode).toBe(404);
     });
 
     it('should return 400 for invalid ID', async () => {
-      const req = {
+      const { nextError } = await invoke(joinCommunity, {
         params: { id: 'invalid-id' },
         user: { _id: testUser._id }
-      };
-      const res = responseMock();
+      });
 
-      await joinCommunity(req, res);
-
-      expect(res.statusCode).toBe(400);
-      expect(res.body.success).toBe(false);
+      expect(nextError).toBeDefined();
+      expect(nextError.statusCode).toBe(400);
     });
   });
 
@@ -156,13 +198,10 @@ describe('Join/Leave Community Controllers', () => {
     });
 
     it('should allow user to leave a community', async () => {
-      const req = {
+      const { res } = await invoke(leaveCommunity, {
         params: { id: testCommunity._id.toString() },
         user: { _id: testUser._id }
-      };
-      const res = responseMock();
-
-      await leaveCommunity(req, res);
+      });
 
       expect(res.statusCode).toBe(200);
       expect(res.body.success).toBe(true);
@@ -170,47 +209,38 @@ describe('Join/Leave Community Controllers', () => {
     });
 
     it('should delete membership record', async () => {
-      const req = {
+      await invoke(leaveCommunity, {
         params: { id: testCommunity._id.toString() },
         user: { _id: testUser._id }
-      };
-      const res = responseMock();
-
-      await leaveCommunity(req, res);
+      });
 
       const membership = await CommunityMember.findOne({
         user: testUser._id,
         community: testCommunity._id
       });
-      
+
       expect(membership).toBeNull();
     });
 
     it('should decrement member count', async () => {
-      const req = {
+      await invoke(leaveCommunity, {
         params: { id: testCommunity._id.toString() },
         user: { _id: testUser._id }
-      };
-      const res = responseMock();
-
-      await leaveCommunity(req, res);
+      });
 
       const updated = await Community.findById(testCommunity._id);
       expect(updated.memberCount).toBe(1);
     });
 
     it('should prevent only owner from leaving', async () => {
-      const req = {
+      const { nextError } = await invoke(leaveCommunity, {
         params: { id: testCommunity._id.toString() },
         user: { _id: ownerUser._id }
-      };
-      const res = responseMock();
+      });
 
-      await leaveCommunity(req, res);
-
-      expect(res.statusCode).toBe(400);
-      expect(res.body.success).toBe(false);
-      expect(res.body.message).toMatch(/only owner/i);
+      expect(nextError).toBeDefined();
+      expect(nextError.statusCode).toBe(400);
+      expect(nextError.message).toMatch(/only owner|transfer ownership/i);
     });
 
     it('should be idempotent when not a member', async () => {
@@ -221,13 +251,10 @@ describe('Join/Leave Community Controllers', () => {
         password: 'password123'
       });
 
-      const req = {
+      const { res } = await invoke(leaveCommunity, {
         params: { id: testCommunity._id.toString() },
         user: { _id: anotherUser._id }
-      };
-      const res = responseMock();
-
-      await leaveCommunity(req, res);
+      });
 
       expect(res.statusCode).toBe(200);
       expect(res.body.message).toMatch(/not a member/i);
@@ -250,42 +277,33 @@ describe('Join/Leave Community Controllers', () => {
       testCommunity.moderators.push(modUser._id);
       await testCommunity.save();
 
-      const req = {
+      await invoke(leaveCommunity, {
         params: { id: testCommunity._id.toString() },
         user: { _id: modUser._id }
-      };
-      const res = responseMock();
-
-      await leaveCommunity(req, res);
+      });
 
       const updated = await Community.findById(testCommunity._id);
       expect(updated.moderators.map(id => id.toString())).not.toContain(modUser._id.toString());
     });
 
     it('should return 404 for non-existent community', async () => {
-      const req = {
+      const { nextError } = await invoke(leaveCommunity, {
         params: { id: '507f1f77bcf86cd799439011' },
         user: { _id: testUser._id }
-      };
-      const res = responseMock();
+      });
 
-      await leaveCommunity(req, res);
-
-      expect(res.statusCode).toBe(404);
-      expect(res.body.success).toBe(false);
+      expect(nextError).toBeDefined();
+      expect(nextError.statusCode).toBe(404);
     });
 
     it('should return 400 for invalid ID', async () => {
-      const req = {
+      const { nextError } = await invoke(leaveCommunity, {
         params: { id: 'invalid-id' },
         user: { _id: testUser._id }
-      };
-      const res = responseMock();
+      });
 
-      await leaveCommunity(req, res);
-
-      expect(res.statusCode).toBe(400);
-      expect(res.body.success).toBe(false);
+      expect(nextError).toBeDefined();
+      expect(nextError.statusCode).toBe(400);
     });
   });
 });

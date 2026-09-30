@@ -3,16 +3,12 @@
   <aside class="sidebar" [class.collapsed]="sidebarCollapsed">
     <div class="sidebar-header">
       <div class="logo">
-        @if (!sidebarCollapsed) {
-          <span class="logo-text">ITI Hub Admin</span>
-        } @else {
-          <span class="logo-icon">ITI</span>
-        }
+        <span class="brand-logo" [class.compact]="sidebarCollapsed"><img src="/brand/logo.png" alt="ITI Hub Admin"></span>
       </div>
     </div>
     
     <nav class="sidebar-nav">
-      @for (item of navItems; track item.path) {
+      @for (item of navItems(); track item.path) {
         <a 
           [routerLink]="item.path" 
           routerLinkActive="active"

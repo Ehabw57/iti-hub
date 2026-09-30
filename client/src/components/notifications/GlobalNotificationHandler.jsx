@@ -1,5 +1,4 @@
 import { useNotificationSocket } from '@hooks/socket/useNotificationSocket';
-import { useAuthStore } from '@store/auth';
 
 /**
  * @fileoverview Global handler for real-time notification events
@@ -32,14 +31,10 @@ import { useAuthStore } from '@store/auth';
  * }
  */
 export const GlobalNotificationHandler = () => {
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-
-  // Only setup listeners when user is authenticated
-  if (!isAuthenticated) {
-    return null;
-  }
-
   // Setup socket event listeners
+  // NOTE: useSocketEvent (used internally) only attaches listeners while
+  // the authenticated socket is connected, so calling this hook
+  // unconditionally is safe and keeps React hook order stable.
   // This hook will:
   // - Listen for 'notification:new' events
   // - Listen for 'notification:update' events  

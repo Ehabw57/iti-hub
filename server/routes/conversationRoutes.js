@@ -12,6 +12,7 @@ const {
   removeGroupMember,
   leaveGroup,
   updateGroup,
+  deleteGroup,
   markConversationAsSeen
 } = require("../controllers/conversation");
 
@@ -35,6 +36,7 @@ conversationRoutes.post("/:conversationId/members", checkAuth, addGroupMember);
 conversationRoutes.delete("/:conversationId/members/:userId", checkAuth, removeGroupMember);
 conversationRoutes.post("/:conversationId/leave", checkAuth, leaveGroup);
 conversationRoutes.patch("/:conversationId", checkAuth, upload.message, updateGroup);
+conversationRoutes.delete("/:conversationId", checkAuth, deleteGroup);
 
 // Message routes (nested under conversations)
 conversationRoutes.get("/:conversationId/messages", checkAuth, getMessages);

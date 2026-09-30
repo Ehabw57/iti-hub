@@ -8,6 +8,12 @@ export default {
     markAllAsRead: t({ en: "Mark all as read", ar: "وضع علامة مقروءة على الكل" }),
     refresh: t({ en: "Refresh", ar: "تحديث" }),
 
+    // Tabs
+    tabAll: t({ en: "All", ar: "الكل" }),
+    tabLikes: t({ en: "Likes", ar: "الإعجابات" }),
+    tabComments: t({ en: "Comments", ar: "التعليقات" }),
+    tabFollows: t({ en: "Follows", ar: "المتابعات" }),
+
     noNotifications: t({ en: "No notifications yet", ar: "لا توجد إشعارات بعد" }),
     noNotificationsDescription: t({
       en: "When someone interacts with your content, you'll see it here",
@@ -28,6 +34,12 @@ export default {
       repost: insert({ en: "{{actor}} reposted your post", ar: "{{actor}} أعاد نشر منشورك" }),
       follow: insert({ en: "{{actor}} started following you", ar: "{{actor}} بدأ بمتابعتك" }),
       comment_like: insert({ en: "{{actor}} liked your comment", ar: "{{actor}} أعجب بتعليقك" }),
+      enrollment_request: insert({ en: "{{actor}} requested to enroll in your track", ar: "{{actor}} طلب الانضمام إلى مسارك" }),
+      enrollment_approved: insert({ en: "Your enrollment request was approved", ar: "تم قبول طلب الانضمام" }),
+      enrollment_rejected: insert({ en: "Your enrollment request was rejected", ar: "تم رفض طلب الانضمام" }),
+      group_join_request: insert({ en: "{{actor}} requested to join your group", ar: "{{actor}} طلب الانضمام إلى مجموعتك" }),
+      group_join_approved: insert({ en: "Your group join request was approved", ar: "تم قبول طلب انضمامك إلى المجموعة" }),
+      group_join_rejected: insert({ en: "Your group join request was rejected", ar: "تم رفض طلب انضمامك إلى المجموعة" }),
     },
 
     actorGroupingTwo: insert({ en: "{{actor1}} and {{actor2}}", ar: "{{actor1}} و {{actor2}}" }),

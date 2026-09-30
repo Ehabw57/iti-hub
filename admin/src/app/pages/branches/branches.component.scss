@@ -1,0 +1,157 @@
+.branches-page {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--spacing-4);
+  margin-bottom: var(--spacing-6);
+  flex-wrap: wrap;
+}
+
+.subtitle {
+  color: var(--color-neutral-500);
+  margin-top: var(--spacing-1);
+}
+
+.header-actions-row {
+  display: flex;
+  gap: var(--spacing-2);
+  flex-wrap: wrap;
+}
+
+.success-message {
+  background-color: #dcfce7;
+  color: #166534;
+  padding: var(--spacing-3) var(--spacing-4);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-4);
+}
+
+.error-message {
+  background-color: var(--color-red-50);
+  color: var(--color-red-700);
+  padding: var(--spacing-3) var(--spacing-4);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-4);
+}
+
+.table-container {
+  overflow-x: auto;
+  padding: 0;
+}
+
+.table {
+  min-width: 700px;
+}
+
+.branch-row {
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--color-neutral-50);
+  }
+}
+
+.branch-name {
+  font-weight: var(--font-weight-semibold);
+}
+
+.location-cell {
+  color: var(--color-neutral-500);
+  max-width: 420px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+}
+
+.badge-core {
+  background-color: var(--color-primary-100);
+  color: var(--color-primary-700);
+}
+
+.badge-extension {
+  background-color: var(--color-blue-100);
+  color: var(--color-blue-700);
+}
+
+.actions {
+  display: flex;
+  gap: var(--spacing-2);
+}
+
+.empty-cell {
+  text-align: center;
+  color: var(--color-neutral-400);
+  padding: var(--spacing-8) !important;
+}
+
+.loading-state {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-12);
+}
+
+.spinner-lg {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--color-neutral-200);
+  border-top-color: var(--color-primary-500);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background-color: white;
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-6);
+  max-width: 440px;
+  width: 90%;
+  box-shadow: var(--shadow-elevation-3);
+}
+
+.modal-title {
+  margin-bottom: var(--spacing-3);
+}
+
+.modal-message {
+  color: var(--color-neutral-600);
+  margin-bottom: var(--spacing-6);
+}
+
+.field-label {
+  display: block;
+  font-size: var(--font-size-body-2);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-neutral-700);
+  margin: var(--spacing-3) 0 var(--spacing-1);
+}
+
+.modal-actions {
+  display: flex;
+  gap: var(--spacing-3);
+  justify-content: flex-end;
+  margin-top: var(--spacing-6);
+}

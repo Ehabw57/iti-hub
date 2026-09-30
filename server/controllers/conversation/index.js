@@ -7,6 +7,7 @@ const { addGroupMember } = require('./addGroupMemberController');
 const { removeGroupMember } = require('./removeGroupMemberController');
 const { leaveGroup } = require('./leaveGroupController');
 const { updateGroup } = require('./updateGroupController');
+const { deleteGroup } = require('./deleteGroupController');
 const { markConversationAsSeen } = require('./markAsSeenController');
 const { getUnreadMessagesCount } = require('./getUnreadMessagesCountController');
 
@@ -19,6 +20,7 @@ module.exports = {
   removeGroupMember,
   leaveGroup,
   updateGroup,
+  deleteGroup,
   markConversationAsSeen,
   getUnreadMessagesCount
 };

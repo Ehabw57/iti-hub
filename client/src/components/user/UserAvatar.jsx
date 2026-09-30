@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 /**
  * UserAvatar Component
  * Reusable avatar component with size variants
@@ -20,6 +22,7 @@ export function UserAvatar({
   onClick,
   className = '' 
 }) {
+  const [failedSrc, setFailedSrc] = useState(null);
   const sizes = {
     sm: 'w-6 h-6',
     md: 'w-10 h-10',
@@ -28,9 +31,12 @@ export function UserAvatar({
 
   const cursorClass = onClick ? 'cursor-pointer' : '';
 
+  if (!src || failedSrc === src) return <span role="img" aria-label={alt || 'User'} onClick={onClick} className={`${sizes[size]} inline-flex shrink-0 items-center justify-center rounded-full bg-primary-50 font-semibold text-primary-700 ${cursorClass} ${className}`}>{(alt || 'U').trim().charAt(0).toUpperCase()}</span>;
+
   return (
     <img
       src={src || '/default-avatar.png'}
+      onError={() => setFailedSrc(src)}
       alt={alt}
       className={`${sizes[size]} rounded-full object-cover ${cursorClass} ${className}`}
       onClick={onClick}

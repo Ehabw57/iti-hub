@@ -252,10 +252,10 @@ const PostCard = React.memo(({ post, onPostClick, isCommentsExpanded = false, cl
 
   return (
     <article
-      className={`bg-neutral-100 border border-neutral-200 rounded-lg shadow-elevation-1 hover:shadow-elevation-2 transition-shadow ${className}`}
+      className={`bg-neutral-100 border border-outline rounded-2xl shadow-elevation-1 hover:shadow-elevation-2 transition-shadow overflow-hidden ${className}`}
     >
       {/* Header */}
-      <div className="p-4">
+      <div className="p-5 pb-3">
         <PostHeader
           post={post}
           isRepost={isRepost}
@@ -269,7 +269,7 @@ const PostCard = React.memo(({ post, onPostClick, isCommentsExpanded = false, cl
 
         {/* Original Post Container (for reposts) */}
         {isRepost && (
-          <div className="border border-neutral-200 rounded-lg p-4 bg-neutral-50 mt-3 shadow-elevation-1">
+          <div className="border border-outline rounded-xl p-4 bg-neutral-50 mt-3">
             {post.originalPost && post.originalPost.author ? (
               <>
                 {/* Original Post Header - No menu */}
@@ -304,7 +304,7 @@ const PostCard = React.memo(({ post, onPostClick, isCommentsExpanded = false, cl
 
       {/* Content (only for non-reposts or reposts with additional content) */}
       {!isRepost && (
-        <div className="px-4 pb-3">
+        <div className="px-5 pb-3">
           <PostContent
             community={post.community}
             content={post.content}
@@ -316,7 +316,7 @@ const PostCard = React.memo(({ post, onPostClick, isCommentsExpanded = false, cl
       )}
 
       {/* Interactions */}
-      <div className="px-4 pb-4 border-t border-neutral-200 pt-3">
+      <div className="px-5 pb-4 border-t border-outline pt-3 mx-0">
         <PostInteractions
           likeCount={likeState.likesCount}
           commentCount={post.commentsCount || 0}

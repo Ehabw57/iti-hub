@@ -184,7 +184,7 @@ export default function PostComposerModal({ isOpen, onClose, initialPost = null,
           </div>
 
           {/* Content - Scrollable */}
-          <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+          <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto no-scrollbar px-6 py-4 space-y-4">
             {/* Post content textarea */}
             <PostTextarea
               value={postContent}

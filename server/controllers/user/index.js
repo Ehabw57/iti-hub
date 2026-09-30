@@ -7,6 +7,9 @@ const getUserProfile = require("./getUserProfileController");
 const uploadProfilePicture = require("./uploadProfilePictureController");
 const uploadCoverImage = require("./uploadCoverImageController");
 const searchUsers = require("./searchUsersController");
+const changePassword = require("./changePasswordController");
+const updateNotificationPreferences = require("./updateNotificationPreferencesController");
+const deleteAccount = require("./deleteAccountController");
 
 module.exports = {
   getUserProfile,
@@ -14,5 +17,8 @@ module.exports = {
   uploadProfilePicture,
   uploadCoverImage,
   searchUsers,
+  changePassword,
+  updateNotificationPreferences,
+  deleteAccount,
   ...require("./blockController"),
 };

@@ -80,37 +80,37 @@ export default function ImageCarousel({ images, className = '' }) {
           {/* Previous button */}
           <button
             onClick={scrollPrev}
-            className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-neutral-100/95 hover:bg-neutral-100 shadow-elevation-2 flex items-center justify-center transition-all hover:scale-110 z-10"
+            className="absolute start-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-neutral-100/95 hover:bg-neutral-100 shadow-elevation-2 flex items-center justify-center transition-all hover:scale-110 z-10"
             aria-label="Previous image"
           >
-            <HiChevronLeft className="w-6 h-6 text-neutral-800 rtl-mirror" />
+            <HiChevronLeft className="w-6 h-6 text-neutral-800" />
           </button>
 
           {/* Next button */}
           <button
             onClick={scrollNext}
-            className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-neutral-100/95 hover:shadow-elevation-2 flex items-center justify-center transition-all hover:scale-110 z-10"
+            className="absolute end-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-neutral-100/95 hover:bg-neutral-100 shadow-elevation-2 flex items-center justify-center transition-all hover:scale-110 z-10"
             aria-label="Next image"
           >
-            <HiChevronRight dir="ltr" className="w-6 h-6 text-neutral-800 rtl-mirror" />
+            <HiChevronRight className="w-6 h-6 text-neutral-800" />
           </button>
           </div>
 
           {/* Image counter */}
-          <div className="absolute top-3 right-3 px-3 py-1.5 bg-neutral-50/80 text-neutral-900 text-caption font-medium rounded-full backdrop-blur-sm">
+          <div className="absolute top-3 end-3 px-3 py-1.5 bg-neutral-50/80 text-neutral-900 text-caption font-medium rounded-full backdrop-blur-sm">
             {selectedIndex + 1} / {images.length}
           </div>
 
           {/* Dot indicators */}
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2 px-3 py-2 rounded-full bg-neutral-900/60 backdrop-blur-sm">
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2 px-3 py-2 rounded-full bg-black/60 backdrop-blur-sm">
             {images.map((_, index) => (
               <button
                 key={index}
                 onClick={() => scrollTo(index)}
                 className={`transition-all ${
                   index === selectedIndex
-                    ? "w-8 h-2 bg-neutral-50 rounded-full"
-                    : "w-2 h-2 bg-neutral-50/60 hover:bg-white/80 rounded-full"
+                    ? "w-8 h-2 bg-white rounded-full"
+                    : "w-2 h-2 bg-white/60 hover:bg-white/80 rounded-full"
                 }`}
                 aria-label={`Go to image ${index + 1}`}
                 aria-current={index === selectedIndex}

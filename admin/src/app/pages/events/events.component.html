@@ -1,0 +1,182 @@
+<div class="events-page">
+  <header class="page-header">
+    <h1 class="text-heading-2">{{ i18n.t('events.title') }}</h1>
+    <p class="text-body-2 page-subtitle">{{ i18n.t('events.subtitle') }}</p>
+  </header>
+
+  <!-- Success / Error Messages -->
+  @if (successMessage()) {
+    <div class="success-message">{{ successMessage() }}</div>
+  }
+  @if (errorMessage()) {
+    <div class="error-message">{{ errorMessage() }}</div>
+  }
+
+  <!-- Create form -->
+  <div class="filters card">
+    <div class="filter-row">
+      <button class="btn btn-primary" (click)="toggleForm()">
+        {{ showForm() ? i18n.t('common.cancel') : i18n.t('events.createEvent') }}
+      </button>
+    </div>
+
+    @if (showForm()) {
+      <form class="event-form" (ngSubmit)="createEvent()">
+        <div class="form-grid">
+          <input
+            class="input"
+            type="text"
+            [(ngModel)]="formTitle"
+            [ngModelOptions]="{ standalone: true }"
+            [placeholder]="i18n.t('events.eventTitle')"
+            required
+          />
+          <input
+            class="input"
+            type="datetime-local"
+            [(ngModel)]="formDate"
+            [ngModelOptions]="{ standalone: true }"
+            [placeholder]="i18n.t('events.date')"
+            required
+          />
+          <input
+            class="input"
+            type="datetime-local"
+            [(ngModel)]="formEndDate"
+            [ngModelOptions]="{ standalone: true }"
+            [placeholder]="i18n.t('events.endDate')"
+          />
+          <input
+            class="input"
+            type="text"
+            [(ngModel)]="formLocation"
+            [ngModelOptions]="{ standalone: true }"
+            [placeholder]="i18n.t('events.location')"
+          />
+          <input
+            class="input"
+            type="url"
+            [(ngModel)]="formRegisterUrl"
+            [ngModelOptions]="{ standalone: true }"
+            [placeholder]="i18n.t('events.registerUrl')"
+          />
+        </div>
+
+        <textarea
+          class="input"
+          rows="3"
+          [(ngModel)]="formDescription"
+          [ngModelOptions]="{ standalone: true }"
+          [placeholder]="i18n.t('events.description')"
+        ></textarea>
+
+        <!-- Participating branches -->
+        <div class="branch-picker">
+          <span class="text-body-2 label">{{ i18n.t('events.branches') }}:</span>
+          <div class="branch-options">
+            @for (branch of branches(); track branch._id) {
+              <label class="branch-option">
+                <input
+                  type="checkbox"
+                  [checked]="isBranchSelected(branch._id)"
+                  (change)="onBranchToggle(branch._id, $event)"
+                />
+                {{ branch.name }}
+              </label>
+            }
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button
+            class="btn btn-primary"
+            type="submit"
+            [disabled]="saving() || !formTitle.trim() || !formDate"
+          >
+            {{ saving() ? i18n.t('common.loading') : i18n.t('events.createEvent') }}
+          </button>
+        </div>
+      </form>
+    }
+  </div>
+
+  <!-- Events table -->
+  @if (isLoading()) {
+    <div class="loading-state">
+      <span class="spinner-lg"></span>
+    </div>
+  } @else {
+    <div class="table-container card">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>{{ i18n.t('events.eventTitle') }}</th>
+            <th>{{ i18n.t('events.date') }}</th>
+            <th>{{ i18n.t('events.location') }}</th>
+            <th>{{ i18n.t('events.branches') }}</th>
+            <th>{{ i18n.t('events.attendees') }}</th>
+            <th>{{ i18n.t('events.organizer') }}</th>
+            <th>{{ i18n.t('common.actions') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (event of events(); track event._id) {
+            <tr [class.past-row]="!isUpcoming(event)">
+              <td class="text-body-2 font-medium">{{ event.title }}</td>
+              <td class="text-body-2">{{ formatDate(event.date) }}</td>
+              <td class="text-body-2">{{ event.location || '—' }}</td>
+              <td>
+                <div class="tags-cell">
+                  @for (branch of event.branchIds || []; track $index) {
+                    <span class="badge badge-pending">
+                      @if (typeof branch === 'object') {
+                        {{ branch.name }}
+                      } @else {
+                        {{ branch }}
+                      }
+                    </span>
+                  } @empty {
+                    <span class="text-body-2">—</span>
+                  }
+                </div>
+              </td>
+              <td class="text-body-2">{{ event.attendeeCount || 0 }}</td>
+              <td class="text-body-2">{{ event.createdBy?.fullName || '—' }}</td>
+              <td>
+                <button
+                  class="btn btn-sm btn-danger"
+                  (click)="confirmDelete(event)"
+                  [disabled]="actionLoading() === event._id"
+                >
+                  {{ i18n.t('common.delete') }}
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7" class="empty-cell">{{ i18n.t('events.noEvents') }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  <!-- Delete confirmation modal -->
+  @if (showConfirmModal()) {
+    <div class="modal-overlay" (click)="cancelDelete()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <h3 class="text-heading-5 modal-title">{{ i18n.t('common.confirm') }}</h3>
+        <p class="text-body-2 modal-message">{{ i18n.t('events.confirmDelete') }}</p>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" (click)="cancelDelete()">
+            {{ i18n.t('common.cancel') }}
+          </button>
+          <button class="btn btn-danger" (click)="deleteEvent()">
+            {{ i18n.t('common.confirm') }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

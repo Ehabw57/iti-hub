@@ -20,7 +20,7 @@ export default function useToggleCommentLike() {
         return response.data;
       }
     },
-    onSuccess: (data, variables) => {
+    onSuccess: () => {
       // Invalidate comment queries to refresh counts
       queryClient.invalidateQueries({ queryKey: ['comments'] });
       queryClient.invalidateQueries({ queryKey: ['replies'] });

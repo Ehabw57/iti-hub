@@ -1,51 +1,88 @@
 const { login } = require('../../../controllers/auth/loginController');
 const User = require('../../../models/User');
+const { APIError } = require('../../../utils/errors');
+
+/**
+ * Invoke an asyncHandler-wrapped controller the same way Express would:
+ * pass a `next` that captures the error and format it exactly like the
+ * global error handler does, so `res.body` matches real HTTP responses.
+ */
+async function invokeController(controller, req, res) {
+  const next = (err) => {
+    if (err instanceof APIError && err.isOperational) {
+      res.statusCode = err.statusCode;
+      res.body = {
+        success: false,
+        error: { code: err.code, message: err.message }
+      };
+    } else {
+      res.statusCode = 500;
+      res.body = {
+        success: false,
+        error: { code: 'INTERNAL_ERROR', message: 'An unexpected error occurred' }
+      };
+    }
+  };
+
+  await controller(req, res, next);
+}
+
+/**
+ * Create a mock response that captures status + body.
+ */
+function mockResponse() {
+  const res = {};
+  res.statusCode = null;
+  res.body = null;
+  res.status = function (code) {
+    this.statusCode = code;
+    return this;
+  };
+  res.json = function (obj) {
+    this.body = obj;
+    return this;
+  };
+  res.send = function (data) {
+    this.body = data;
+    return this;
+  };
+  return res;
+}
 
 describe('Login Controller', () => {
   jasmine.DEFAULT_TIMEOUT_INTERVAL = 15000;
 
-  let mockResponse;
-
-  beforeEach(() => {
-    mockResponse = () => ({
-      statusCode: null,
-      jsonData: null,
-      status: function(code) {
-        this.statusCode = code;
-        return this;
-      },
-      json: function(data) {
-        this.jsonData = data;
-        return this;
-      }
-    });
-  });
-
   it('should return 400 if email is missing', async () => {
     const req = { body: { password: 'Password123' } };
     const res = mockResponse();
-    await login(req, res);
+
+    await invokeController(login, req, res);
+
     expect(res.statusCode).toBe(400);
-    expect(res.jsonData.error.message).toMatch(/email.*required/i);
+    expect(res.body.error.message).toMatch(/email.*required/i);
   });
 
   it('should return 400 if password is missing', async () => {
     const req = { body: { email: 'test@example.com' } };
     const res = mockResponse();
-    await login(req, res);
+
+    await invokeController(login, req, res);
+
     expect(res.statusCode).toBe(400);
-    expect(res.jsonData.error.message).toMatch(/password.*required/i);
+    expect(res.body.error.message).toMatch(/password.*required/i);
   });
 
   it('should return 401 if user not found', async () => {
     const req = { body: { email: 'nonexistent@example.com', password: 'Password123' } };
     const res = mockResponse();
-    const findOneStub = spyOn(User, 'findOne').and.returnValue({
+    spyOn(User, 'findOne').and.returnValue({
       select: jasmine.createSpy().and.returnValue(Promise.resolve(null))
     });
-    await login(req, res);
+
+    await invokeController(login, req, res);
+
     expect(res.statusCode).toBe(401);
-    expect(res.jsonData.error.code).toBe('INVALID_CREDENTIALS');
+    expect(res.body.error.code).toBe('INVALID_CREDENTIALS');
   });
 
   it('should return 401 if password is incorrect', async () => {
@@ -57,9 +94,11 @@ describe('Login Controller', () => {
     spyOn(User, 'findOne').and.returnValue({
       select: jasmine.createSpy().and.returnValue(Promise.resolve(mockUser))
     });
-    await login(req, res);
+
+    await invokeController(login, req, res);
+
     expect(res.statusCode).toBe(401);
-    expect(res.jsonData.error.code).toBe('INVALID_CREDENTIALS');
+    expect(res.body.error.code).toBe('INVALID_CREDENTIALS');
   });
 
   it('should return 403 if account is blocked', async () => {
@@ -73,10 +112,12 @@ describe('Login Controller', () => {
     spyOn(User, 'findOne').and.returnValue({
       select: jasmine.createSpy().and.returnValue(Promise.resolve(mockUser))
     });
-    await login(req, res);
+
+    await invokeController(login, req, res);
+
     expect(res.statusCode).toBe(403);
-    expect(res.jsonData.error.code).toBe('ACCOUNT_BLOCKED');
-    expect(res.jsonData.error.message).toMatch(/blocked/i);
+    expect(res.body.error.code).toBe('ACCOUNT_BLOCKED');
+    expect(res.body.error.message).toMatch(/blocked/i);
   });
 
   it('should login successfully with valid credentials', async () => {
@@ -103,13 +144,13 @@ describe('Login Controller', () => {
       select: jasmine.createSpy().and.returnValue(Promise.resolve(mockUser))
     });
 
-    await login(req, res);
+    await invokeController(login, req, res);
 
     expect(res.statusCode).toBe(200);
-    expect(res.jsonData.success).toBe(true);
-    expect(res.jsonData.data.token).toBe('mockToken123');
-    expect(res.jsonData.data.user.email).toBe('test@example.com');
-    expect(res.jsonData.data.user.password).toBeUndefined();
+    expect(res.body.success).toBe(true);
+    expect(res.body.data.token).toBe('mockToken123');
+    expect(res.body.data.user.email).toBe('test@example.com');
+    expect(res.body.data.user.password).toBeUndefined();
     expect(mockUser.save).toHaveBeenCalled();
   });
 
@@ -131,7 +172,7 @@ describe('Login Controller', () => {
       select: jasmine.createSpy().and.returnValue(Promise.resolve(mockUser))
     });
 
-    await login(req, res);
+    await invokeController(login, req, res);
 
     expect(mockUser.lastSeen.getTime()).toBeGreaterThan(oldDate.getTime());
   });
@@ -149,7 +190,7 @@ describe('Login Controller', () => {
       }))
     });
 
-    await login(req, res);
+    await invokeController(login, req, res);
 
     expect(findOneSpy).toHaveBeenCalledWith(
       jasmine.objectContaining({ email: 'test@example.com' })

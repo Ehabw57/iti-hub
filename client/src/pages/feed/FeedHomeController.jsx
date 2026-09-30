@@ -39,7 +39,7 @@ export default function FeedHomeController() {
 
   if (isLoading) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-6">
+      <div className="flex flex-col gap-3">
         <FeedPostSkeleton />
         <FeedPostSkeleton />
         <FeedPostSkeleton />
@@ -49,25 +49,21 @@ export default function FeedHomeController() {
 
   if (isError) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-6">
-        <ErrorDisplay 
-          message={error?.response?.data?.error?.message || content.errorLoadingFeed}
-          onRetry={refetch}
-        />
-      </div>
+      <ErrorDisplay 
+        message={error?.response?.data?.error?.message || content.errorLoadingFeed}
+        onRetry={refetch}
+      />
     );
   }
 
   if (posts.length === 0) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-6">
-        <EmptyFeed />
-      </div>
+      <EmptyFeed />
     );
   }
 
   return (
-    <div className="max-w-2xl mx-auto  px-4 py-6 flex flex-col gap-3">
+    <div className="flex flex-col gap-3">
       {posts.map(post => (
         <PostCard
           key={post._id}

@@ -16,7 +16,7 @@ export default function ResendVerificationPage() {
       onSuccess: () => {
         setStatus("success");
       },
-      onError: (err) => {
+      onError: () => {
         setStatus("error");
       },
     });

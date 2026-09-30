@@ -31,6 +31,11 @@ describe('Auth Routes', () => {
     expect(res.status).not.toBe(404);
   });
 
+  it('should mount POST /auth/google', async () => {
+    const res = await request(app).post('/auth/google').send({});
+    expect(res.status).not.toBe(404);
+  });
+
   it('should have rate limiting configured on registration', () => {
     // Verify the route has middleware (rate limiter is applied)
     const registerRoute = authRoutes.stack.find(layer => 

@@ -1,3 +1,4 @@
+import BrandLogo from '@components/common/BrandLogo';
 import { useEffect, useState } from 'react';
 import { useIntlayer } from 'react-intlayer';
 import { useAuthStore } from '@store/auth';
@@ -32,7 +33,7 @@ export default function AuthProvider({ children }) {
         const response = await api.get('/users/me');
         setUser(response.data);
         setIsVerifying(false);
-      } catch (error) {
+      } catch {
         logout();
         setIsVerifying(false);
       }
@@ -58,7 +59,7 @@ export default function AuthProvider({ children }) {
         <div className="text-center">
           <div className="mb-4">
             <div className="w-18 h-18 mx-auto bg-primary-600 rounded-full flex items-center justify-center animate-pulse">
-              <span className="text-sm font-bold text-white">ITI HUB</span>
+              <BrandLogo className="h-16 w-16" />
             </div>
           </div>
 

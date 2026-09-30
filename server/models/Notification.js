@@ -35,13 +35,22 @@ const NotificationSchema = new mongoose.Schema(
     },
     targetModel: {
       type: String,
-      enum: ['Post', 'Comment'],
+      enum: ['Post', 'Comment', 'Track', 'CommunityGroup', 'Community'],
       default: function() {
         if (this.type === NOTIFICATION_TYPES.REPLY || this.type === NOTIFICATION_TYPES.COMMENT || this.type === NOTIFICATION_TYPES.COMMENT_LIKE) {
           return 'Comment';
         }
         if (this.type === NOTIFICATION_TYPES.LIKE ||  this.type === NOTIFICATION_TYPES.REPOST) {
           return 'Post';
+        }
+        if (this.type === NOTIFICATION_TYPES.ENROLLMENT_REQUEST || this.type === NOTIFICATION_TYPES.ENROLLMENT_APPROVED || this.type === NOTIFICATION_TYPES.ENROLLMENT_REJECTED) {
+          return 'Track';
+        }
+        if (this.type === NOTIFICATION_TYPES.GROUP_JOIN_REQUEST || this.type === NOTIFICATION_TYPES.GROUP_JOIN_APPROVED || this.type === NOTIFICATION_TYPES.GROUP_JOIN_REJECTED) {
+          return 'CommunityGroup';
+        }
+        if (this.type === NOTIFICATION_TYPES.COMMUNITY_JOIN_REQUEST || this.type === NOTIFICATION_TYPES.COMMUNITY_JOIN_APPROVED || this.type === NOTIFICATION_TYPES.COMMUNITY_JOIN_REJECTED) {
+          return 'Community';
         }
         return undefined;
       }

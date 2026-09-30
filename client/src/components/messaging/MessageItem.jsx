@@ -143,11 +143,10 @@ export const MessageItem = memo(function MessageItem({
         {/* Bubble Content */}
         <div
           className={`
-            rounded-2xl px-4 py-2
-            ${
-              isOwn
-                ? 'bg-secondary-500 text-white rounded-br-sm'
-                : 'bg-neutral-100 text-neutral-900 rounded-bl-sm'
+            rounded-2xl px-4 py-2 shadow-elevation-1
+            ${isOwn
+              ? 'bg-gradient-to-br from-primary-600 to-primary-700 text-white rounded-ee-md'
+              : 'bg-neutral-100 border border-outline text-neutral-900 rounded-es-md'
             }
             ${status === 'failed' ? 'opacity-50' : ''}
           `}
@@ -181,7 +180,7 @@ export const MessageItem = memo(function MessageItem({
           >
             <span
               className={`text-xs ${
-                isOwn ? 'text-blue-100' : 'text-neutral-500'
+                isOwn ? 'text-primary-100' : 'text-neutral-500'
               }`}
             >
               {formatTime(createdAt)}

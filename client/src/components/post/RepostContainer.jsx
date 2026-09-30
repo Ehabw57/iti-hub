@@ -48,7 +48,7 @@ export function RepostContainer({ repost, originalPost, onPostClick, className =
     isSaved: repost.isSaved || false,
   });
 
-  const [repostState, setRepostState] = useState({
+  const [repostState] = useState({
     isReposted: repost.isReposted || false,
     repostsCount: repost.repostsCount || 0,
   });
@@ -194,7 +194,7 @@ export function RepostContainer({ repost, originalPost, onPostClick, className =
 
   const handleCommunityClick = useCallback(
     (communityId) => {
-      navigate(`/communities/${communityId}`);
+      navigate(`/community/${communityId}`);
     },
     [navigate]
   );

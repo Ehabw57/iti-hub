@@ -1,0 +1,143 @@
+<div class="enrollment-requests-page">
+  <header class="page-header">
+    <h1 class="text-heading-2">{{ i18n.t('enrollmentRequests.title') }}</h1>
+    <p class="text-body-2 page-subtitle">{{ i18n.t('enrollmentRequests.subtitle') }}</p>
+  </header>
+
+  <!-- Success Message -->
+  @if (successMessage()) {
+    <div class="success-message">
+      {{ successMessage() }}
+    </div>
+  }
+
+  <!-- Filters -->
+  <div class="filters card">
+    <div class="filter-row">
+      <div class="filter-group">
+        <select class="input" [(ngModel)]="statusFilter" (change)="onFilterChange()">
+          <option value="pending">{{ i18n.t('enrollmentRequests.pending') }}</option>
+          <option value="approved">{{ i18n.t('enrollmentRequests.approved') }}</option>
+          <option value="rejected">{{ i18n.t('enrollmentRequests.rejected') }}</option>
+          <option value="all">{{ i18n.t('common.all') }}</option>
+        </select>
+      </div>
+
+      <button class="btn btn-secondary" (click)="refresh()">
+        {{ i18n.t('enrollmentRequests.refresh') }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Requests Table -->
+  @if (isLoading()) {
+    <div class="loading-state">
+      <span class="spinner-lg"></span>
+    </div>
+  } @else {
+    <div class="table-container card">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>{{ i18n.t('enrollmentRequests.requester') }}</th>
+            <th>{{ i18n.t('enrollmentRequests.track') }}</th>
+            <th>{{ i18n.t('enrollmentRequests.branch') }}</th>
+            <th>{{ i18n.t('enrollmentRequests.status') }}</th>
+            <th>{{ i18n.t('enrollmentRequests.requestedAt') }}</th>
+            <th>{{ i18n.t('enrollmentRequests.decidedAt') }}</th>
+            <th>{{ i18n.t('common.actions') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (request of requests(); track request._id) {
+            <tr [class.pending-row]="request.status === 'pending'">
+              <td>
+                <div class="user-cell">
+                  <div class="user-avatar-sm">
+                    @if (request.user_id?.profilePicture) {
+                      <img [src]="request.user_id!.profilePicture" [alt]="request.user_id!.username" />
+                    } @else {
+                      <span>{{ (request.user_id?.username || '?').charAt(0).toUpperCase() }}</span>
+                    }
+                  </div>
+                  <span>{{ request.user_id?.fullName || request.user_id?.username || '—' }}</span>
+                </div>
+              </td>
+              <td>{{ request.track_id?.name || '—' }}</td>
+              <td>{{ request.branch_id?.name || '—' }}</td>
+              <td>
+                <span
+                  class="badge"
+                  [class.badge-pending]="request.status === 'pending'"
+                  [class.badge-approved]="request.status === 'approved'"
+                  [class.badge-rejected]="request.status === 'rejected'"
+                >
+                  {{ statusLabel(request.status) }}
+                </span>
+              </td>
+              <td>{{ formatDate(request.createdAt) }}</td>
+              <td>{{ request.decidedAt ? formatDate(request.decidedAt) : '—' }}</td>
+              <td>
+                @if (request.status === 'pending') {
+                  <div class="actions">
+                    <button
+                      class="btn btn-sm btn-primary"
+                      (click)="confirmApprove(request)"
+                      [disabled]="actionLoading() === request._id"
+                    >
+                      {{ i18n.t('enrollmentRequests.approve') }}
+                    </button>
+                    <button
+                      class="btn btn-sm btn-danger"
+                      (click)="confirmReject(request)"
+                      [disabled]="actionLoading() === request._id"
+                    >
+                      {{ i18n.t('enrollmentRequests.reject') }}
+                    </button>
+                  </div>
+                } @else {
+                  <span class="text-body-2">—</span>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7" class="empty-cell">
+                {{ i18n.t('enrollmentRequests.noRequests') }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  <!-- Confirmation Modal -->
+  @if (showConfirmModal()) {
+    <div class="modal-overlay" (click)="cancelAction()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <h3 class="text-heading-5 modal-title">{{ i18n.t('common.confirm') }}</h3>
+        <p class="text-body-2 modal-message">
+          @if (confirmAction().type === 'approve') {
+            {{ i18n.t('enrollmentRequests.confirmApprove') }}
+          } @else {
+            {{ i18n.t('enrollmentRequests.confirmReject') }}
+          }
+        </p>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" (click)="cancelAction()">
+            {{ i18n.t('common.cancel') }}
+          </button>
+          <button
+            class="btn"
+            [class.btn-danger]="confirmAction().type === 'reject'"
+            [class.btn-primary]="confirmAction().type === 'approve'"
+            (click)="executeAction()"
+          >
+            {{ i18n.t('common.confirm') }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

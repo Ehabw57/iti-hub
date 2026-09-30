@@ -56,6 +56,8 @@ coverage/
 *.tgz
 *.log
 package-lock.json
+!client/package-lock.json
+!admin/package-lock.json
 yarn.lock
 pnpm-lock.yaml
 
@@ -65,3 +67,9 @@ pnpm-lock.yaml
 #github-spec-kit
 .github/
 *.md
+!docs/work-order-audit.md
+!docs/work-order-verification.md
+
+# Agent/tool state directories (local only)
+.freebuff/
+.zcode/

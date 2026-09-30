@@ -61,15 +61,15 @@ export function NewMessageModal({ isOpen, onClose }) {
 
       {/* Modal Container */}
       <div className="fixed inset-0 flex items-center justify-center p-4">
-        <DialogPanel className="w-full max-w-md bg-white rounded-lg shadow-elevation-3">
+        <DialogPanel className="w-full max-w-md bg-neutral-100 rounded-lg shadow-elevation-3">
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-outline">
             <DialogTitle className="text-heading-5 font-semibold text-neutral-900">
               {content.newMessage.value}
             </DialogTitle>
             <button
               onClick={onClose}
-              className="p-2 -mr-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-colors"
+              className="p-2 -me-2 text-neutral-600 hover:text-neutral-900 hover:bg-surface-high rounded-lg transition-colors"
             >
               <HiOutlineXMark className="w-6 h-6" />
             </button>
@@ -89,7 +89,7 @@ export function NewMessageModal({ isOpen, onClose }) {
                 rounded-xl
                 text-body-2
                 placeholder:text-neutral-500
-                focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:bg-white
+                focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:bg-neutral-100
                 transition-colors
               "
               autoFocus
@@ -100,7 +100,7 @@ export function NewMessageModal({ isOpen, onClose }) {
           </div>
 
           {/* Search Results */}
-          <div className="max-h-96 overflow-y-auto">
+          <div className="max-h-96 overflow-y-auto no-scrollbar">
             {searchResults.length === 0 ? (
               <div className="px-6 py-8 text-center text-neutral-600">
                 {searchQuery
@@ -108,13 +108,13 @@ export function NewMessageModal({ isOpen, onClose }) {
                   : 'Search for users to start a conversation'}
               </div>
             ) : (
-              <div className="divide-y divide-neutral-200">
+              <div className="divide-y divide-outline">
                 {searchResults.map((user) => (
                   <button
                     key={user._id}
                     onClick={() => handleSelectUser(user._id)}
                     disabled={createConversation.isPending}
-                    className="w-full flex items-center gap-3 px-6 py-3 hover:bg-neutral-50 transition-colors disabled:opacity-50"
+                    className="w-full flex items-center gap-3 px-6 py-3 hover:bg-surface-high transition-colors disabled:opacity-50"
                   >
                     <UserAvatar
                       src={user.profilePicture}
@@ -136,9 +136,9 @@ export function NewMessageModal({ isOpen, onClose }) {
           </div>
 
           {/* Footer */}
-          <div className="flex justify-end gap-2 px-6 py-4 border-t border-neutral-200">
+          <div className="flex justify-end gap-2 px-6 py-4 border-t border-outline">
             <Button variant="text" onClick={onClose}>
-              {content.noConversations.value}
+              {content.cancel.value}
             </Button>
           </div>
         </DialogPanel>

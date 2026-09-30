@@ -79,6 +79,3 @@ export default function LoginRequiredModal() {
     </Dialog>
   );
 }
-
-// Export the content for use with useIntlayer
-export { loginModalContent };

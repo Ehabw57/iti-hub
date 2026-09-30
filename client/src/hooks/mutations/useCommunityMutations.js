@@ -3,6 +3,11 @@ import api from '@lib/api';
 
 /**
  * Hook for joining a community
+ *
+ * Round 3 work order §4: joining now sends a join REQUEST (pending admin
+ * approval) instead of instantly adding the member. Same endpoint — the
+ * server creates a CommunityJoinRequest row.
+ *
  * @param {string} communityId - The community ID
  * @returns {object} React Query mutation object
  */
@@ -15,8 +20,9 @@ export const useJoinCommunity = (communityId) => {
       return response.data;
     },
     onSuccess: () => {
-      // Invalidate community details to refetch with updated join status
+      // Invalidate community details to refetch with updated join/pending status
       queryClient.invalidateQueries({ queryKey: ['community', communityId] });
+      queryClient.invalidateQueries({ queryKey: ['community', 'join-requests'] });
     },
   });
 };
@@ -169,6 +175,47 @@ export const useKickMember = (communityId) => {
   });
 };
 
+/**
+ * Approve or reject a community join request (owners/moderators)
+ * Round 3 work order §4 — legacy-community pending-approval flow.
+ */
+export const useDecideCommunityJoinRequest = (communityId) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ requestId, decision }) => {
+      const response = await api.patch(
+        `/communities/join-requests/${requestId}/decision`,
+        { decision }
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['community', 'join-requests'] });
+      queryClient.invalidateQueries({ queryKey: ['community', communityId] });
+      queryClient.invalidateQueries({ queryKey: ['community', communityId, 'members'] });
+    },
+  });
+};
+
+/**
+ * Cancel the current user's pending community join request
+ */
+export const useCancelCommunityJoinRequest = (communityId) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (requestId) => {
+      const response = await api.delete(`/communities/join-requests/${requestId}`);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['community', 'join-requests'] });
+      queryClient.invalidateQueries({ queryKey: ['community', communityId] });
+    },
+  });
+};
+
 export default {
   useJoinCommunity,
   useLeaveCommunity,
@@ -178,4 +225,6 @@ export default {
   useAddModerator,
   useRemoveModerator,
   useKickMember,
+  useDecideCommunityJoinRequest,
+  useCancelCommunityJoinRequest,
 };

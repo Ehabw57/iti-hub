@@ -2,6 +2,8 @@
 // community: object with fields from Community.js OR extended object with { community, role, joinedAt }
 
 import { Link } from "react-router-dom";
+import { HiOutlineUserGroup } from "react-icons/hi2";
+import { Chip } from '@components/common';
 
 const CommunityCard = ({ community: communityProp, size = 'small' }) => {
     if (!communityProp) return null;
@@ -20,51 +22,56 @@ const CommunityCard = ({ community: communityProp, size = 'small' }) => {
         tags,
         memberCount,
         postCount,
-        owners,
-        moderators,
     } = community;
     // console.log('[CommunityCard] community:', community);
 
     if (size === 'large') {
         return (
-            <div className="community-card--large rounded-xl shadow-elevation-2 bg-neutral-50 p-0 flex flex-col overflow-hidden">
-                <img
-                    className="w-full h-32 object-cover rounded-t-xl"
-                    src={coverImage || '/default-cover.png'}
-                    alt="Cover"
-                />
+            <div className="community-card--large rounded-xl shadow-elevation-2 bg-neutral-100 border border-outline overflow-hidden flex flex-col hover:shadow-elevation-3 hover:-translate-y-0.5 transition-all">
+                {/* Cover — fixed aspect-ratio container (work order §3): the
+                    image fills the box with object-cover regardless of source
+                    aspect; the gradient stays as a graceful no-image fallback */}
+                <div className="relative aspect-[16/6] bg-gradient-to-br from-primary-600 via-secondary-800 to-secondary-900">
+                    {coverImage ? (
+                        <img
+                            className="absolute inset-0 w-full h-full object-cover"
+                            src={coverImage}
+                            alt={`${name || 'Community'} cover`}
+                        />
+                    ) : null}
+                    <span className="absolute -top-6 ltr:-right-6 rtl:-left-6 w-24 h-24 rounded-full border-[10px] border-white/10" />
+                </div>
                 <div className="p-5 flex-1 flex flex-col">
                     <div className="flex items-center gap-4 mb-4">
-                        <img
-                            className="w-16 h-16 rounded-full border-4 border-primary-200 object-cover"
-                            src={profilePicture || '/default-community.png'}
-                            alt={name}
-                        />
-                        <div>
-                            <p className="text-heading-5 text-primary-700 font-bold">{name}</p>
-                            <div className="flex flex-wrap gap-2 mt-1">
-                                {tags && tags.map(tag => (
-                                    <span
-                                        key={tag}
-                                        className="bg-primary-100 text-primary-700 text-caption px-2 py-0.5 rounded-full"
-                                    >
+                        {profilePicture ? (
+                            <img
+                                className="w-16 h-16 rounded-2xl border-4 border-neutral-100 object-cover shadow-elevation-1"
+                                src={profilePicture}
+                                alt={name}
+                            />
+                        ) : (
+                            <div className="w-16 h-16 rounded-2xl bg-surface-high border-4 border-neutral-100 shadow-elevation-1 flex items-center justify-center">
+                                <HiOutlineUserGroup className="w-8 h-8 text-secondary-700" strokeWidth={1.5} />
+                            </div>
+                        )}
+                        <div className="min-w-0">
+                            <p className="text-heading-5 text-neutral-900 font-bold truncate">{name}</p>
+                            <div className="flex flex-wrap gap-1.5 mt-1.5">
+                                {tags && tags.slice(0, 3).map(tag => (
+                                    <Chip key={tag} size="xs" hash>
                                         {tag}
-                                    </span>
+                                    </Chip>
                                 ))}
                             </div>
                         </div>
                     </div>
-                    <p className="text-body-2 text-neutral-700 mb-4 line-clamp-3">{description}</p>
-                    <div className="flex flex-wrap gap-4 text-caption text-neutral-600 mb-4">
-                        <span>{memberCount} members</span>
-                        <span>{postCount} posts</span>
-                        <span>{owners?.length} owners</span>
-                        <span>{moderators?.length} moderators</span>
-                    </div>
-                    <div className="mt-auto">
+                    {description && (
+                        <p className="text-body-2 text-neutral-500 line-clamp-2 mb-3 min-h-[2.5rem]">{description}</p>
+                    )}
+                    <div className="mt-auto pt-3 border-t border-outline">
                         <Link
                             to={`/community/${community._id}`}
-                            className="inline-block w-full h-10 text-center px-4 py-2 rounded-md bg-primary-600 text-white font-semibold hover:bg-primary-700 transition-colors"
+                            className="inline-flex w-full h-10 items-center justify-center px-4 rounded-full bg-primary-600 text-white text-button font-semibold hover:bg-primary-700 transition-colors"
                             >Explore
                         </Link>
                     </div>
@@ -75,36 +82,43 @@ const CommunityCard = ({ community: communityProp, size = 'small' }) => {
 
     if (size === 'medium') {
         return (
-            <div className="community-card--medium rounded-lg shadow-elevation-1 bg-neutral-50 p-4 flex gap-4 max-w-md">
-                <img
-                    className="w-16 h-16 rounded-full border-2 border-primary-200 object-cover"
-                    src={profilePicture || '/default-community.png'}
-                    alt={name}
-                />
-                <div className="flex-1">
+            <div className="community-card--medium rounded-xl shadow-elevation-2 bg-neutral-100 border border-outline p-4 flex gap-4 max-w-md hover:shadow-elevation-3 transition-all">
+                {profilePicture ? (
+                    <img
+                        className="w-16 h-16 rounded-2xl border border-outline object-cover shrink-0"
+                        src={profilePicture}
+                        alt={name}
+                    />
+                ) : (
+                    <div className="w-16 h-16 rounded-2xl bg-surface-high border border-outline flex items-center justify-center shrink-0">
+                        <HiOutlineUserGroup className="w-8 h-8 text-secondary-700" strokeWidth={1.5} />
+                    </div>
+                )}
+                <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                        <h3 className="text-heading-4 text-primary-700">{name}</h3>
+                        <h3 className="text-heading-6 text-neutral-900 truncate">{name}</h3>
                         {userRole && (
-                            <span className="bg-primary-600 text-white text-caption px-2 py-0.5 rounded-full">
+                            <Chip
+                                size="xs"
+                                tone="border-transparent bg-primary-600 text-white"
+                                className="shrink-0"
+                            >
                                 {userRole}
-                            </span>
+                            </Chip>
                         )}
                     </div>
-                    <div className="flex flex-wrap gap-2 mt-1">
+                    <div className="flex flex-wrap gap-1.5 mt-1.5">
                         {tags && tags.slice(0, 3).map(tag => (
-                            <span
-                                key={tag}
-                                className="bg-primary-100 text-primary-700 text-caption px-2 py-0.5 rounded-full"
-                            >
+                            <Chip key={tag} size="xs" hash>
                                 {tag}
-                            </span>
+                            </Chip>
                         ))}
                     </div>
-                    <p className="text-body-2 text-neutral-700 mt-1">
+                    <p className="text-body-2 text-neutral-500 mt-1 line-clamp-2">
                         {description?.slice(0, 100)}
                         {description && description.length > 100 ? '...' : ''}
                     </p>
-                    <div className="flex gap-4 text-caption text-neutral-600 mt-2">
+                    <div className="flex gap-4 text-caption text-neutral-500 mt-2">
                         <span>{memberCount} members</span>
                         <span>{postCount} posts</span>
                         {joinedAt && (
@@ -128,9 +142,12 @@ const CommunityCard = ({ community: communityProp, size = 'small' }) => {
                 <div className="flex items-center gap-2">
                     <p className="text-xs text-neutral-700 truncate">{name}</p>
                     {userRole && (
-                        <span className="bg-primary-600 text-white text-[10px] px-1.5 py-0.5 rounded-full">
+                        <Chip
+                            size="xs"
+                            tone="border-transparent bg-primary-600 text-white"
+                        >
                             {userRole}
-                        </span>
+                        </Chip>
                     )}
                 </div>
             </div>

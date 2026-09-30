@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, Navigate, useParams } from "react-router-dom";
 import Layout from "@/layout/layout";
 import AuthLayout from "@/layout/AuthLayout";
 import ProtectedRoute from "@components/routes/ProtectedRoute";
@@ -17,17 +17,31 @@ import PostDetailController from "@pages/post/PostDetailController";
 import NotificationsCenterController from "@pages/notifications/NotificationsCenterController";
 import ProfileController from "../pages/profile/ProfileController";
 import FeedLayout from "../layout/FeedLayout";
-import MessagesList from "@pages/messages/MessagesList";
+import MessagesShell from "../layout/MessagesShell";
 import ConversationDetail from "@pages/messages/ConversationDetail";
 import CommunityManagement from "@pages/community/CommunityManagement";
-import UserCommunitiesController from "@pages/community/UserCommunitiesController";
+import CommunitiesController from "@pages/community/CommunitiesController";
 import Community from "@components/community/Community";
 import SearchPage from "@pages/SearchPage";
-import ExploreController from "@pages/explore/ExploreController";
 import AskCommunityController from "@pages/ask/AskCommunityController";
+import CoursesListController from "@pages/courses/CoursesListController";
+import TrackDetailController from "@pages/courses/TrackDetailController";
+import TrackWorkspaceController from "@pages/courses/TrackWorkspaceController";
+import BranchesListController from "@pages/branches/BranchesListController";
+import BranchDetailController from "@pages/branches/BranchDetailController";
+import RoundTracksController from "@pages/branches/RoundTracksController";
+import JobsListController from "@pages/jobs/JobsListController";
+import EventsListController from "@pages/events/EventsListController";
+import SettingsController from "@pages/settings/SettingsController";
 
 // Placeholder components for routes not yet implemented
 const NotFoundPage = () => <div>404 - Page Not Found</div>;
+
+// Redirect legacy /courses/tracks/:trackId URLs to the corrected /tracks/:trackId
+const LegacyTrackDetailRedirect = () => {
+  const { trackId } = useParams();
+  return <Navigate to={`/tracks/${trackId}`} replace />;
+};
 
 const router = createBrowserRouter([
   {
@@ -112,12 +126,82 @@ const router = createBrowserRouter([
         element: <SearchPage />,
       },
       {
+        // Consolidated Communities page (work-order §2): All (browse grid,
+        // public — the API is optional-auth) + My Communities (joined list,
+        // auth-gated inside the page with a sign-in CTA for guests).
+        path: "/communities",
+        element: <CommunitiesController />,
+      },
+      // Legacy community-list URLs — redirect into the consolidated page
+      // (former "Explore Communities" and "Community/Groups" pages).
+      {
         path: "/explore",
-        element: <ExploreController />,
+        element: <Navigate to="/communities" replace />,
       },
       {
         path: "/ask",
         element: <AskCommunityController />,
+      },
+      {
+        // X-style job board — API is auth-gated; page shows guests a sign-in CTA
+        path: "/jobs",
+        element: <JobsListController />,
+      },
+      {
+        // Events (work order §1) — API is auth-gated; guests see a sign-in CTA
+        path: "/events",
+        element: <EventsListController />,
+      },
+      {
+        // Branches → Rounds → Tracks drill-down (top-level entry)
+        path: "/branches",
+        element: <BranchesListController />,
+      },
+      {
+        path: "/branches/:branchId",
+        element: <BranchDetailController />,
+      },
+      {
+        path: "/branches/:branchId/rounds/:roundId",
+        element: <RoundTracksController />,
+      },
+      {
+        // Flat tracks catalog (kept reachable at /tracks)
+        path: "/tracks",
+        element: <CoursesListController />,
+      },
+      {
+        path: "/tracks/:trackId",
+        element: <TrackDetailController />,
+      },
+      {
+        // Gated Track workspace (Chat / Records / Files) — approved members only.
+        // The optional :tab defaults to "chat" inside the controller.
+        element: <ProtectedRoute />,
+        children: [
+          {
+            path: "/tracks/:trackId/workspace",
+            element: <TrackWorkspaceController />,
+          },
+          {
+            path: "/tracks/:trackId/workspace/:tab",
+            element: <TrackWorkspaceController />,
+          },
+        ],
+      },
+      // Legacy URLs — redirect to the corrected structure (no /courses prefix)
+      {
+        path: "/courses",
+        element: <Navigate to="/branches" replace />,
+      },
+      {
+        path: "/courses/tracks/:trackId",
+        element: <LegacyTrackDetailRedirect />,
+      },
+      {
+        // Legacy community-group list URL — consolidated into /communities
+        path: "/groups",
+        element: <Navigate to="/communities" replace />,
       },
       {
         path: "/community/:communityId",
@@ -132,10 +216,6 @@ const router = createBrowserRouter([
             element: <CommunityManagement />,
           },
           {
-            path: "/communities",
-            element: <UserCommunitiesController />,
-          },
-          {
             path: "/notifications",
             element: <NotificationsCenterController />,
           },
@@ -145,12 +225,21 @@ const router = createBrowserRouter([
           },
           {
             path: "/messages",
-            element: <MessagesList />,
+            element: <MessagesShell />,
+            children: [
+              // Index renders nothing in the right panel — the shell itself
+              // always shows <MessagesList /> in the left panel.
+              { index: true, element: null },
+              {
+                path: ":conversationId",
+                element: <ConversationDetail />,
+              },
+            ],
           },
-          {
-            path: "/messages/:conversationId",
-            element: <ConversationDetail />,
-          },
+              {
+                path: "/settings",
+                element: <SettingsController />,
+              },
         ],
       },
       // 404 route
@@ -165,5 +254,3 @@ const router = createBrowserRouter([
 export function AppRoutes() {
   return <RouterProvider router={router} />;
 }
-
-export default router;

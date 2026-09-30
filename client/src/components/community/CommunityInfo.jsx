@@ -159,7 +159,7 @@ const CommunityInfo = ({ community, onUpdateCommunity }) => {
         </button>
 
         {showMembers && (
-          <div className="space-y-3 max-h-96 overflow-y-auto">
+          <div className="space-y-3 max-h-96 overflow-y-auto no-scrollbar">
             {community?.members?.map((member) => (
               <div
                 key={member._id}

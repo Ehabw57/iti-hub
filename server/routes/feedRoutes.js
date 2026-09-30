@@ -3,6 +3,7 @@ const { checkAuth, optionalAuth } = require('../middlewares/checkAuth');
 const getHomeFeed = require('../controllers/feed/getHomeFeedController');
 const getFollowingFeed = require('../controllers/feed/getFollowingFeedController');
 const getTrendingFeed = require('../controllers/feed/getTrendingFeedController');
+const getTrendingTopics = require('../controllers/feed/getTrendingTopicsController');
 
 const feedRoutes = express.Router();
 
@@ -26,5 +27,12 @@ feedRoutes.get('/following', checkAuth, getFollowingFeed);
  * @access  Public (optional auth)
  */
 feedRoutes.get('/trending', optionalAuth, getTrendingFeed);
+
+/**
+ * @route   GET /api/feed/trending-topics
+ * @desc    Trending ITI Topics widget (7-day tag activity, group fallback)
+ * @access  Public (optional auth)
+ */
+feedRoutes.get('/trending-topics', optionalAuth, getTrendingTopics);
 
 module.exports = feedRoutes;

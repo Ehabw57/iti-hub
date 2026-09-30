@@ -44,17 +44,17 @@ export default function Input({
           required={required}
           className={`
             w-full
-            h-10
+            h-11
             px-3 py-2.5
-            rounded-lg
+            rounded-md
             border
             text-neutral-900
             placeholder:text-neutral-400
             text-sm
             transition-all duration-200
-            focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:border-secondary-600
+            focus:outline-none focus:ring-2 focus:ring-primary-100 focus:border-primary-600
             disabled:bg-neutral-100 disabled:text-neutral-500 disabled:border-neutral-200 disabled:cursor-not-allowed
-            ${error ? 'border-error' : 'border-neutral-300 hover:border-neutral-400'}
+            ${error ? 'border-error' : 'border-neutral-200 hover:border-neutral-300'}
             ${isPassword ? 'pr-10' : ''}
           `}
           {...props}

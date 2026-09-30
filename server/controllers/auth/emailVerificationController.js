@@ -63,7 +63,8 @@ exports.resendVerificationEmail = asyncHandler(async (req, res) => {
   const verificationToken = user.generateEmailVerificationToken();
   await user.save(); 
   
-  const verifyLink = `http://localhost:5173/verify-email?token=${verificationToken}`;
+  const frontendBaseUrl = process.env.FRONTEND_BASE_URL || 'http://localhost:5173';
+  const verifyLink = `${frontendBaseUrl}/verify-email?token=${verificationToken}`;
   
   await sendEmail({
     to: user.email,

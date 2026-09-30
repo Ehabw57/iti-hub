@@ -11,12 +11,16 @@ import {
   useUpdateCommunityCoverImage,
 } from '@hooks/mutations/useCommunityMutations';
 import { useIntlayer } from 'react-intlayer';
+import toast from 'react-hot-toast';
 import communityContent from '@content/community/community.content';
 
 /**
  * Community Component - Main container for community page
  * Displays community header, info sidebar, and feed
  * Integrates all community API endpoints
+ *
+ * Round 3 work order §4: joining goes through the pending-request flow —
+ * the Join button sends a request that a moderator must approve.
  */
 const Community = () => {
   const { communityId } = useParams();
@@ -32,12 +36,21 @@ const Community = () => {
   const updateProfilePictureMutation = useUpdateCommunityProfilePicture(communityId);
   const updateCoverImageMutation = useUpdateCommunityCoverImage(communityId);
 
-  // Handle join/leave community
+  // Handle join/leave community (pending-request flow for joins)
   const handleJoinLeave = async () => {
     if (community?.isJoined) {
       await leaveMutation.mutateAsync();
     } else {
-      await joinMutation.mutateAsync();
+      try {
+        await joinMutation.mutateAsync();
+        toast.success(content.joinRequestSent?.value || 'Join request sent!');
+      } catch (err) {
+        const message =
+          err?.response?.data?.error?.message ||
+          content.joinRequestFailed?.value ||
+          'Failed to send join request';
+        toast.error(message);
+      }
     }
   };
 
@@ -95,6 +108,8 @@ const Community = () => {
       <CommunityHeader
         community={community}
         isJoined={community?.isJoined || false}
+        isPending={community?.isPending || false}
+        isJoining={joinMutation.isPending}
         onJoinLeave={handleJoinLeave}
         onProfilePictureUpdate={handleProfilePictureUpdate}
         onCoverImageUpdate={handleCoverImageUpdate}

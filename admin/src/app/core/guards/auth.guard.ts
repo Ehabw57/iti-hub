@@ -33,3 +33,21 @@ export const guestGuard: CanActivateFn = () => {
   router.navigate(['/dashboard']);
   return false;
 };
+
+/**
+ * Platform Admin Guard
+ * Only legacy "admin" / "super_admin" may access platform-wide pages
+ * (dashboard stats, users, posts, comments, communities).
+ * Branch admins are redirected to their branches section.
+ */
+export const platformAdminGuard: CanActivateFn = () => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  if (authService.isPlatformAdmin()) {
+    return true;
+  }
+
+  router.navigate(['/branches']);
+  return false;
+};

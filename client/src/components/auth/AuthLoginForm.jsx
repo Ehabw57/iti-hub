@@ -1,7 +1,9 @@
 import { useIntlayer } from "react-intlayer";
 import { Link } from "react-router-dom";
 import { Input, Button, Card } from "@components/common";
+import GoogleSignInButton from "@components/auth/GoogleSignInButton";
 import loginContent from "@/content/auth/login.content";
+import googleAuthContent from "@/content/auth/google-auth.content";
 
 export default function AuthLoginForm({
   email,
@@ -11,8 +13,11 @@ export default function AuthLoginForm({
   disabled,
   onChange,
   onSubmit,
+  onGoogleSuccess,
+  onGoogleError,
 }) {
   const t = useIntlayer(loginContent.key);
+  const g = useIntlayer(googleAuthContent.key);
 
   const handleInputChange = (e) => {
     onChange({ [e.target.name]: e.target.value });
@@ -69,6 +74,19 @@ export default function AuthLoginForm({
             {t.submitButton}
           </Button>
         </form>
+
+        {/* Divider + Google Sign-In */}
+        <div className="flex items-center gap-3">
+          <div className="h-px flex-1 bg-neutral-200" />
+          <span className="text-xs text-neutral-500">{g.orContinueWith}</span>
+          <div className="h-px flex-1 bg-neutral-200" />
+        </div>
+
+        <GoogleSignInButton
+          onSuccess={onGoogleSuccess}
+          onError={onGoogleError}
+          disabled={disabled || submitting}
+        />
 
         <div className="text-center text-sm text-neutral-600">
           {t.noAccount}{" "}

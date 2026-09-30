@@ -1,6 +1,6 @@
 import { UserAvatar } from '@/components/user/UserAvatar';
 import { useIntlayer, useLocale } from 'react-intlayer';
-import { HiOutlineArrowLeft, HiOutlineInformationCircle, HiOutlineEllipsisVertical } from 'react-icons/hi2';
+import { HiOutlineArrowLeft, HiOutlineInformationCircle } from 'react-icons/hi2';
 import { useNavigate } from 'react-router-dom';
 
 /**
@@ -50,15 +50,15 @@ export function ConversationHeader({
   }
 
   return (
-    <div className="sticky top-0 z-3 bg-white border-b border-neutral-200">
+    <div className="sticky top-0 z-3 bg-neutral-100 border-b border-outline">
       <div className="flex items-center gap-3 px-4 py-3">
         {/* Back Button */}
         <button
           onClick={() => navigate('/messages')}
-          className="p-2 -ml-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-colors"
+          className="p-2 -ms-2 text-neutral-600 hover:text-neutral-900 hover:bg-surface-high rounded-lg transition-colors"
           aria-label={content.backToMessages.value}
         >
-          <HiOutlineArrowLeft className="w-6 h-6" />
+          <HiOutlineArrowLeft className="w-6 h-6 rtl:[transform:scaleX(-1)]" />
         </button>
 
         {/* Avatar */}
@@ -66,7 +66,7 @@ export function ConversationHeader({
           src={displayAvatar}
           alt={displayName}
           size="md"
-          className="ring-2 ring-white"
+          className="ring-2 ring-surface-lowest"
         />
 
         {/* Info */}
@@ -83,24 +83,16 @@ export function ConversationHeader({
 
         {/* Actions */}
         <div className="flex items-center gap-1">
-          {/* Info Button (for groups) */}
+          {/* Info Button (for groups) — opens GroupSettingsModal (group management) */}
           {isGroup && (
             <button
               onClick={onInfoClick}
-              className="p-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-colors"
+              className="p-2 text-neutral-600 hover:text-neutral-900 hover:bg-surface-high rounded-lg transition-colors"
               aria-label={content.conversationInfo.value}
             >
               <HiOutlineInformationCircle className="w-6 h-6" />
             </button>
           )}
-
-          {/* More Options */}
-          <button
-            className="p-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-colors"
-            aria-label="More options"
-          >
-            <HiOutlineEllipsisVertical className="w-6 h-6" />
-          </button>
         </div>
       </div>
     </div>

@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { FaFileAlt } from 'react-icons/fa';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { useIntlayer } from 'react-intlayer';
@@ -14,10 +13,10 @@ const ProfilePosts = ({ userId, isOwnProfile }) => {
 
   if (isLoading) {
     return (
-      <div className="bg-white dark:bg-neutral-100 shadow-sm rounded-lg p-12">
+      <div className="bg-neutral-50 shadow-sm rounded-lg p-12">
         <div className="flex flex-col items-center justify-center">
           <AiOutlineLoading3Quarters className="w-10 h-10 text-primary-600 animate-spin mb-4" />
-          <p className="text-neutral-600 dark:text-neutral-600">{content.loadingPosts}</p>
+          <p className="text-neutral-600">{content.loadingPosts}</p>
         </div>
       </div>
     );
@@ -26,15 +25,15 @@ const ProfilePosts = ({ userId, isOwnProfile }) => {
   // No Posts State
   if (!posts || posts.length === 0) {
     return (
-      <div className="bg-white dark:bg-neutral-100 shadow-sm rounded-lg p-12">
+      <div className="bg-neutral-50 shadow-sm rounded-lg p-12">
         <div className="flex flex-col items-center justify-center text-center">
-          <div className="w-20 h-20 rounded-full bg-neutral-100 dark:bg-neutral-100 flex items-center justify-center mb-4">
-            <FaFileAlt className="w-10 h-10 text-neutral-400 dark:text-neutral-400" />
+          <div className="w-20 h-20 rounded-full bg-neutral-100 flex items-center justify-center mb-4">
+            <FaFileAlt className="w-10 h-10 text-neutral-400" />
           </div>
-          <h3 className="text-xl font-semibold text-neutral-900 dark:text-neutral-900 mb-2">
+          <h3 className="text-xl font-semibold text-neutral-900 mb-2">
             {content.noPostsYet}
           </h3>
-          <p className="text-neutral-600 dark:text-neutral-600 max-w-sm">
+          <p className="text-neutral-600 max-w-sm">
             {isOwnProfile
               ? content.noPostsYetOwnMessage
               : content.noPostsYetOthersMessage}
@@ -53,8 +52,8 @@ const ProfilePosts = ({ userId, isOwnProfile }) => {
   return (
     <div className="space-y-4">
       {/* Posts Header */}
-      <div className="bg-white dark:bg-neutral-100 shadow-sm rounded-lg px-6 py-4">
-        <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-900">
+      <div className="bg-neutral-50 shadow-sm rounded-lg px-6 py-4">
+        <h2 className="text-lg font-semibold text-neutral-900">
           {content.posts} ({posts.length})
         </h2>
       </div>

@@ -3,11 +3,11 @@ import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react';
 import { HiXMark } from 'react-icons/hi2';
 import { useIntlayer } from 'react-intlayer';
 import { toast } from 'react-hot-toast';
-import dayjs from 'dayjs';
 import useRepost from '@hooks/mutations/useRepost';
 import CommunitySelector from './CommunitySelector';
 import repostContent from '@/content/post/repost.content';
 import { sanitizeContent } from '@/utils/sanitizeContent';
+import { Chip } from '@components/common';
 
 /**
  * Repost composer modal for reposting with optional comment
@@ -90,7 +90,7 @@ export default function RepostComposerModal({ isOpen, onClose, originalPost }) {
           </div>
 
           {/* Content - Scrollable */}
-          <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+          <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto no-scrollbar px-6 py-4 space-y-4">
             {/* Optional comment textarea */}
             <div>
               <label className="block text-body-2 font-medium text-neutral-700 mb-2">
@@ -155,12 +155,9 @@ export default function RepostComposerModal({ isOpen, onClose, originalPost }) {
                   {originalPost.tags && originalPost.tags.length > 0 && (
                     <div className="flex flex-wrap gap-2 mt-2">
                       {originalPost.tags.slice(0, 3).map((tag, idx) => (
-                        <span 
-                          key={idx}
-                          className="px-2 py-1 bg-primary-100 text-primary-600 text-caption rounded-full"
-                        >
-                          #{tag}
-                        </span>
+                        <Chip key={idx} hash size="xs">
+                          {tag}
+                        </Chip>
                       ))}
                       {originalPost.tags.length > 3 && (
                         <span className="text-caption text-neutral-500">
