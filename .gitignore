@@ -56,6 +56,8 @@ coverage/
 *.tgz
 *.log
 package-lock.json
+!client/package-lock.json
+!admin/package-lock.json
 yarn.lock
 pnpm-lock.yaml
 
