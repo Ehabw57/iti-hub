@@ -3,7 +3,6 @@ import { useIntlayer } from 'react-intlayer';
 import { toast } from 'react-hot-toast';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { useUpdateNotificationPreferences } from '@hooks/mutations/useCourseMutations';
-import settingsContent from '@/content/settings/settings.content';
 
 function Toggle({ checked, onChange, label, description }) {
   return (
@@ -34,7 +33,7 @@ function Toggle({ checked, onChange, label, description }) {
 }
 
 export default function NotificationSettings({ user }) {
-  const content = useIntlayer(settingsContent.key);
+  const content = useIntlayer('settings');
   const prefs = user?.notificationPreferences || {
     email: true,
     push: true,

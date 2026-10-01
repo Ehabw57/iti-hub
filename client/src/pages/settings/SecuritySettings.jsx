@@ -3,10 +3,9 @@ import { useIntlayer } from 'react-intlayer';
 import { toast } from 'react-hot-toast';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { useChangePassword } from '@hooks/mutations/useCourseMutations';
-import settingsContent from '@/content/settings/settings.content';
 
 export default function SecuritySettings() {
-  const content = useIntlayer(settingsContent.key);
+  const content = useIntlayer('settings');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');

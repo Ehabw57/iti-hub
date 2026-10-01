@@ -2,7 +2,6 @@ import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react';
 import { HiXMark } from 'react-icons/hi2';
 import { useIntlayer } from 'react-intlayer';
 import { useLoginModalStore } from '@hooks/useRequireAuth';
-import loginModalContent from '@/content/auth/login-modal.content';
 // import { useNavigate } from 'react-router-dom';
 
 
@@ -13,7 +12,7 @@ import loginModalContent from '@/content/auth/login-modal.content';
  */
 export default function LoginRequiredModal() {
   // const navigate = useNavigate();
-  const content = useIntlayer(loginModalContent.key);
+  const content = useIntlayer('loginModal');
   const { isOpen, closeModal } = useLoginModalStore();
 
   const handleLogin = () => {

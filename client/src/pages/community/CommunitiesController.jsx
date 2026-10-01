@@ -10,7 +10,6 @@ import CommunitySkeleton from '@components/explore/CommunitySkeleton';
 import { ErrorDisplay } from '@components/common';
 import CommunityDirectoryCard from '@components/community/CommunityDirectoryCard';
 import CreateCommunity from '@components/community/CreateCommunity';
-import groupsContent from '@/content/groups/groups.content';
 
 /**
  * Communities page — consolidated (work-order §2).
@@ -31,7 +30,7 @@ const TABS = [
 ];
 
 export default function CommunitiesController() {
-  const content = useIntlayer(groupsContent.key);
+  const content = useIntlayer('groups');
   const navigate = useNavigate();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const [searchParams, setSearchParams] = useSearchParams();

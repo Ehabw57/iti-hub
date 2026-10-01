@@ -3,10 +3,9 @@ import { useEffect, useState } from 'react';
 import { useIntlayer } from 'react-intlayer';
 import { useAuthStore } from '@store/auth';
 import api from '@/lib/api';
-import authProviderContent from '@/content/auth/provider.content';
 
 export default function AuthProvider({ children }) {
-  const content = useIntlayer(authProviderContent.key);
+  const content = useIntlayer('authProvider');
   const [isVerifying, setIsVerifying] = useState(true);
 
   const {

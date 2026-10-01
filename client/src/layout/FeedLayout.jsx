@@ -6,7 +6,6 @@ import PostComposerModal from "@components/post/PostComposerModal";
 import PostComposerTrigger from "@components/feed/PostComposerTrigger";
 import FeedRightRail from "@components/feed/FeedRightRail";
 import useRequireAuth from "@hooks/useRequireAuth";
-import homeContent from "@/content/feed/home.content";
 
 /**
  * Feed layout — center feed column with inline composer trigger + right rail.
@@ -15,7 +14,7 @@ import homeContent from "@/content/feed/home.content";
 export default function FeedLayout() {
   const navigate = useNavigate();
   const location = useLocation();
-  const content = useIntlayer(homeContent.key);
+  const content = useIntlayer('feedHome');
   const { isAuthenticated } = useAuthStore();
   const { requireAuth } = useRequireAuth();
   const [showComposer, setShowComposer] = useState(false);

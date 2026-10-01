@@ -7,7 +7,6 @@ import { PostHeader } from './PostHeader';
 import { PostContent } from './PostContent';
 import { PostInteractions } from './PostInteractions';
 import ConfirmDialog from '@components/common/ConfirmDialog';
-import repostMenuContent from '@/content/post/repost-menu.content';
 
 /**
  * RepostContainer - Container component for reposts using unified PostHeader
@@ -36,7 +35,7 @@ export function RepostContainer({ repost, originalPost, onPostClick, className =
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const queryClient = useQueryClient();
-  const content = useIntlayer(repostMenuContent.key);
+  const content = useIntlayer('repost-menu');
 
   // Local state for optimistic updates
   const [likeState, setLikeState] = useState({

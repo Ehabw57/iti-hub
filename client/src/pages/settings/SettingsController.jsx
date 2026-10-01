@@ -5,7 +5,6 @@ import ProfileSettings from './ProfileSettings';
 import SecuritySettings from './SecuritySettings';
 import NotificationSettings from './NotificationSettings';
 import DeleteAccountSection from './DeleteAccountSection';
-import settingsContent from '@/content/settings/settings.content';
 
 const TABS = [
   { id: 'profile', labelKey: 'profileTab' },
@@ -15,7 +14,7 @@ const TABS = [
 ];
 
 export default function SettingsController() {
-  const content = useIntlayer(settingsContent.key);
+  const content = useIntlayer('settings');
   const user = useAuthStore((s) => s.user);
   const [activeTab, setActiveTab] = useState('profile');
 

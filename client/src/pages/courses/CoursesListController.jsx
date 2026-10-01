@@ -4,10 +4,9 @@ import { useAuthStore } from '@store/auth';
 import { Loading, ErrorDisplay } from '@components/common';
 import CourseSkeleton from './CourseSkeleton';
 import TrackCard from './TrackCard';
-import coursesContent from '@/content/courses/courses.content';
 
 function MyLearningStrip() {
-  const content = useIntlayer(coursesContent.key);
+  const content = useIntlayer('courses');
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const { data, isLoading } = useMyEnrollments();
 
@@ -45,7 +44,7 @@ function MyLearningStrip() {
 }
 
 export default function CoursesListController() {
-  const content = useIntlayer(coursesContent.key);
+  const content = useIntlayer('courses');
   const {
     data,
     fetchNextPage,

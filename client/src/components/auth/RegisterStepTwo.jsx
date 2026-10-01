@@ -2,7 +2,6 @@ import { useIntlayer } from "react-intlayer";
 import { useEffect, useState } from "react";
 import { Input, Button } from "@components/common";
 import { AiOutlineCheckCircle, AiOutlineCloseCircle } from "react-icons/ai";
-import registerContent from "@/content/auth/register.content";
 
 export default function RegisterStepTwo({
   username,
@@ -15,7 +14,7 @@ export default function RegisterStepTwo({
   suggestions,
   onSelectSuggestion,
 }) {
-  const t = useIntlayer(registerContent.key);
+  const t = useIntlayer('authRegister');
   const [showAvailability, setShowAvailability] = useState(false);
 
   useEffect(() => {

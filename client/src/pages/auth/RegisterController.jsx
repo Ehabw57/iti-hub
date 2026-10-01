@@ -15,7 +15,6 @@ import {
 import RegisterStepOne from "@components/auth/RegisterStepOne";
 import RegisterStepTwo from "@components/auth/RegisterStepTwo";
 import RegisterStepThree from "@components/auth/RegisterStepThree";
-import registerContent from "@/content/auth/register.content";
 import dayjs from "dayjs";
 import duration from "dayjs/plugin/duration";
 
@@ -25,7 +24,7 @@ const COOLDOWN_KEY = "register-cooldown";
 const COOLDOWN_DURATION = 15 * 60 * 1000; // 15 minutes
 
 export default function RegisterController() {
-  const t = useIntlayer(registerContent.key);
+  const t = useIntlayer('authRegister');
   const navigate = useNavigate();
   const { setToken, setUser } = useAuthStore();
   const debounceRef = useRef(null);

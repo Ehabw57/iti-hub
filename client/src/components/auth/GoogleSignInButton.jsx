@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { useIntlayer } from "react-intlayer";
-import googleAuthContent from "@/content/auth/google-auth.content";
 
 // Single global promise for the GIS script — shared across button mounts
 let gisScriptPromise = null;
@@ -45,7 +44,7 @@ function loadGoogleScript() {
  * Renders nothing when Google Sign-In is not configured (missing env var).
  */
 export default function GoogleSignInButton({ onSuccess, onError, disabled = false }) {
-  const t = useIntlayer(googleAuthContent.key);
+  const t = useIntlayer('authGoogle');
   const buttonRef = useRef(null);
   const [ready, setReady] = useState(false);
   const [configured, setConfigured] = useState(true);

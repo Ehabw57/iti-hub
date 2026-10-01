@@ -11,11 +11,10 @@ import {
 import { useBranches } from '@hooks/queries/useCourse';
 import { ErrorDisplay, PageBanner, Chip } from '@components/common';
 import BranchCardSkeleton from './BranchCardSkeleton';
-import branchesContent from '@/content/branches/branches.content';
 
 /** Safe dictionary accessor — never crashes if a key is missing */
 const useBranchesContent = () => {
-  const content = useIntlayer(branchesContent.key);
+  const content = useIntlayer('branches');
   return (key, fallback = '') => content?.[key]?.value ?? fallback;
 };
 

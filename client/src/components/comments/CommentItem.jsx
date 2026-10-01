@@ -17,7 +17,6 @@ import useUpdateComment from '@hooks/mutations/useUpdateComment';
 import useDeleteComment from '@hooks/mutations/useDeleteComment';
 import useToggleCommentLike from '@hooks/mutations/useToggleCommentLike';
 import CommentForm from './CommentForm';
-import  commentContent  from '@/content/comment/comment.content';
 import ConfirmDialog from '@components/common/ConfirmDialog';
 
 dayjs.extend(relativeTime);
@@ -43,7 +42,7 @@ export default function CommentItem({
   const { locale } = useUIStore();
   const { user } = useAuthStore();
   const { requireAuth } = useRequireAuth();
-  const content = useIntlayer(commentContent.key);
+  const content = useIntlayer('commentForm');
   const [showReplies, setShowReplies] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(comment.content);

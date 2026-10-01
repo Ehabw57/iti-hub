@@ -2,14 +2,13 @@ import { Link } from 'react-router-dom';
 import { useIntlayer } from 'react-intlayer';
 import { HiOutlineUserGroup } from 'react-icons/hi2';
 import { Chip } from '@components/common';
-import groupsContent from '@/content/groups/groups.content';
 
 /**
  * Group card — visual variant for the Communities page (matches /screens groups mockup).
  * Cover band with icon badge + body with name, description and member footer.
  */
 export default function CommunityDirectoryCard({ community }) {
-  const content = useIntlayer(groupsContent.key);
+  const content = useIntlayer('groups');
   if (!community) return null;
 
   const { name, description, profilePicture, coverImage, tags, memberCount } =

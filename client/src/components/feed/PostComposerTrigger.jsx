@@ -1,7 +1,6 @@
 import { HiOutlinePhoto, HiOutlineCalendarDays, HiOutlineDocumentText } from 'react-icons/hi2';
 import { useIntlayer } from 'react-intlayer';
 import { useAuthStore } from '@store/auth';
-import homeContent from '@/content/feed/home.content';
 import { UserAvatar } from '../user/UserAvatar';
 
 /**
@@ -9,7 +8,7 @@ import { UserAvatar } from '../user/UserAvatar';
  * Matches /screens: avatar + pill input + Media / Event / Article actions.
  */
 export default function PostComposerTrigger({ onCreatePost, className = '' }) {
-  const content = useIntlayer(homeContent.key);
+  const content = useIntlayer('feedHome');
   const user = useAuthStore((state) => state.user);
 
   return (

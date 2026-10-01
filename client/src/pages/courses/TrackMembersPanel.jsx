@@ -4,7 +4,6 @@ import { useIntlayer } from 'react-intlayer';
 import { HiOutlineMagnifyingGlass, HiOutlineUserMinus } from 'react-icons/hi2';
 import { useTrackMembers, useSearchAssignableUsers } from '@hooks/queries/useCourse';
 import { useUpdateTrackMembers } from '@hooks/mutations/useCourseMutations';
-import coursesContent from '@/content/courses/courses.content';
 
 const SEARCH_DEBOUNCE_MS = 350;
 const MIN_QUERY_LENGTH = 2;
@@ -16,7 +15,7 @@ const MIN_QUERY_LENGTH = 2;
  * admins/super admins all get it — the server scopes results per role.
  */
 export default function TrackMembersPanel({ trackId }) {
-  const content = useIntlayer(coursesContent.key);
+  const content = useIntlayer('courses');
   // Content accessor with fallbacks — safe against missing keys.
   const t = (key, fallback = '') => content?.[key]?.value ?? fallback;
 

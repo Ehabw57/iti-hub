@@ -2,7 +2,6 @@ import { useIntlayer } from 'react-intlayer';
 import { NotificationItem } from './NotificationItem';
 import { NotificationSkeleton } from './NotificationSkeleton';
 import { useIntersectionObserver } from '../../hooks/useIntersectionObserver';
-import notificationsContent from '../../content/notifications/notificationsCenter.content';
 import { FiInbox } from 'react-icons/fi';
 
 /**
@@ -33,7 +32,7 @@ export const NotificationsList = ({
   onItemMarkRead,
   inFlightMap = {},
 }) => {
-  const content = useIntlayer(notificationsContent.key);
+  const content = useIntlayer('notificationsCenter');
 
   // Setup intersection observer for infinite scroll
   const { observerTarget } = useIntersectionObserver({

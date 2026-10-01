@@ -10,7 +10,6 @@ import {
   FiUserX
 } from 'react-icons/fi';
 import { formatNotificationTime } from '../../utils/notificationHelpers';
-import notificationsContent from '../../content/notifications/notificationsCenter.content';
 
 /**
  * @fileoverview Single notification item component
@@ -54,7 +53,7 @@ const NOTIFICATION_ICONS = {
  */
 export const NotificationItem = ({ notification, onMarkAsRead, onNavigate, inFlight = {} }) => {
   const navigate = useNavigate();
-  const content = useIntlayer(notificationsContent.key);
+  const content = useIntlayer('notificationsCenter');
   const {locale} = useLocale();
   
   const {

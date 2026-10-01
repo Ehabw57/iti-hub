@@ -2,11 +2,10 @@ import { useEffect, useState, useRef } from "react";
 import { useSearchParams, Link, useNavigate } from "react-router-dom";
 import { useIntlayer } from "react-intlayer";
 import { Card, Button, ErrorDisplay } from "@components/common";
-import emailVerificationContent from "@/content/auth/email-verification.content";
 import { useVerifyEmail } from "@hooks/mutations/useVerifyEmail";
 
 export default function EmailVerifyPage() {
-  const t = useIntlayer(emailVerificationContent.key);
+  const t = useIntlayer('authEmailVerification');
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 

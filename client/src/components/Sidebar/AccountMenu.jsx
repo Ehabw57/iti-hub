@@ -14,7 +14,6 @@ import { useIntlayer, useLocale } from 'react-intlayer';
 import { useSidebarStore } from '@hooks/useSidebarStore';
 import useUIStore from '@store/uiStore';
 import { UserAvatar } from '@components/user/UserAvatar';
-import sidebarContent from '@/content/sidebar/sidebar.content';
 
 // Popover geometry — the menu is portaled to document.body and positioned
 // from the chip's getBoundingClientRect(), so no scrollable / overflow-hidden
@@ -32,7 +31,7 @@ const VIEWPORT_GAP = 8;
  */
 export default function AccountMenu() {
   const navigate = useNavigate();
-  const content = useIntlayer(sidebarContent.key);
+  const content = useIntlayer('sidebar');
   const { setLocale: setIntlayerLocale } = useLocale();
   const { user, logout } = useSidebarStore();
   const theme = useUIStore((s) => s.theme);

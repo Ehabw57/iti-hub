@@ -6,7 +6,6 @@ import CommentForm from './CommentForm';
 import CommentItem from './CommentItem';
 import { Loading } from '@components/common';
 import { useIntlayer } from 'react-intlayer';
-import commentContent from '@/content/comment/comment.content';
 import { useAuthStore } from '@/store/auth';
 
 /**
@@ -17,7 +16,7 @@ import { useAuthStore } from '@/store/auth';
  */
 export default function CommentsSection({ postId, onClose, authorId }) {
   const [replyingTo, setReplyingTo] = useState(null);
-  const t = useIntlayer(commentContent.key);
+  const t = useIntlayer('commentForm');
   const { isAuthenticated } = useAuthStore();
   
   const { 

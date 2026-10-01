@@ -2,11 +2,10 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useIntlayer } from "react-intlayer";
 import { Card, Button, ErrorDisplay } from "@components/common";
-import resendVerificationContent from "@/content/auth/resend-verification.content";
 import { useResendVerificationEmail } from "@hooks/mutations/useResendVerificationEmail";
 
 export default function ResendVerificationPage() {
-  const t = useIntlayer(resendVerificationContent.key);
+  const t = useIntlayer('authResendVerification');
   const resendMutation = useResendVerificationEmail();
   
   const [status, setStatus] = useState("idle"); // idle, success, error

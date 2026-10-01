@@ -1,6 +1,5 @@
 import { FiRefreshCw } from 'react-icons/fi';
 import { useIntlayer } from 'react-intlayer';
-import notificationsContent from '../../content/notifications/notificationsCenter.content';
 
 /**
  * @fileoverview Toolbar for notifications page — title + actions + filter tabs.
@@ -22,7 +21,7 @@ export const NotificationsToolbar = ({
   onMarkAllRead,
   onRefresh,
 }) => {
-  const content = useIntlayer(notificationsContent.key);
+  const content = useIntlayer('notificationsCenter');
 
   return (
     <div className="bg-neutral-50/95 backdrop-blur-md border-b border-outline px-4 py-4">

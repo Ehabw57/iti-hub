@@ -1,7 +1,6 @@
 import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react';
 import { HiExclamationTriangle, HiXMark } from 'react-icons/hi2';
 import { useIntlayer } from 'react-intlayer';
-import confirmDialogContent from '@/content/common/confirm-dialog.content';
 
 /**
  * Reusable confirmation dialog component
@@ -25,7 +24,7 @@ export default function ConfirmDialog({
   cancelText,
   variant = 'warning'
 }) {
-  const content = useIntlayer(confirmDialogContent.key);
+  const content = useIntlayer('confirmDialog');
 
   const handleConfirm = () => {
     onConfirm();

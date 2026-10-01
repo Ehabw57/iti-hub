@@ -11,7 +11,6 @@ import PostTextarea from './PostTextarea';
 import ImageUploadPreview from './ImageUploadPreview';
 import TagSelector from './TagSelector';
 import CommunitySelector from './CommunitySelector';
-import composerContent from'@/content/post/composer.content';
 import { sanitizeContent } from '@/utils/sanitizeContent';
 
 /**
@@ -23,7 +22,7 @@ import { sanitizeContent } from '@/utils/sanitizeContent';
  * @param {string} props.initialCommunityId - Pre-selected community ID (optional)
  */
 export default function PostComposerModal({ isOpen, onClose, initialPost = null, initialCommunityId = null }) {
-  const content = useIntlayer(composerContent.key);
+  const content = useIntlayer('postComposer');
   const isEditMode = !!initialPost;
   
   const [postContent, setPostContent] = useState('');

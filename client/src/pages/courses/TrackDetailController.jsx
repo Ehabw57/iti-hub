@@ -9,7 +9,6 @@ import useRequireAuth from '@hooks/useRequireAuth';
 import { Loading, ErrorDisplay, PageBanner, Chip } from '@components/common';
 import BranchCard from './BranchCard';
 import TrackMembersPanel from './TrackMembersPanel';
-import coursesContent from '@/content/courses/courses.content';
 import {
   getTrackCategory,
   getTrackCategoryLabelKey,
@@ -18,7 +17,7 @@ import {
 export default function TrackDetailController() {
   const { trackId } = useParams();
   const navigate = useNavigate();
-  const content = useIntlayer(coursesContent.key);
+  const content = useIntlayer('courses');
   const { requireAuth } = useRequireAuth();
 
   const { data, isLoading, isError, refetch } = useTrackDetail(trackId);
