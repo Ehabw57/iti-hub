@@ -1,0 +1,12 @@
+{
+  "name": "iti-hub",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "npm --prefix admin ci --include=dev && npm --prefix admin run build && npm --prefix server install --omit=dev",
+    "start": "node server/app.js"
+  },
+  "engines": {
+    "node": ">=20.19"
+  }
+}
