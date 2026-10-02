@@ -2,8 +2,6 @@ import { useIntlayer } from "react-intlayer";
 import { Link } from "react-router-dom";
 import { Input, Button, Card } from "@components/common";
 import GoogleSignInButton from "@components/auth/GoogleSignInButton";
-import loginContent from "@/content/auth/login.content";
-import googleAuthContent from "@/content/auth/google-auth.content";
 
 export default function AuthLoginForm({
   email,
@@ -16,8 +14,8 @@ export default function AuthLoginForm({
   onGoogleSuccess,
   onGoogleError,
 }) {
-  const t = useIntlayer(loginContent.key);
-  const g = useIntlayer(googleAuthContent.key);
+  const t = useIntlayer('authLogin');
+  const g = useIntlayer('authGoogle');
 
   const handleInputChange = (e) => {
     onChange({ [e.target.name]: e.target.value });

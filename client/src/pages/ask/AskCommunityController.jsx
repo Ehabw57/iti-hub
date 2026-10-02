@@ -10,7 +10,6 @@ import { useIntlayer } from 'react-intlayer';
 import { toast } from 'react-hot-toast';
 import useAskCommunity from '@hooks/mutations/useAskCommunity';
 import { Loading } from '@components/common';
-import askContent from '@/content/ask/ask.content';
 
 // itiHub Logo Component (using brand colors)
 const ItiHubLogo = ({ className = "w-8 h-8" }) => (
@@ -25,7 +24,7 @@ const ItiHubLogo = ({ className = "w-8 h-8" }) => (
  * Reddit Answers-style interface for AI-powered community Q&A
  */
 export default function AskCommunityController() {
-  const content = useIntlayer(askContent.key);
+  const content = useIntlayer('askCommunity');
   const [question, setQuestion] = useState('');
   const [submittedQuestion, setSubmittedQuestion] = useState('');
   const [result, setResult] = useState(null);

@@ -2,7 +2,6 @@ import { FaShieldAlt, FaUserShield, FaCrown } from 'react-icons/fa';
 import { AiOutlineUserDelete } from 'react-icons/ai';
 import { useIntlayer } from 'react-intlayer';
 import { useNavigate } from 'react-router-dom';
-import communityContent from '@content/community/community.content';
 import { useRemoveModerator } from '@hooks/mutations/useCommunityMutations';
 import useRequireAuth from '@hooks/useRequireAuth';
 import { Chip } from '@components/common';
@@ -14,7 +13,7 @@ import { Chip } from '@components/common';
  * Always visible without dropdown
  */
 const ModeratorsList = ({ community }) => {
-  const content = useIntlayer(communityContent.key);
+  const content = useIntlayer('community');
   const navigate = useNavigate();
   const { requireAuth } = useRequireAuth();
 

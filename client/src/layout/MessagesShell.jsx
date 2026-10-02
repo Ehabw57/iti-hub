@@ -1,7 +1,6 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useIntlayer } from 'react-intlayer';
 import { HiOutlineChatBubbleLeftRight } from 'react-icons/hi2';
-import messagesListContent from '@/content/messages/messagesList.content';
 import MessagesList from '@pages/messages/MessagesList';
 
 /**
@@ -17,7 +16,7 @@ import MessagesList from '@pages/messages/MessagesList';
 export default function MessagesShell() {
   const location = useLocation();
   const navigate = useNavigate();
-  const content = useIntlayer(messagesListContent.key);
+  const content = useIntlayer('messagesList');
 
   // "/messages" -> list active; "/messages/:id" -> detail active
   const conversationId = location.pathname.split('/')[2];

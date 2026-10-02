@@ -12,7 +12,6 @@ import {
 } from '@hooks/mutations/useCommunityMutations';
 import { useIntlayer } from 'react-intlayer';
 import toast from 'react-hot-toast';
-import communityContent from '@content/community/community.content';
 
 /**
  * Community Component - Main container for community page
@@ -24,7 +23,7 @@ import communityContent from '@content/community/community.content';
  */
 const Community = () => {
   const { communityId } = useParams();
-  const  content  = useIntlayer(communityContent.key);
+  const  content  = useIntlayer('community');
 
   // Fetch community details using custom hook
   const { data: community, isLoading, error } = useCommunityDetails(communityId);

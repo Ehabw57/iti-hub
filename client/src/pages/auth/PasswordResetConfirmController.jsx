@@ -5,10 +5,9 @@ import { Card, Input, Button, ErrorDisplay } from "@components/common";
 import { AiOutlineCheckCircle, AiOutlineCloseCircle } from "react-icons/ai";
 import { usePasswordResetConfirm } from "@hooks/mutations/usePasswordResetConfirm";
 import { validatePassword, isPasswordValid } from "@/utils/registerHelpers";
-import passwordResetContent from "@/content/auth/password-reset.content";
 
 export default function PasswordResetConfirmController() {
-  const t = useIntlayer(passwordResetContent.key);
+  const t = useIntlayer('authPasswordReset');
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const token = searchParams.get("token");

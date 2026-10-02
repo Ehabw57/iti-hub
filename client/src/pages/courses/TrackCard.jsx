@@ -2,7 +2,6 @@ import { useIntlayer } from 'react-intlayer';
 import { HiOutlineAcademicCap, HiOutlineUsers } from 'react-icons/hi2';
 import { useNavigate } from 'react-router-dom';
 import { Chip } from '@components/common';
-import coursesContent from '@/content/courses/courses.content';
 import {
   parseTrackDescription,
   getTrackCategory,
@@ -17,7 +16,7 @@ import {
  * divider and meta footer.
  */
 export default function TrackCard({ track, enrolledCount = 0 }) {
-  const content = useIntlayer(coursesContent.key);
+  const content = useIntlayer('courses');
   const navigate = useNavigate();
 
   // Category comes from the dedicated Track.category field; the legacy

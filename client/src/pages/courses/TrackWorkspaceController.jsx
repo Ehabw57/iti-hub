@@ -17,7 +17,6 @@ import {
 } from '@hooks/queries/useCourse';
 import { useAuthStore } from '@store/auth';
 import { Loading, ErrorDisplay, Chip } from '@components/common';
-import coursesContent from '@/content/courses/courses.content';
 import {
   getTrackCategory,
   getTrackCategoryStyle,
@@ -45,7 +44,7 @@ const TAB_ICONS = {
 
 /** Content accessor with fallbacks — safe against missing keys. */
 function useCoursesText() {
-  const content = useIntlayer(coursesContent.key);
+  const content = useIntlayer('courses');
   return (key, fallback = '') => content?.[key]?.value ?? fallback;
 }
 

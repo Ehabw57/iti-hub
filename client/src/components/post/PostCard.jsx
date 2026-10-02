@@ -16,7 +16,6 @@ import RepostComposerModal from './RepostComposerModal';
 import CommentsSection from '@components/comments/CommentsSection';
 import UnavailablePost from './UnavailablePost';
 import ConfirmDialog from '@components/common/ConfirmDialog';
-import postMenuContent from '@/content/post/post-menu.content';
 
 /**
  * PostCard - Main container component for posts with business logic
@@ -43,7 +42,7 @@ const PostCard = React.memo(({ post, onPostClick, isCommentsExpanded = false, cl
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const { requireAuth } = useRequireAuth();
-  const content = useIntlayer(postMenuContent.key);
+  const content = useIntlayer('post-menu');
 
   // Hooks for mutations
   const toggleLike = useToggleLike();

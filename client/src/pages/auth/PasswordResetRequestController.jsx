@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Card, Input, Button, ErrorDisplay } from "@components/common";
 import { usePasswordResetRequest } from "@hooks/mutations/usePasswordResetRequest";
-import passwordResetContent from "@/content/auth/password-reset.content";
 import dayjs from "dayjs";
 import duration from "dayjs/plugin/duration";
 
@@ -13,7 +12,7 @@ const COOLDOWN_KEY = "password-reset-cooldown";
 const COOLDOWN_DURATION = 15 * 60 * 1000; // 15 minutes
 
 export default function PasswordResetRequestController() {
-  const t = useIntlayer(passwordResetContent.key);
+  const t = useIntlayer('authPasswordReset');
   const [email, setEmail] = useState("");
   const [errors, setErrors] = useState({});
   const [success, setSuccess] = useState(false);

@@ -7,6 +7,7 @@
     "build:dic": "intlayer build",
     "dev": "vite",
     "build": "vite build",
+    "test:production-translations": "node --test tests/production-translations.test.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest",

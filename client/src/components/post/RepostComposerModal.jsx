@@ -5,7 +5,6 @@ import { useIntlayer } from 'react-intlayer';
 import { toast } from 'react-hot-toast';
 import useRepost from '@hooks/mutations/useRepost';
 import CommunitySelector from './CommunitySelector';
-import repostContent from '@/content/post/repost.content';
 import { sanitizeContent } from '@/utils/sanitizeContent';
 import { Chip } from '@components/common';
 
@@ -17,7 +16,7 @@ import { Chip } from '@components/common';
  * @param {Object} props.originalPost - Original post to repost
  */
 export default function RepostComposerModal({ isOpen, onClose, originalPost }) {
-  const content = useIntlayer(repostContent.key);
+  const content = useIntlayer('repostComposer');
   const [repostComment, setRepostComment] = useState('');
   const [communityId, setCommunityId] = useState(null);
 

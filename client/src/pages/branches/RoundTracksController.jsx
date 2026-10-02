@@ -4,11 +4,10 @@ import { HiArrowLeft, HiOutlineAcademicCap } from 'react-icons/hi2';
 import { useRoundTracks, useBranchDetail } from '@hooks/queries/useCourse';
 import { Loading, ErrorDisplay, PageBanner, Chip } from '@components/common';
 import TrackCard from '../courses/TrackCard';
-import branchesContent from '@/content/branches/branches.content';
 
 /** Safe dictionary accessor — never crashes if a key is missing */
 const useBranchesContent = () => {
-  const content = useIntlayer(branchesContent.key);
+  const content = useIntlayer('branches');
   return (key, fallback = '') => content?.[key]?.value ?? fallback;
 };
 

@@ -4,7 +4,6 @@ import { FaCamera, FaUserPlus, FaUserMinus, FaShieldAlt } from 'react-icons/fa';
 import { FiSettings } from 'react-icons/fi';
 import { HiPencil, HiOutlineClock } from 'react-icons/hi2';
 import { useIntlayer } from 'react-intlayer';
-import communityContent from '@content/community/community.content';
 import useRequireAuth from '@hooks/useRequireAuth';
 import Button from '@components/common/Button';
 import PostComposerModal from '@components/post/PostComposerModal';
@@ -28,7 +27,7 @@ const CommunityHeader = ({
   onProfilePictureUpdate,
   onCoverImageUpdate,
 }) => {
-  const  content  = useIntlayer(communityContent.key);
+  const  content  = useIntlayer('community');
   const navigate = useNavigate();
   const { requireAuth } = useRequireAuth();
   const [showSettings, setShowSettings] = useState(false);

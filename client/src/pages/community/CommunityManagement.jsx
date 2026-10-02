@@ -4,7 +4,6 @@ import { FaShieldAlt, FaUsers, FaCrown, FaUserPlus, FaUserMinus, FaArrowLeft } f
 import { AiOutlineUserAdd, AiOutlineUserDelete } from 'react-icons/ai';
 import { useIntlayer } from 'react-intlayer';
 import toast from 'react-hot-toast';
-import communityContent from '@content/community/community.content';
 import { useCommunityDetails, useCommunityMembersInfinite, useCommunityJoinRequests } from '@hooks/queries/useCommunity';
 import { useAddModerator, useRemoveModerator, useKickMember, useDecideCommunityJoinRequest } from '@hooks/mutations/useCommunityMutations';
 import useIntersectionObserver from '@hooks/useIntersectionObserver';
@@ -20,7 +19,7 @@ import { Chip } from '@components/common';
 const CommunityManagement = () => {
   const { communityId } = useParams();
   const navigate = useNavigate();
-  const content = useIntlayer(communityContent.key);
+  const content = useIntlayer('community');
   const { requireAuth } = useRequireAuth();
   
   const [selectedRole, setSelectedRole] = useState('all'); // 'all' | 'member' | 'moderator' | 'owner'

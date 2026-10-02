@@ -12,7 +12,6 @@ import { useEvents } from '@hooks/queries/useCourse';
 import { useToggleEventRegister } from '@hooks/mutations/useCourseMutations';
 import { ErrorDisplay } from '@components/common';
 import useRequireAuth from '@hooks/useRequireAuth';
-import eventsContent from '@/content/events/events.content';
 import EventCard from './EventCard';
 
 /**
@@ -22,7 +21,7 @@ import EventCard from './EventCard';
  * /events is auth-gated) — guests get a sign-in prompt card instead.
  */
 export default function EventsListController() {
-  const content = useIntlayer(eventsContent.key);
+  const content = useIntlayer('events');
   const navigate = useNavigate();
   const { requireAuth } = useRequireAuth();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);

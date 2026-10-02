@@ -14,7 +14,6 @@ import {
 } from 'react-icons/hi2';
 import { useGlobalSearch } from '@hooks/queries/useGlobalSearch';
 import { UserAvatar } from '../user/UserAvatar';
-import sidebarSearchContent from '@/content/sidebar/sidebarSearch.content';
 
 /**
  * @fileoverview Site-wide search pinned in the sidebar (work order §1).
@@ -188,7 +187,7 @@ function SearchResults({ data, loading, query, content, onSelect, onSeeAll }) {
  */
 export default function SidebarSearch({ compact = false }) {
   const navigate = useNavigate();
-  const content = useIntlayer(sidebarSearchContent.key);
+  const content = useIntlayer('sidebarSearch');
 
   const [value, setValue] = useState('');
   const [debounced, setDebounced] = useState('');

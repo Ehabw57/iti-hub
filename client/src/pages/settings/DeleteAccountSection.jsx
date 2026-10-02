@@ -5,10 +5,9 @@ import { useNavigate } from 'react-router-dom';
 import ConfirmDialog from '@components/common/ConfirmDialog';
 import { useDeleteAccount } from '@hooks/mutations/useCourseMutations';
 import { useAuthStore } from '@/store/auth';
-import settingsContent from '@/content/settings/settings.content';
 
 export default function DeleteAccountSection() {
-  const content = useIntlayer(settingsContent.key);
+  const content = useIntlayer('settings');
   const [password, setPassword] = useState('');
   const [showConfirm, setShowConfirm] = useState(false);
   const navigate = useNavigate();

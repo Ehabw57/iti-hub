@@ -4,7 +4,6 @@ import { useIntlayer } from 'react-intlayer';
 import { useAuthStore } from '@store/auth';
 import { useJobs } from '@hooks/queries/useCourse';
 import { ErrorDisplay, Chip } from '@components/common';
-import jobsContent from '@/content/jobs/jobs.content';
 
 /**
  * JobsListController — X-style job board page.
@@ -13,7 +12,7 @@ import jobsContent from '@/content/jobs/jobs.content';
  * guests get a sign-in prompt card instead of the list.
  */
 export default function JobsListController() {
-  const content = useIntlayer(jobsContent.key);
+  const content = useIntlayer('jobs');
   const navigate = useNavigate();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const { data, isLoading, isError, refetch } = useJobs();

@@ -7,7 +7,6 @@ import LanguageSwitcher from "../common/LanguageSwitcher";
 import { HiOutlineLogout } from "react-icons/hi";
 import { useIntlayer } from "react-intlayer";
 import { useSidebarStore } from "@hooks/useSidebarStore";
-import navbarContent from "@/content/navbar/navbar.content";
 
 function IconButton({ icon, badge = 0, onClick, label }) {
   const Icon = icon;
@@ -34,7 +33,7 @@ export default function NavMenu() {
   const { unreadNotifications, unreadMessages } = useSidebarStore();
   const [open, setOpen] = useState(false);
   const menuRef = useRef(null);
-  const content = useIntlayer(navbarContent.key);
+  const content = useIntlayer('navbar');
 
   // Close menu on click outside
   useEffect(() => {

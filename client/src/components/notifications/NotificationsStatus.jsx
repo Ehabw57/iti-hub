@@ -1,6 +1,5 @@
 import { FiAlertCircle, FiRefreshCw } from 'react-icons/fi';
 import { useIntlayer } from 'react-intlayer';
-import notificationsContent from '../../content/notifications/notificationsCenter.content';
 
 /**
  * @fileoverview Status message component for notifications
@@ -20,7 +19,7 @@ export const NotificationsStatus = ({
   error = null,
   onRetry,
 }) => {
-  const content = useIntlayer(notificationsContent.key);
+  const content = useIntlayer('notificationsCenter');
 
   // Don't render for idle, loading, or success states
   if (status !== 'error' || !error) {

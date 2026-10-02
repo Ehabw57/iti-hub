@@ -1,6 +1,5 @@
 import { HiDocumentText } from 'react-icons/hi2';
 import { useIntlayer } from 'react-intlayer';
-import feedHomeContent from '@/content/feed/home.content'
 
 /**
  * Empty state component for feed
@@ -16,7 +15,7 @@ export default function EmptyFeed({
   action, 
   actionText 
 }) {
-  const content = useIntlayer(feedHomeContent.key);
+  const content = useIntlayer('feedHome');
 
   return (
     <div className="flex flex-col items-center justify-center py-16 px-4">

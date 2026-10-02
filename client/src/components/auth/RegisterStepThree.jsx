@@ -2,7 +2,6 @@ import { useIntlayer } from "react-intlayer";
 import { Input, Button } from "@components/common";
 import { AiOutlineCheckCircle, AiOutlineCloseCircle } from "react-icons/ai";
 import { validatePassword } from "@/utils/registerHelpers";
-import registerContent from "@/content/auth/register.content";
 
 export default function RegisterStepThree({
   firstName,
@@ -15,7 +14,7 @@ export default function RegisterStepThree({
   onBack,
   submitting,
 }) {
-  const t = useIntlayer(registerContent.key);
+  const t = useIntlayer('authRegister');
 
   const handleInputChange = (e) => {
     onChange({ [e.target.name]: e.target.value });

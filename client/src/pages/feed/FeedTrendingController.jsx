@@ -7,13 +7,12 @@ import FeedPostSkeleton from '@components/feed/FeedPostSkeleton';
 import EmptyFeed from '@components/feed/EmptyFeed';
 import TimeframeSelector from '@components/feed/TimeframeSelector';
 import { Loading, ErrorDisplay } from '@components/common';
-import homeContent from '../../content/feed/home.content';
 
 /**
  * Trending feed controller - shows trending posts with timeframe filter
  */
 export default function FeedTrendingController() {
-  const  content  = useIntlayer(homeContent.key);
+  const  content  = useIntlayer('feedHome');
   const [timeframe] = useState('24h');
 
   const { 

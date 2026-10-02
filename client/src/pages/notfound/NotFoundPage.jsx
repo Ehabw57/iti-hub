@@ -2,11 +2,10 @@ import { Link } from "react-router-dom";
 import { FaHome, FaSearch, FaGlobe } from "react-icons/fa";
 import { useIntlayer, useLocale } from "react-intlayer";
 
-import notFoundContent from "@/content/auth/notfound/notFound.content.js";
 
 export default function NotFoundPage() {
   const { title, description, home, search, langSwitch } =
-    useIntlayer(notFoundContent.key);
+    useIntlayer('notFound');
 
   const { locale, setLocale } = useLocale();
 

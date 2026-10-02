@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { HiXMark } from 'react-icons/hi2';
 import { useIntlayer } from 'react-intlayer';
-import commentContent from '@/content/comment/comment.content';
 import { sanitizeContent } from '@/utils/sanitizeContent';
 
 /**
@@ -16,7 +15,7 @@ export default function CommentForm({
   onSubmit, 
   onCancel, 
 }) {
-    const t  = useIntlayer(commentContent.key);
+    const t  = useIntlayer('commentForm');
   const [content, setContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 

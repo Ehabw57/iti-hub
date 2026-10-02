@@ -1,12 +1,10 @@
 import { useIntlayer } from "react-intlayer";
 import { Input, Button } from "@components/common";
 import GoogleSignInButton from "@components/auth/GoogleSignInButton";
-import registerContent from "@/content/auth/register.content";
-import googleAuthContent from "@/content/auth/google-auth.content";
 
 export default function RegisterStepOne({ email, errors, onChange, onNext, checking, onGoogleSuccess }) {
-  const t = useIntlayer(registerContent.key);
-  const g = useIntlayer(googleAuthContent.key);
+  const t = useIntlayer('authRegister');
+  const g = useIntlayer('authGoogle');
 
   const handleInputChange = (e) => {
     onChange({ [e.target.name]: e.target.value });

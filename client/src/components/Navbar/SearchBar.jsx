@@ -8,7 +8,6 @@ import { ImSpinner2 } from "react-icons/im";
 import { UserAvatar } from "../user/UserAvatar";
 import clsx from "clsx";
 import { useIntlayer } from "react-intlayer";
-import navbarContent from "@/content/navbar/navbar.content";
 
 export default function SearchBar() {
   const navigate = useNavigate();
@@ -17,7 +16,7 @@ export default function SearchBar() {
   const [showDropdown, setShowDropdown] = useState(false);
   const inputRef = useRef(null);
   const inputElementRef = useRef(null);
-  const content = useIntlayer(navbarContent.key);
+  const content = useIntlayer('navbar');
 
   // Debounce logic
   const [debouncedValue, setDebouncedValue] = useState("");

@@ -1,6 +1,5 @@
 import { useCommunityFeed } from '@hooks/queries/useCommunity';
 import { useIntlayer } from 'react-intlayer';
-import communityContent from '@content/community/community.content';
 import { PostCard } from '@/components/post/PostCard';
 import useIntersectionObserver from '@hooks/useIntersectionObserver';
 
@@ -10,7 +9,7 @@ import useIntersectionObserver from '@hooks/useIntersectionObserver';
  * Uses infinite scroll with Intersection Observer
  */
 const CommunityFeed = ({ communityId }) => {
-  const  content  = useIntlayer(communityContent.key);
+  const  content  = useIntlayer('community');
 
   // Use custom hook for fetching community feed
   const {

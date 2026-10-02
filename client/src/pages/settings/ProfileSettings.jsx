@@ -5,10 +5,9 @@ import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { useSettingsUpdateProfile } from '@hooks/mutations/useCourseMutations';
 import { useUploadProfilePicture, useUploadCoverImage } from '@hooks/mutations/useUserMutations';
 import { useAuthStore } from '@/store/auth';
-import settingsContent from '@/content/settings/settings.content';
 
 export default function ProfileSettings({ user }) {
-  const content = useIntlayer(settingsContent.key);
+  const content = useIntlayer('settings');
   const setUser = useAuthStore((s) => s.setUser);
 
   const [fullName, setFullName] = useState(user?.fullName || '');

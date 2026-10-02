@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { AiOutlineInfoCircle, AiOutlineEdit, AiOutlineSave, AiOutlineClose, AiOutlineUserAdd } from 'react-icons/ai';
 import { FaUsers } from 'react-icons/fa';
 import { useIntlayer } from 'react-intlayer';
-import communityContent from '@content/community/community.content';
 import { useAddModerator } from '@hooks/mutations/useCommunityMutations';
 import useRequireAuth from '@hooks/useRequireAuth';
 import ModeratorsList from '../community/ModeratorsList';
@@ -14,7 +13,7 @@ import { TextContent } from '@/components/shared/TextContent';
  * Displays detailed community information, members, and moderators
  */
 const CommunityInfo = ({ community, onUpdateCommunity }) => {
-  const  content  = useIntlayer(communityContent.key);
+  const  content  = useIntlayer('community');
   const navigate = useNavigate();
   const { requireAuth } = useRequireAuth();
   const [isEditingDescription, setIsEditingDescription] = useState(false);

@@ -12,10 +12,9 @@ import { GlobalMessagingHandler } from '@components/messaging/GlobalMessagingHan
 import { useAuthStore } from '@store/auth';
 import PostComposerModal from '@components/post/PostComposerModal';
 import useRequireAuth from '@hooks/useRequireAuth';
-import sidebarContent from '@/content/sidebar/sidebar.content';
 
 export default function Layout() {
-  const content = useIntlayer(sidebarContent.key);
+  const content = useIntlayer('sidebar');
   const isAuthenticated = useAuthStore(state => state.isAuthenticated);
   const user = useAuthStore(state => state.user);
   const [compose, setCompose] = useState(false);
